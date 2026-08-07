@@ -1,26 +1,71 @@
 @import "tailwindcss";
 
+/* ==========================================================================
+   Salguero Gourmet · tokens (LOCK, del mockup aprobado)
+   Ver DESIGN.md. No agregar colores nuevos.
+   ========================================================================== */
+@theme {
+  --color-bg: #241c15;
+  --color-surface: #30261d;
+  --color-crema: #f5eee0;
+  --color-crema-dim: #b5a691;
+  --color-amarillo: #e9bc4f;
+  --color-hairline: rgba(245, 238, 224, 0.14);
+
+  /* Fuentes: las variables --font-* las define next/font en <html> (ver layout.tsx). */
+  --font-display: var(--font-playfair), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-dmsans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-crema);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Foco visible amarillo (regla de accesibilidad del proyecto). */
+:focus-visible {
+  outline: 2px solid var(--color-amarillo);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+::selection {
+  background: var(--color-amarillo);
+  color: #241c15;
+}
+
+/* No usamos scroll-behavior:smooth de CSS: lo maneja Lenis por JS.
+   Con reduced-motion, Lenis se desactiva y neutralizamos animaciones/transiciones. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

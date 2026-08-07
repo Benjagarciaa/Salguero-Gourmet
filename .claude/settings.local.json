@@ -14,7 +14,11 @@
       "PowerShell(npx tsc --noEmit; Write-Output \"tsc exit: $LASTEXITCODE\"; Write-Output \"=== placeholders [[ ]] que quedan en data.ts ===\"; Select-String -Path \"D:\\\\salguero-landing\\\\content\\\\data.ts\" -Pattern '\\\\[\\\\[' | ForEach-Object { $_.Line.Trim\\(\\) })",
       "mcp__visualize__read_me",
       "mcp__visualize__show_widget",
-      "Bash(git --no-pager diff)"
+      "Bash(git --no-pager diff)",
+      "Bash(npx tsc *)",
+      "PowerShell(npm install motion lenis lucide-react --no-audit --no-fund)",
+      "Bash(node -e \"const p=require\\('./node_modules/motion/package.json'\\); console.log\\('motion', p.version\\); console.log\\(Object.keys\\(p.exports||{}\\).slice\\(0,20\\)\\)\")",
+      "PowerShell(npx tsc --noEmit; Write-Output \"tsc exit: $LASTEXITCODE\"; Write-Output \"=== build ===\"; npm run build 2>&1 | Out-String; Write-Output \"build exit: $LASTEXITCODE\")"
     ]
   }
 }
