@@ -7,6 +7,15 @@ import { InstagramIcon } from "@/components/ui/InstagramIcon";
 import { contacto, type GaleriaFoto } from "@/content/data";
 
 /**
+ * URL del visor ruteada por el optimizador de Next (avif/webp, resize a 1200px de
+ * ancho: suficiente para el visor + zoom, mucho mas liviana que el JPG crudo).
+ * w=1200 esta en los deviceSizes por defecto y q=75 es la calidad permitida por
+ * defecto (Next 16 rechaza con 400 los `q` fuera de la allowlist).
+ */
+const viewerSrc = (src: string) =>
+  `/_next/image?url=${encodeURIComponent(src)}&w=1200&q=75`;
+
+/**
  * Galería completa en lightbox. Un botón "Ver galería completa" abre un modal con
  * una grilla de todas las fotos curadas; al tocar una se abre un visor fullscreen
  * con zoom (click para acercar, mouse para desplazar el encuadre) y navegación.
@@ -55,6 +64,17 @@ export function GaleriaLightbox({
     setZoom(false);
     setOrigin("center center");
   }, [active]);
+
+  // Precargar las fotos vecinas para que paginar sea instantaneo (quedan en cache
+  // del navegador antes de que el usuario toque prev/next).
+  useEffect(() => {
+    if (active === null) return;
+    [1, -1].forEach((d) => {
+      const i = (active + d + fotos.length) % fotos.length;
+      const pre = new window.Image();
+      pre.src = viewerSrc(fotos[i].image);
+    });
+  }, [active, fotos]);
 
   // Teclado: Escape, flechas y trampa de foco (Tab) dentro de la capa activa.
   useEffect(() => {
@@ -283,11 +303,9 @@ export function GaleriaLightbox({
                   style={{ cursor: zoom ? "zoom-out" : "zoom-in" }}
                   className="overflow-hidden rounded-lg"
                 >
-                  {/* Ruteado por el optimizador de Next (webp/avif, resize) en
-                      vez de servir el JPG crudo (hasta ~480KB). */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={`/_next/image?url=${encodeURIComponent(foto.image)}&w=1920&q=70`}
+                    src={viewerSrc(foto.image)}
                     alt={foto.alt}
                     draggable={false}
                     style={{
