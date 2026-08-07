@@ -5,38 +5,41 @@ Cada dato no confirmado vive como `[[PLACEHOLDER]]` en `content/data.ts`.
 
 ---
 
-## A · Datos a confirmar con el cliente
+## A · Datos del cliente — RESUELTOS (agosto 2026)
 
-Estos ocho son los pendientes conocidos del brief. Al confirmarse, se cargan en
-`content/data.ts` (en `politicas`, `contacto`, `flor` o `resenas` según corresponda) y se
-tacha la línea acá.
+Los ocho pendientes del brief quedaron **cargados** en `content/data.ts` con los datos que
+pasó el cliente.
 
-| # | Pendiente | Dónde vive en el código | Estado |
+| # | Pendiente | Dónde vive | Estado |
 |---|---|---|---|
-| 1 | **Anticipación mínima** para reservar | `politicas.anticipacionMinima` + FAQ #2 | `[[ANTICIPACION_MINIMA]]` |
-| 2 | **Seña / porcentaje** para confirmar fecha | `politicas.senaPorcentaje` + FAQ #6 | `[[SENA_PORCENTAJE]]` |
-| 3 | **Medios de pago** | `politicas.mediosDePago` + FAQ #6 | `[[MEDIOS_DE_PAGO]]` |
-| 4 | **Horario de atención** | `politicas.horarioAtencion` + aside cotizador | `[[HORARIO_ATENCION]]` (UI muestra "A confirmar") |
-| 5 | **¿La persona de `flor-trabajando.jpg` es Flor?** | `flor.identidadConfirmada` | `false` (respaldo: `flor-alternativa.jpg`) |
-| 6 | **Link público del perfil de Google** | `contacto.googleProfileUrl` / `resenas.profileUrl` | `[[LINK_PERFIL_GOOGLE]]` |
-| 7 | **Confirmar que el 351 2300715 es WhatsApp** | `contacto.whatsappConfirmado` | `false` |
-| 8 | **¿La reseña de Nahir es de un box de regalo?** | `resenas.items[3].servicioConfirmado` | `false` |
+| 1 | ~~Anticipación mínima~~ | `politicas.anticipacionMinima` + FAQ #2 | ✅ Al menos 48 hs antes de la fecha del evento (+ seña del 50%) |
+| 2 | ~~Seña / porcentaje~~ | `politicas.senaPorcentaje` + FAQ #6 | ✅ 50% |
+| 3 | ~~Medios de pago~~ | `politicas.mediosDePago` + FAQ #6 | ✅ Efectivo, transferencia o depósito bancario |
+| 4 | ~~Horario de atención~~ | `politicas.horarioAtencion` + aside cotizador | ✅ 9 a 17 hs |
+| 5 | ~~¿Es Flor en la foto?~~ | `flor.identidadConfirmada` | ✅ Sí (`true`) |
+| 6 | ~~Link del perfil de Google~~ | `contacto.googleProfileUrl` / `resenas.profileUrl` | ✅ https://share.google/WSgW27pZTcjI7gejG |
+| 7 | ~~¿El 351 2300715 es WhatsApp?~~ | `contacto.whatsappConfirmado` | ✅ Sí (`true`) |
+| 8 | ~~¿Reseña de Nahir = box de regalo?~~ | `resenas.items[3].servicioConfirmado` | ✅ Sí (`true`) |
 
-### Pendientes adicionales detectados en las FAQ (menores)
-- **Cantidades mínimas** por servicio → `politicas.cantidadesMinimas` (FAQ #3).
-- **Opciones sin TACC / veganas / vegetarianas**: detalle a confirmar (FAQ #1).
-- **Vajilla / personal incluido**: a confirmar según evento (FAQ #4).
-- **Costo de envío por zona**: a confirmar (FAQ #5).
+### Pendientes adicionales de las FAQ — también RESUELTOS
+- ✅ **Cantidades mínimas** → "Sin cantidades mínimas" (`politicas.cantidadesMinimas`, FAQ #3).
+- ✅ **Opciones sin TACC / veganas / vegetarianas** → nos adaptamos según el servicio (FAQ #1).
+- ✅ **Vajilla / personal** → se adapta a lo que necesita el cliente (FAQ #4).
+- ✅ **Costo de envío por zona** → se acuerda al hacer el pedido (FAQ #5).
+
+### Abierto (diferido por decisión del usuario)
+- ⏳ **Reseña de "Javier Sauret" con etiqueta "Evento a medida"** (punto 11 del cliente).
+  Decisión: por ahora se dejan las **4 reseñas actuales**; se sumará la de Javier Sauret
+  ("Evento a medida") más adelante, cuando llegue el **texto** de la reseña (no se inventa
+  copy de reseñas). La de Nahir ya quedó confirmada como "Box de regalo".
 
 ---
 
-## B · Discrepancias de copy a validar (no se toca sin OK)
+## B · Discrepancias de copy
 
-- **FAQ "cantidades mínimas" menciona "viandas".** El mockup aprobado lista
-  `catering, pastelería, boxes o viandas`, pero el brief del negocio aclara que Salguero
-  **no hace viandas recurrentes**. Se dejó el copy aprobado verbatim y se marca acá.
-  Sugerencia al confirmar: reemplazar "viandas" por "boxes corporativos" o quitarlo.
-- **Captions de la galería.** El mockup tenía etiquetas atadas a frames de video; las fotos
+- ✅ **"viandas" en FAQ.** RESUELTO: la respuesta de cantidades mínimas se reescribió
+  ("Sin cantidades mínimas") y ya no menciona viandas.
+- ⏳ **Captions de la galería.** El mockup tenía etiquetas atadas a frames de video; las fotos
   reales son otras. Se asignaron captions por contenido real de cada foto (según
   `SELECCION.md`) usando el vocabulario del mockup. Repasar con el cliente si conviene.
 

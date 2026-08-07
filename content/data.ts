@@ -102,15 +102,15 @@ export const contacto = {
   whatsappDigits: "5493512300715",
   whatsappDisplay: "+54 351 230 0715",
   whatsappHref: "https://wa.me/5493512300715",
-  /** Pendiente: confirmar que el 351 2300715 es WhatsApp. Ver PENDIENTES.md. */
-  whatsappConfirmado: false,
+  /** Confirmado por el cliente: el 351 2300715 es WhatsApp. */
+  whatsappConfirmado: true,
   email: "salguerogourmet@gmail.com",
   instagramHandle: "@salguerogourmet",
   instagramUrl: "https://instagram.com/salguerogourmet",
   // Nombre del perfil de Google, confirmado en el brief del cliente (no aparece en el mockup).
   googleProfileName: "Salguero Gourmet Catering",
-  // El link público del perfil sigue pendiente (ver PENDIENTES.md #6).
-  googleProfileUrl: "[[LINK_PERFIL_GOOGLE]]",
+  // Link público del perfil de Google, confirmado por el cliente.
+  googleProfileUrl: "https://share.google/WSgW27pZTcjI7gejG",
   ciudad: "Córdoba capital",
   zonaDelivery: "anillo de Circunvalación de Córdoba capital",
 } as const;
@@ -123,16 +123,16 @@ export const site = {
 } as const;
 
 /**
- * Políticas comerciales aún no confirmadas por el cliente. Estos son los slots
- * canónicos: al confirmarse, se cargan acá y se ajusta la prosa "a confirmar"
- * de las FAQ. Ver PENDIENTES.md.
+ * Políticas comerciales CONFIRMADAS por el cliente (agosto 2026). Fuente de verdad
+ * para el copy de las FAQ y el aside del cotizador.
  */
 export const politicas = {
-  anticipacionMinima: "[[ANTICIPACION_MINIMA]]",
-  senaPorcentaje: "[[SENA_PORCENTAJE]]",
-  mediosDePago: "[[MEDIOS_DE_PAGO]]",
-  cantidadesMinimas: "[[CANTIDADES_MINIMAS]]",
-  horarioAtencion: "[[HORARIO_ATENCION]]",
+  // Anticipación mínima de 48 hs antes del evento; se reserva con la seña del 50%.
+  anticipacionMinima: "Al menos 48 hs antes de la fecha del evento.",
+  senaPorcentaje: "50%",
+  mediosDePago: "Efectivo, transferencia o depósito bancario",
+  cantidadesMinimas: "Sin cantidades mínimas",
+  horarioAtencion: "9 a 17 hs",
 } as const;
 
 /* ========================================================================== *
@@ -279,8 +279,8 @@ export const flor = {
     /** Recortar cerrado para que el backdrop institucional del evento no domine. */
     cropNote: "encuadre cerrado",
   },
-  /** Pendiente: confirmar con el cliente que la persona de la foto es Flor. */
-  identidadConfirmada: false,
+  /** Confirmado por el cliente: la persona de la foto es Flor. */
+  identidadConfirmada: true,
 };
 
 /* ========================================================================== *
@@ -293,7 +293,7 @@ export const resenas = {
   reviewCount: site.reviewCount,
   stars: 5,
   ratingCaption: "reseñas en Google",
-  profileUrl: contacto.googleProfileUrl, // "[[LINK_PERFIL_GOOGLE]]"
+  profileUrl: contacto.googleProfileUrl,
   profileCta: "Ver perfil de Google",
   items: [
     {
@@ -322,8 +322,8 @@ export const resenas = {
         "Excelente servicio! Abundante, delicioso y ni hablar de la atencion! Quede mas que conforme. Gracias nuevamente",
       author: "Nahir",
       servicio: "Box de regalo",
-      // Pendiente: confirmar que la reseña de Nahir corresponde a un box de regalo.
-      servicioConfirmado: false,
+      // Confirmado por el cliente: la reseña de Nahir es de un box de regalo.
+      servicioConfirmado: true,
     },
   ] as Resena[],
 };
@@ -375,10 +375,10 @@ export const empresas = {
 /* ========================================================================== *
  * 8 · FAQ
  * ---------------------------------------------------------------------------
- * Verbatim del mockup. Las frases "a confirmar" son placeholders blandos
- * (datos en `politicas`). Nota: la pregunta de cantidades mínimas menciona
- * "viandas"; el negocio aclara que NO hace viandas recurrentes. Discrepancia
- * registrada en PENDIENTES.md (no se toca copy aprobado sin confirmar).
+ * Respuestas actualizadas con los datos CONFIRMADOS por el cliente (agosto 2026):
+ * se reemplazaron las frases "a confirmar" del mockup por la info real (seña 50%,
+ * medios de pago, horario, sin mínimos). La mención a "viandas" quedó fuera: el
+ * negocio no hace viandas recurrentes (discrepancia resuelta).
  * ========================================================================== */
 
 export const faq = {
@@ -389,27 +389,27 @@ export const faq = {
   items: [
     {
       q: "¿Tienen opciones sin TACC, veganas o vegetarianas?",
-      a: "Trabajamos menúes personalizados, contanos qué necesitás en el pedido. Detalle de opciones a confirmar con el cliente.",
+      a: "Sí. Nos adaptamos a lo que necesités: según el servicio armamos las opciones sin TACC, veganas o vegetarianas que quieras. Contanos en el pedido.",
     },
     {
       q: "¿Con cuánta anticipación tengo que reservar?",
-      a: "Depende del tipo de servicio y la fecha. Anticipación mínima a confirmar.",
+      a: "Te pedimos al menos 48 hs de anticipación antes de la fecha del evento. Reservás tu fecha con una seña del 50% del servicio o producto.",
     },
     {
       q: "¿Hay cantidades mínimas?",
-      a: "A confirmar según el servicio: catering, pastelería, boxes o viandas.",
+      a: "No tenemos cantidades mínimas. Armamos desde un pedido chico hasta un evento grande con el mismo cuidado.",
     },
     {
       q: "¿El servicio incluye vajilla o personal?",
-      a: "A confirmar con el cliente según el tipo de evento.",
+      a: "Lo adaptamos a lo que necesités. Según el tipo de evento coordinamos vajilla y personal dentro de la propuesta.",
     },
     {
       q: "¿Hacen envíos? ¿A qué zonas?",
-      a: "Sí, con delivery en Córdoba capital, dentro del anillo de Circunvalación. Costo de envío a confirmar según la zona.",
+      a: "Sí, con delivery en Córdoba capital, dentro del anillo de Circunvalación. El costo de envío se acuerda al hacer el pedido, según la zona.",
     },
     {
       q: "¿Cómo reservo mi fecha?",
-      a: "Con una seña quedás confirmado. Porcentaje y medios de pago a confirmar.",
+      a: "Con una seña del 50% quedás confirmado. Podés pagar en efectivo, por transferencia o depósito bancario.",
     },
   ] as FaqItem[],
 };
