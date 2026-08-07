@@ -10,7 +10,11 @@
       "PowerShell(npm run build 2>&1 | Out-String; Write-Output \"build exit: $LASTEXITCODE\")",
       "PowerShell(npx tsc --noEmit; Write-Output \"tsc exit: $LASTEXITCODE\")",
       "Bash(git add *)",
-      "Bash(git commit -q -m ' *)"
+      "Bash(git commit -q -m ' *)",
+      "PowerShell(npx tsc --noEmit; Write-Output \"tsc exit: $LASTEXITCODE\"; Write-Output \"=== placeholders [[ ]] que quedan en data.ts ===\"; Select-String -Path \"D:\\\\salguero-landing\\\\content\\\\data.ts\" -Pattern '\\\\[\\\\[' | ForEach-Object { $_.Line.Trim\\(\\) })",
+      "mcp__visualize__read_me",
+      "mcp__visualize__show_widget",
+      "Bash(git --no-pager diff)"
     ]
   }
 }
