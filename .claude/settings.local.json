@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p \"C:/Users/B3NSH4/AppData/Local/Temp/claude/D--salguero-landing/53e4291a-18a4-4cfe-9a60-da1228d4b519/scratchpad\")",
+      "Bash(sed -E 's#data:image/[^\"]*#__BASE64_IMAGE__#g; s#data:video/[^\"]*#__BASE64_VIDEO__#g' mockup-salguero-v4.html)",
+      "PowerShell(try { Move-Item \"D:\\\\salguero-landing\\\\_assets\" \"D:\\\\_salguero_assets_stash\" -Force -ErrorAction Stop; Write-Output \"MOVED OK\" } catch { Write-Output \"MOVE FAILED: $_\" }; Write-Output \"--- salguero-landing now contains:\"; Get-ChildItem \"D:\\\\salguero-landing\" -Force | Select-Object Name)",
+      "PowerShell($scaf = \"C:\\\\Users\\\\B3NSH4\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\D--salguero-landing\\\\53e4291a-18a4-4cfe-9a60-da1228d4b519\\\\scratchpad\\\\scaffold\"; $dst = \"D:\\\\salguero-landing\"; robocopy $scaf $dst /E /XD \"$scaf\\\\.git\" /NFL /NDL /NJH /NJS /NP | Out-Null; Write-Output \"robocopy exit: $LASTEXITCODE \\(0-7 = success\\)\"; Write-Output \"--- project root now:\"; Get-ChildItem $dst -Force | Select-Object Name)",
+      "PowerShell(npm install --no-audit --no-fund)",
+      "PowerShell(Write-Output \"=== tsc --noEmit ===\"; npx tsc --noEmit; Write-Output \"tsc exit: $LASTEXITCODE\")",
+      "PowerShell(npm run build 2>&1 | Out-String; Write-Output \"build exit: $LASTEXITCODE\")",
+      "PowerShell(npx tsc --noEmit; Write-Output \"tsc exit: $LASTEXITCODE\")",
+      "Bash(git add *)",
+      "Bash(git commit -q -m ' *)"
+    ]
+  }
+}

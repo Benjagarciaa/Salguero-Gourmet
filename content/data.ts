@@ -1,0 +1,479 @@
+/**
+ * content/data.ts · Salguero Gourmet
+ * ---------------------------------------------------------------------------
+ * FUENTE ÚNICA DE COPY. Todo el texto de la landing vive acá, tipado.
+ *
+ * Reglas (ver CLAUDE.md):
+ *  - El copy proviene del mockup aprobado (_assets/mockup-salguero-v4.html).
+ *    Transcripto, no reescrito. Español argentino, voseo, sin guion largo ni medio.
+ *  - Lo no confirmado va como "[[PLACEHOLDER]]" y queda registrado en PENDIENTES.md.
+ *  - Los textos de reseñas son reales (Google): se dejan VERBATIM, con sus typos.
+ *
+ * Convención de placeholder: cualquier string "[[X]]". Usar isPlaceholder() para que
+ * la UI muestre un fallback prolijo hasta que el cliente confirme el dato.
+ */
+
+export const isPlaceholder = (v: string): boolean =>
+  v.startsWith("[[") && v.endsWith("]]");
+
+/* ========================================================================== *
+ * Tipos
+ * ========================================================================== */
+
+/** Titular con una palabra en itálica amarilla (el <em> del mockup). */
+export interface EmphasisTitle {
+  pre: string;
+  em: string;
+  post?: string;
+}
+
+/** Bajada con un tramo en <strong> (color crema pleno). */
+export interface RichLead {
+  pre: string;
+  strong: string;
+  post: string;
+}
+
+export interface CTA {
+  label: string;
+  href: string;
+}
+
+export interface TrustItem {
+  /** Texto antes del contador. */
+  before: string;
+  /** Valor final del contador (el SSR ya muestra este número). */
+  count?: number;
+  /** Texto después del contador. */
+  after?: string;
+}
+
+export interface NavLink {
+  label: string;
+  href: string;
+}
+
+export interface Servicio {
+  id: string;
+  title: string;
+  desc: string;
+  etiqueta: string;
+  ctaLabel: string;
+  /** Debe COINCIDIR con una opción del <select> para la preselección + wa.ts. */
+  servicioValue: string;
+  image: string;
+  alt: string;
+  /** Placa ancha (ocupa la fila completa, imagen a un lado). */
+  wide: boolean;
+}
+
+export interface GaleriaFoto {
+  image: string;
+  /** Etiqueta descriptiva. Asignada por contenido de la foto (a revisar). */
+  caption: string;
+  alt: string;
+}
+
+export interface Resena {
+  quote: string;
+  author: string;
+  /** Etiqueta por SERVICIO contratado, nunca por fecha. */
+  servicio: string;
+  /** false = el servicio de esta reseña está pendiente de confirmar. */
+  servicioConfirmado: boolean;
+}
+
+export interface Paso {
+  n: string;
+  title: string;
+  desc: string;
+}
+
+export interface FaqItem {
+  q: string;
+  a: string;
+}
+
+/* ========================================================================== *
+ * Datos de contacto y negocio (globales)
+ * ========================================================================== */
+
+export const contacto = {
+  whatsappDigits: "5493512300715",
+  whatsappDisplay: "+54 351 230 0715",
+  whatsappHref: "https://wa.me/5493512300715",
+  /** Pendiente: confirmar que el 351 2300715 es WhatsApp. Ver PENDIENTES.md. */
+  whatsappConfirmado: false,
+  email: "salguerogourmet@gmail.com",
+  instagramHandle: "@salguerogourmet",
+  instagramUrl: "https://instagram.com/salguerogourmet",
+  // Nombre del perfil de Google, confirmado en el brief del cliente (no aparece en el mockup).
+  googleProfileName: "Salguero Gourmet Catering",
+  // El link público del perfil sigue pendiente (ver PENDIENTES.md #6).
+  googleProfileUrl: "[[LINK_PERFIL_GOOGLE]]",
+  ciudad: "Córdoba capital",
+  zonaDelivery: "anillo de Circunvalación de Córdoba capital",
+} as const;
+
+export const site = {
+  name: "Salguero Gourmet",
+  aniosTrayectoria: 15,
+  rating: 5.0,
+  reviewCount: 33,
+} as const;
+
+/**
+ * Políticas comerciales aún no confirmadas por el cliente. Estos son los slots
+ * canónicos: al confirmarse, se cargan acá y se ajusta la prosa "a confirmar"
+ * de las FAQ. Ver PENDIENTES.md.
+ */
+export const politicas = {
+  anticipacionMinima: "[[ANTICIPACION_MINIMA]]",
+  senaPorcentaje: "[[SENA_PORCENTAJE]]",
+  mediosDePago: "[[MEDIOS_DE_PAGO]]",
+  cantidadesMinimas: "[[CANTIDADES_MINIMAS]]",
+  horarioAtencion: "[[HORARIO_ATENCION]]",
+} as const;
+
+/* ========================================================================== *
+ * Navegación
+ * ========================================================================== */
+
+export const nav = {
+  links: [
+    { label: "Servicios", href: "#servicios" },
+    { label: "Galería", href: "#galeria" },
+    { label: "Reseñas", href: "#resenas" },
+    { label: "Preguntas", href: "#faq" },
+  ] as NavLink[],
+  cta: { label: "Pedir presupuesto", href: "#cotizar" } as CTA,
+};
+
+/* ========================================================================== *
+ * 1 · Hero
+ * ========================================================================== */
+
+export const hero = {
+  kicker: "Catering · Pastelería · Córdoba",
+  title: { pre: "La mesa que se ", em: "recuerda" } as EmphasisTitle,
+  sub: {
+    pre: "Catering gourmet, pastelería para eventos, boxes de regalo y propuestas corporativas. ",
+    strong: "Comida casera, abundante y bien servida",
+    post: ", como la describen las reseñas.",
+  } as RichLead,
+  ctas: {
+    primary: { label: "Pedir presupuesto", href: "#cotizar" } as CTA,
+    ghost: { label: "Ver el trabajo", href: "#galeria" } as CTA,
+  },
+  trust: [
+    { before: "5.0 en Google · ", count: 33, after: " reseñas" },
+    { before: "+", count: 15, after: " años de trayectoria" },
+    { before: "Córdoba capital" },
+  ] as TrustItem[],
+  media: {
+    /** Video vertical del hero (FASE 2 lo comprime a public/media). */
+    video: "/media/salguero_navidad.mp4",
+    /** Poster JPG del mejor frame; es el LCP. Lo genera FASE 2. */
+    poster: "[[HERO_POSTER]]",
+    alt: "Mesa de catering servida por Salguero Gourmet",
+    width: 640,
+    height: 877, // marco 4:5
+  },
+};
+
+/* ========================================================================== *
+ * 2 · Servicios
+ * ========================================================================== */
+
+export const servicios = {
+  head: {
+    kicker: "Servicios",
+    title: { pre: "Cuatro formas de ", em: "servirte" } as EmphasisTitle,
+  },
+  items: [
+    {
+      id: "catering",
+      title: "Catering para eventos",
+      desc: "Mesas dulces y saladas para cumpleaños, casamientos, recibidas y eventos de empresa. Armamos la propuesta según tu evento, cantidad de invitados y presupuesto.",
+      etiqueta: "Eventos sociales y corporativos",
+      ctaLabel: "Cotizar catering",
+      servicioValue: "Catering para evento",
+      image: "/media/servicios-catering.jpg",
+      alt: "Mesa de catering con mesa dulce y salada en un evento",
+      wide: true,
+    },
+    {
+      id: "pasteleria",
+      title: "Pastelería para eventos",
+      desc: "Tortas, alfajores, budines y mesa dulce. Pastelería casera hecha a pedido.",
+      etiqueta: "Por encargo",
+      ctaLabel: "Cotizar pastelería",
+      servicioValue: "Pastelería por encargo",
+      image: "/media/servicios-pasteleria.jpg",
+      alt: "Budines de chocolate caseros sobre una tabla",
+      wide: false,
+    },
+    {
+      id: "box-regalo",
+      title: "Boxes dulces y salados",
+      desc: "Cajas de regalo para fechas especiales, con envío en Córdoba. Ediciones limitadas durante el año.",
+      etiqueta: "Envíos en Córdoba",
+      ctaLabel: "Cotizar un box",
+      servicioValue: "Box de regalo",
+      image: "/media/servicios-box-regalo.jpg",
+      alt: "Box de regalo con el sticker de la marca en mano",
+      wide: false,
+    },
+    {
+      id: "box-corporativo",
+      title: "Boxes corporativos",
+      desc: "Cajas individuales para eventos de empresa, jornadas y ocasiones especiales, o para agasajar a tu equipo en una fecha importante. Se arman a medida del evento.",
+      etiqueta: "Empresas · eventos y ocasiones especiales",
+      ctaLabel: "Cotizar box corporativo",
+      servicioValue: "Box corporativo",
+      image: "/media/servicios-box-corporativo.jpg",
+      alt: "Fila de boxes corporativos individuales en producción",
+      wide: true,
+    },
+  ] as Servicio[],
+};
+
+/* ========================================================================== *
+ * 3 · Galería (marquee doble)
+ * ---------------------------------------------------------------------------
+ * Captions asignados por CONTENIDO real de la foto (ver _assets/fotos/SELECCION.md),
+ * usando el vocabulario de etiquetas del mockup. Pendiente de revisión con el cliente.
+ * ========================================================================== */
+
+export const galeria = {
+  head: {
+    kicker: "Galería",
+    title: { pre: "El trabajo ", em: "habla solo" } as EmphasisTitle,
+  },
+  fotos: [
+    { image: "/media/galeria-01-alfajores.jpg", caption: "Pastelería casera", alt: "Alfajores de maicena sobre la mesa" },
+    { image: "/media/galeria-02-scones.jpg", caption: "Desayunos y meriendas", alt: "Scones caseros apilados" },
+    { image: "/media/galeria-03-cookies.jpg", caption: "Mesa dulce", alt: "Cookies caseras en pedestal" },
+    { image: "/media/galeria-04-budin-sticker.jpg", caption: "Pastelería casera", alt: "Budín envuelto con el sticker de la marca" },
+    { image: "/media/galeria-05-caja-abierta.jpg", caption: "Box dulce y salado", alt: "Caja de regalo abierta en primer plano" },
+    { image: "/media/galeria-06-produccion.jpg", caption: "Boxes corporativos", alt: "Producción de boxes individuales sobre tablones" },
+    { image: "/media/galeria-07-cookies-bowl.jpg", caption: "Mesa dulce", alt: "Cookies caseras en bowl de madera" },
+    { image: "/media/galeria-08-desayuno-mano.jpg", caption: "Desayunos y meriendas", alt: "Box de desayuno en mano con olivo de fondo" },
+  ] as GaleriaFoto[],
+};
+
+/* ========================================================================== *
+ * 4 · La cocina de Flor
+ * ========================================================================== */
+
+export const flor = {
+  kicker: "La casa",
+  title: { pre: "La cocina de ", em: "Flor" } as EmphasisTitle,
+  body: "Detrás de cada mesa está Flor, al frente de Salguero Gourmet desde hace más de quince años. Cocina casera, atención personalizada y el mismo cuidado para un cumpleaños de diez personas que para un evento de empresa.",
+  etiqueta: "Al frente desde el primer día",
+  foto: {
+    src: "/media/flor-trabajando.jpg",
+    /** Respaldo si la principal no convence o no es Flor. */
+    fallback: "/media/flor-alternativa.jpg",
+    alt: "Flor armando la mesa dulce en un evento",
+    /** Recortar cerrado para que el backdrop institucional del evento no domine. */
+    cropNote: "encuadre cerrado",
+  },
+  /** Pendiente: confirmar con el cliente que la persona de la foto es Flor. */
+  identidadConfirmada: false,
+};
+
+/* ========================================================================== *
+ * 5 · Reseñas
+ * ========================================================================== */
+
+export const resenas = {
+  kicker: "Reseñas",
+  rating: site.rating,
+  reviewCount: site.reviewCount,
+  stars: 5,
+  ratingCaption: "reseñas en Google",
+  profileUrl: contacto.googleProfileUrl, // "[[LINK_PERFIL_GOOGLE]]"
+  profileCta: "Ver perfil de Google",
+  items: [
+    {
+      quote:
+        "Tuvimos la posibilidad de trabajar con Flor y su emprendimiento para un evento que tuvimos que realizar en la empresa. Desde la organización, predisposición, profesionalismos y la pastelería y cafetería es de primera calidad. Contraten los servicios para sus eventos que no se van a arrepentir.",
+      author: "Mauricio Schmid",
+      servicio: "Catering de empresa",
+      servicioConfirmado: true,
+    },
+    {
+      quote:
+        "Contraté un coffee para una reunión empresarial y la experiencia fue muy buena! Buenas productos, excelente atención, muy buena relación precio-calidad.",
+      author: "María Candelaria Contreras",
+      servicio: "Coffee break empresarial",
+      servicioConfirmado: true,
+    },
+    {
+      quote:
+        "Contrate el catering de Salguero Gourmet para mi cumpleaños y todo estuvo riquisimo!!! La comida casera es sin dudas lo mejor. Gracias!!!",
+      author: "Maria Victoria Garcia",
+      servicio: "Catering de cumpleaños",
+      servicioConfirmado: true,
+    },
+    {
+      quote:
+        "Excelente servicio! Abundante, delicioso y ni hablar de la atencion! Quede mas que conforme. Gracias nuevamente",
+      author: "Nahir",
+      servicio: "Box de regalo",
+      // Pendiente: confirmar que la reseña de Nahir corresponde a un box de regalo.
+      servicioConfirmado: false,
+    },
+  ] as Resena[],
+};
+
+/* ========================================================================== *
+ * 6 · Cómo trabajamos (proceso)
+ * ========================================================================== */
+
+export const proceso = {
+  head: {
+    kicker: "Cómo trabajamos",
+    title: { pre: "Del mensaje a la mesa, ", em: "en cuatro pasos" } as EmphasisTitle,
+  },
+  pasos: [
+    {
+      n: "01",
+      title: "Contanos tu evento",
+      desc: "Fecha, cantidad de personas y qué tenés en mente. Por el formulario o directo por WhatsApp.",
+    },
+    {
+      n: "02",
+      title: "Recibís propuesta y precio",
+      desc: "Armamos un menú a medida de tu evento y tu presupuesto.",
+    },
+    {
+      n: "03",
+      title: "Coordinamos",
+      desc: "Confirmás con una seña y cerramos fecha, entrega y detalles.",
+    },
+    {
+      n: "04",
+      title: "Servimos o entregamos",
+      desc: "El día del evento llegamos con todo listo, o lo recibís con nuestro delivery.",
+    },
+  ] as Paso[],
+};
+
+/* ========================================================================== *
+ * 7 · Banda empresas
+ * ========================================================================== */
+
+export const empresas = {
+  kicker: "Para empresas",
+  title: { pre: "Tu equipo también ", em: "come bien" } as EmphasisTitle,
+  items: ["Coffee breaks", "Boxes corporativos", "Agasajos y fechas especiales"],
+  cta: { label: "Cotizar para mi empresa", href: "#cotizar" } as CTA,
+};
+
+/* ========================================================================== *
+ * 8 · FAQ
+ * ---------------------------------------------------------------------------
+ * Verbatim del mockup. Las frases "a confirmar" son placeholders blandos
+ * (datos en `politicas`). Nota: la pregunta de cantidades mínimas menciona
+ * "viandas"; el negocio aclara que NO hace viandas recurrentes. Discrepancia
+ * registrada en PENDIENTES.md (no se toca copy aprobado sin confirmar).
+ * ========================================================================== */
+
+export const faq = {
+  head: {
+    kicker: "Preguntas frecuentes",
+    title: { pre: "Antes de ", em: "escribirnos" } as EmphasisTitle,
+  },
+  items: [
+    {
+      q: "¿Tienen opciones sin TACC, veganas o vegetarianas?",
+      a: "Trabajamos menúes personalizados, contanos qué necesitás en el pedido. Detalle de opciones a confirmar con el cliente.",
+    },
+    {
+      q: "¿Con cuánta anticipación tengo que reservar?",
+      a: "Depende del tipo de servicio y la fecha. Anticipación mínima a confirmar.",
+    },
+    {
+      q: "¿Hay cantidades mínimas?",
+      a: "A confirmar según el servicio: catering, pastelería, boxes o viandas.",
+    },
+    {
+      q: "¿El servicio incluye vajilla o personal?",
+      a: "A confirmar con el cliente según el tipo de evento.",
+    },
+    {
+      q: "¿Hacen envíos? ¿A qué zonas?",
+      a: "Sí, con delivery en Córdoba capital, dentro del anillo de Circunvalación. Costo de envío a confirmar según la zona.",
+    },
+    {
+      q: "¿Cómo reservo mi fecha?",
+      a: "Con una seña quedás confirmado. Porcentaje y medios de pago a confirmar.",
+    },
+  ] as FaqItem[],
+};
+
+/* ========================================================================== *
+ * 9 · Cotizador
+ * ========================================================================== */
+
+export const cotizador = {
+  head: {
+    kicker: "Cotizador",
+    title: { pre: "Pedí tu presupuesto, ", em: "tarda un minuto" } as EmphasisTitle,
+    intro:
+      "Completá el formulario y el pedido te llega armado al WhatsApp de Salguero. Sin vueltas.",
+  },
+  form: {
+    fields: {
+      nombre: { label: "Nombre", required: true, placeholder: "Tu nombre" },
+      contacto: {
+        label: "WhatsApp o email",
+        required: true,
+        placeholder: "Para responderte",
+      },
+      servicio: { label: "Tipo de servicio", required: true },
+      fecha: { label: "Fecha del evento", required: false },
+      personas: {
+        label: "Cantidad de personas",
+        required: false,
+        placeholder: "Aprox.",
+      },
+      descripcion: {
+        label: "Contanos qué estás organizando",
+        required: true,
+        placeholder: "Tipo de evento, horario, qué te imaginás para la mesa...",
+      },
+    },
+    /** Las opciones deben coincidir con Servicio.servicioValue para la preselección. */
+    servicioOptions: [
+      "Catering para evento",
+      "Pastelería por encargo",
+      "Box de regalo",
+      "Box corporativo",
+      "Otro",
+    ],
+    submitLabel: "Enviar por WhatsApp",
+  },
+  aside: {
+    title: "O escribinos directo",
+    datos: [
+      { label: "WhatsApp", value: contacto.whatsappDisplay, href: contacto.whatsappHref },
+      { label: "Email", value: contacto.email, href: `mailto:${contacto.email}` },
+      { label: "Instagram", value: contacto.instagramHandle, href: contacto.instagramUrl },
+      // Horario pendiente: la UI muestra "A confirmar" mientras sea placeholder.
+      { label: "Horario de atención", value: politicas.horarioAtencion, href: null },
+    ] as { label: string; value: string; href: string | null }[],
+    etiqueta: "Respondemos a la brevedad",
+  },
+};
+
+/* ========================================================================== *
+ * Footer
+ * ========================================================================== */
+
+export const footer = {
+  tagline: "Catering y pastelería artesanal · Córdoba, Argentina",
+  copyright: "© 2026 Salguero Gourmet",
+};
