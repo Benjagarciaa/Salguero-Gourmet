@@ -54,12 +54,16 @@ pasó el cliente.
 - **Videos crudos fuera de git.** Los 3 `.mp4` originales (~76MB) quedan en `_assets/` solo
   como referencia y están en `.gitignore`. Al repo/deploy solo van las versiones comprimidas
   (`public/media/`, FASE 2).
-- **ffmpeg no está instalado.** Necesario en FASE 2 para comprimir video (720px, sin audio,
-  H.264 CRF 28, `-movflags +faststart`, objetivo < 4MB) y generar los posters JPG.
-  Opciones: `winget install ffmpeg`, o continuar con posters JPG a mano y dejar la
-  compresión pendiente. **Decisión del cliente/usuario requerida en FASE 2.**
-- **Poster del hero (LCP).** `hero.media.poster` = `[[HERO_POSTER]]` hasta que FASE 2 genere
-  el frame (`public/media/…-poster.jpg`, objetivo < 150KB con `priority`).
+- ✅ **ffmpeg instalado** (Gyan.FFmpeg 9.0, vía winget). Videos comprimidos a 720px de ancho,
+  30fps, sin audio, H.264 CRF 28, `+faststart` en `public/media`: navidad 2.15MB (hero
+  recortado 4:5), caja 1.61MB, box 1.58MB. No queda en el PATH de shells nuevos: usar la ruta
+  completa del `.exe` (`%LOCALAPPDATA%\Microsoft\WinGet\Packages\Gyan.FFmpeg_...\bin\ffmpeg.exe`).
+- ✅ **Poster del hero (LCP)** generado: `public/media/salguero_navidad-poster.jpg` (58KB, 4:5).
+- ⚠️ **Hero: video con texto quemado.** El reel `salguero_navidad` trae texto de marketing
+  quemado en todo el clip. Por decisión del usuario se usa igual, con un recorte agresivo 4:5
+  que saca las bandas de texto; queda un watermark tenue ("crear") que asoma ~2s. Los videos
+  `caja` y `box` también tienen texto y hoy NO se usan (quedan disponibles en `public/media`).
+  Para un hero impecable: conseguir un clip limpio (de los 60+ sin curar) y reemplazar.
 - **Nombres de fotos con sufijo descriptivo.** Los archivos reales son
   `galeria-01-alfajores.jpg`, `servicios-catering.jpg`, etc. (el brief los nombraba
   `galeria-01`). Las rutas en `content/data.ts` ya usan los nombres reales.
@@ -81,9 +85,9 @@ pasó el cliente.
 
 ## E · Estado de fases
 
-- [x] **FASE 0** · Lectura + scaffold + documentos (este set). Mostrar y esperar OK.
-- [ ] FASE 1 · Base (tokens, fuentes, Lenis, primitivas, Wordmark, icon.svg, página muestra).
-- [ ] FASE 2 · Hero (video + poster) + Servicios.
+- [x] **FASE 0** · Lectura + scaffold + documentos.
+- [x] **FASE 1** · Base (tokens, fuentes, Lenis, primitivas, Wordmark, icon.svg, muestra).
+- [x] **FASE 2** · Hero (video recortado + poster) + Servicios (fotos + preselección).
 - [ ] FASE 3 · Galería + Flor + Reseñas.
 - [ ] FASE 4 · Proceso + Empresas + FAQ + Cotizador + Footer + `lib/wa.ts`.
 - [ ] FASE 5 · SEO + performance + a11y + pasada mobile.

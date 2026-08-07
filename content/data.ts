@@ -171,13 +171,13 @@ export const hero = {
     { before: "Córdoba capital" },
   ] as TrustItem[],
   media: {
-    /** Video vertical del hero (FASE 2 lo comprime a public/media). */
+    /** Video del hero, comprimido y recortado 4:5 (sin texto quemado del reel). */
     video: "/media/salguero_navidad.mp4",
-    /** Poster JPG del mejor frame; es el LCP. Lo genera FASE 2. */
-    poster: "[[HERO_POSTER]]",
-    alt: "Mesa de catering servida por Salguero Gourmet",
-    width: 640,
-    height: 877, // marco 4:5
+    /** Poster JPG (LCP), frame limpio del video recortado. */
+    poster: "/media/salguero_navidad-poster.jpg",
+    alt: "Mesa dulce y salada servida por Salguero Gourmet en un evento",
+    width: 720,
+    height: 900, // marco 4:5
   },
 };
 
