@@ -251,14 +251,14 @@ export const galeria = {
     title: { pre: "El trabajo ", em: "habla solo" } as EmphasisTitle,
   },
   fotos: [
-    { image: "/media/galeria-mesa-abundante.jpg", caption: "Mesa dulce", alt: "Mesa dulce abundante con scones, facturas y budines" },
-    { image: "/media/galeria-02-scones.jpg", caption: "Desayunos y meriendas", alt: "Scones caseros apilados" },
-    { image: "/media/galeria-03-cookies.jpg", caption: "Pastelería casera", alt: "Cookies caseras en pedestal" },
-    { image: "/media/galeria-budin-sello.jpg", caption: "Con nuestro sello", alt: "Budines caseros con el sello de la marca" },
-    { image: "/media/galeria-coffee-boxes.jpg", caption: "Coffee breaks", alt: "Boxes individuales de coffee break con budín y limonada" },
-    { image: "/media/galeria-06-produccion.jpg", caption: "Boxes corporativos", alt: "Producción de boxes individuales sobre tablones" },
-    { image: "/media/galeria-07-cookies-bowl.jpg", caption: "Meriendas", alt: "Cookies caseras en bowl de madera" },
-    { image: "/media/galeria-08-desayuno-mano.jpg", caption: "Box de desayuno", alt: "Box de desayuno en mano con olivo de fondo" },
+    { image: "/media/galeria-flatlay-tarta.jpg", caption: "Mesa dulce", alt: "Tarta de rejilla, chocolate blanco y alfajores vistos desde arriba" },
+    { image: "/media/galeria-alfajores.jpg", caption: "Pastelería casera", alt: "Alfajores de maicena apilados en un pedestal de madera" },
+    { image: "/media/galeria-oficio.jpg", caption: "Hecho a mano", alt: "Armando alfajores a mano sobre la mesa dulce" },
+    { image: "/media/galeria-bombas.jpg", caption: "Bombones", alt: "Bombas de chocolate sobre una tabla de madera" },
+    { image: "/media/galeria-mesa-cups.jpg", caption: "Coffee breaks", alt: "Mesa larga con vasitos de café y mesa dulce junto al ventanal" },
+    { image: "/media/galeria-noche.jpg", caption: "Eventos de noche", alt: "Facturas en pedestales con luz azul en un evento de noche" },
+    { image: "/media/galeria-coffee-boxes.jpg", caption: "Boxes corporativos", alt: "Boxes individuales de coffee break con budín y limonada" },
+    { image: "/media/galeria-flatlay-spread.jpg", caption: "Meriendas", alt: "Mesa dulce vista desde arriba con alfajores, budín y brownies" },
   ] as GaleriaFoto[],
 };
 

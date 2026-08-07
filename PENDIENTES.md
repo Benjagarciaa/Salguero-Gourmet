@@ -39,9 +39,14 @@ pasó el cliente.
 
 - ✅ **"viandas" en FAQ.** RESUELTO: la respuesta de cantidades mínimas se reescribió
   ("Sin cantidades mínimas") y ya no menciona viandas.
-- ⏳ **Captions de la galería.** El mockup tenía etiquetas atadas a frames de video; las fotos
-  reales son otras. Se asignaron captions por contenido real de cada foto (según
-  `SELECCION.md`) usando el vocabulario del mockup. Repasar con el cliente si conviene.
+- ✅ **Galería y servicios renovados** con el material nuevo (agosto 2026): fotos elegidas
+  por el cliente en servicios (IMG_2171/1745/1903 + box en mano) y galería con 8 gemas
+  (tarta de rejilla, alfajores, oficio, bombas, mesa+vasitos, evento de noche, coffee boxes,
+  flat-lay). Con captions descriptivos.
+- 📸 **Los HEIC del cliente son imágenes en mosaico.** Decodificar SIEMPRE con el default de
+  ffmpeg (sin `-map`), que reconstruye la grilla a full-res (~2266x4028). `-map [0:v]` toma un
+  solo tile y da falsos "borrosos". Hay una biblioteca rica de fotos buenas sin usar (spreads,
+  flat-lays, oficio, eventos corporativos El Norte/Coca/Samsung/FCEFyN) para futuras pasadas.
 
 ---
 
@@ -88,8 +93,8 @@ pasó el cliente.
 
 - [x] **FASE 0** · Lectura + scaffold + documentos.
 - [x] **FASE 1** · Base (tokens, fuentes, Lenis, primitivas, Wordmark, icon.svg, muestra).
-- [x] **FASE 2** · Hero (video recortado + poster) + Servicios (fotos + preselección).
-- [ ] FASE 3 · Galería + Flor + Reseñas.
+- [x] **FASE 2** · Hero (clip limpio + poster) + Servicios (fotos elegidas por el cliente).
+- [x] **FASE 3** · Galería (marquee con las gemas) + La cocina de Flor + Reseñas.
 - [ ] FASE 4 · Proceso + Empresas + FAQ + Cotizador + Footer + `lib/wa.ts`.
 - [ ] FASE 5 · SEO + performance + a11y + pasada mobile.
 - [ ] FASE 6 · Entrega (build final, guía de deploy en Vercel, cómo cargar datos faltantes).

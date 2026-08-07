@@ -69,3 +69,40 @@ a {
     scroll-behavior: auto !important;
   }
 }
+
+/* ==========================================================================
+   Galería · marquee (contenido duplicado -> loop con translate3d(-50%)).
+   Fail-open: si el JS no corre, el CSS anima igual. Con reduced-motion se
+   detiene y el viewport se vuelve scrolleable a mano.
+   ========================================================================== */
+.mq-viewport {
+  overflow: hidden;
+}
+.mq-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 42s linear infinite;
+  will-change: transform;
+}
+.mq-track-rev {
+  animation-direction: reverse;
+}
+.mq-viewport:hover .mq-track {
+  animation-play-state: paused;
+}
+@keyframes marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mq-track {
+    animation: none !important;
+  }
+  .mq-viewport {
+    overflow-x: auto;
+  }
+}
