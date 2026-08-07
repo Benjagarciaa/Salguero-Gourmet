@@ -119,3 +119,42 @@ a {
     object-position: var(--obj-d, var(--obj-m, 50% 50%));
   }
 }
+
+/* Offset para que las anclas no queden tapadas por el nav sticky. */
+:where(section[id], header[id]) {
+  scroll-margin-top: 76px;
+}
+
+/* Flash del <select> cuando se preselecciona un servicio desde "Cotizar X". */
+@keyframes flash {
+  0%,
+  60% {
+    outline: 2px solid var(--color-amarillo);
+    outline-offset: 2px;
+  }
+  100% {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
+}
+.flash {
+  animation: flash 1.4s ease-out 1;
+}
+
+/* FAQ: animación de altura del acordeón (progresivo; navegadores sin soporte
+   hacen el toggle instantáneo, que es igual de accesible). */
+@media (prefers-reduced-motion: no-preference) {
+  :root {
+    interpolate-size: allow-keywords;
+  }
+  .faq-acc::details-content {
+    height: 0;
+    overflow: clip;
+    transition:
+      height 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+      content-visibility 0.28s allow-discrete;
+  }
+  .faq-acc[open]::details-content {
+    height: auto;
+  }
+}

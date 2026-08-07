@@ -9,7 +9,7 @@ export function Wordmark({ className }: { className?: string }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-[10px] font-sans text-[15px] font-bold tracking-[0.14em] text-crema",
+        "inline-flex items-center gap-[10px] font-sans font-bold tracking-[0.14em] text-crema",
         className,
       )}
     >

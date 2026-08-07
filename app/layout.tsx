@@ -3,6 +3,8 @@ import { Playfair_Display, DM_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { SmoothScroll } from "@/components/chrome/SmoothScroll";
 import { QuoteProvider } from "@/components/chrome/QuoteContext";
+import { Nav } from "@/components/chrome/Nav";
+import { Footer } from "@/components/chrome/Footer";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -40,7 +42,11 @@ export default function RootLayout({
     >
       <body>
         <SmoothScroll>
-          <QuoteProvider>{children}</QuoteProvider>
+          <QuoteProvider>
+            <Nav />
+            {children}
+            <Footer />
+          </QuoteProvider>
         </SmoothScroll>
       </body>
     </html>

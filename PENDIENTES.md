@@ -95,6 +95,7 @@ pasó el cliente.
 - [x] **FASE 1** · Base (tokens, fuentes, Lenis, primitivas, Wordmark, icon.svg, muestra).
 - [x] **FASE 2** · Hero (clip limpio + poster) + Servicios (fotos elegidas por el cliente).
 - [x] **FASE 3** · Galería (marquee con las gemas) + La cocina de Flor + Reseñas.
+- [x] **FASE 4** · Proceso + Empresas + FAQ + Cotizador (WhatsApp + preselección) + Footer + Nav.
 - [ ] FASE 4 · Proceso + Empresas + FAQ + Cotizador + Footer + `lib/wa.ts`.
 - [ ] FASE 5 · SEO + performance + a11y + pasada mobile.
 - [ ] FASE 6 · Entrega (build final, guía de deploy en Vercel, cómo cargar datos faltantes).

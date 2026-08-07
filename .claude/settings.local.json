@@ -24,7 +24,8 @@
       "Bash(awk '{print $5, $9}')",
       "PowerShell(npx tsc --noEmit; Write-Output \"tsc: $LASTEXITCODE\"; npm run build 2>&1 | Select-String -Pattern 'Compiled|error|Error' | Select-Object -First 5; Write-Output \"build: $LASTEXITCODE\")",
       "PowerShell(npx tsc --noEmit; Write-Output \"tsc: $LASTEXITCODE\"; npm run build 2>&1 | Select-String -Pattern 'Compiled|error|Error|Failed' | Select-Object -First 8; Write-Output \"build: $LASTEXITCODE\")",
-      "PowerShell(npx tsc --noEmit; Write-Output \"tsc: $LASTEXITCODE\"; npm run build 2>&1 | Select-String -Pattern 'Compiled|error|Error' | Select-Object -First 3; Write-Output \"build: $LASTEXITCODE\")"
+      "PowerShell(npx tsc --noEmit; Write-Output \"tsc: $LASTEXITCODE\"; npm run build 2>&1 | Select-String -Pattern 'Compiled|error|Error' | Select-Object -First 3; Write-Output \"build: $LASTEXITCODE\")",
+      "PowerShell(npx tsc --noEmit; Write-Output \"tsc: $LASTEXITCODE\"; npm run build 2>&1 | Select-String -Pattern 'Compiled|Error|error|Failed|warn' | Select-Object -First 10; Write-Output \"build: $LASTEXITCODE\")"
     ]
   }
 }

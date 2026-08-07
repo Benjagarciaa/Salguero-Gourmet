@@ -3,6 +3,10 @@ import { Servicios } from "@/components/sections/Servicios";
 import { Galeria } from "@/components/sections/Galeria";
 import { Flor } from "@/components/sections/Flor";
 import { Resenas } from "@/components/sections/Resenas";
+import { Proceso } from "@/components/sections/Proceso";
+import { Empresas } from "@/components/sections/Empresas";
+import { Faq } from "@/components/sections/Faq";
+import { Cotizador } from "@/components/sections/Cotizador";
 
 export default function Page() {
   return (
@@ -12,6 +16,10 @@ export default function Page() {
       <Galeria />
       <Flor />
       <Resenas />
+      <Proceso />
+      <Empresas />
+      <Faq />
+      <Cotizador />
     </main>
   );
 }

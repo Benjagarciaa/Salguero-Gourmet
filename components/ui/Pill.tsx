@@ -1,9 +1,17 @@
 import { cn } from "@/lib/cn";
 
 type PillVariant = "primaria" | "fantasma";
+type PillSize = "md" | "sm";
 
 const base =
-  "inline-block cursor-pointer rounded-full px-5 py-3 text-center text-[14px] font-medium transition-[transform,filter] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] sm:px-7 sm:py-[14px] sm:text-[15px]";
+  "inline-block cursor-pointer rounded-full text-center font-medium transition-[transform,filter] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]";
+
+const sizes: Record<PillSize, string> = {
+  // CTA principal: compacta en mobile, completa desde sm.
+  md: "px-5 py-3 text-[14px] sm:px-7 sm:py-[14px] sm:text-[15px]",
+  // Compacta siempre (nav).
+  sm: "px-5 py-[10px] text-[14px]",
+};
 
 const variants: Record<PillVariant, string> = {
   primaria:
@@ -13,6 +21,7 @@ const variants: Record<PillVariant, string> = {
 
 interface PillProps {
   variant?: PillVariant;
+  size?: PillSize;
   href?: string;
   children: React.ReactNode;
   className?: string;
@@ -29,6 +38,7 @@ interface PillProps {
  */
 export function Pill({
   variant = "primaria",
+  size = "md",
   href,
   children,
   className,
@@ -38,7 +48,7 @@ export function Pill({
   onClick,
   "aria-label": ariaLabel,
 }: PillProps) {
-  const classes = cn(base, variants[variant], className);
+  const classes = cn(base, sizes[size], variants[variant], className);
 
   if (href) {
     return (

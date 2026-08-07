@@ -228,8 +228,8 @@ export const servicios = {
       servicioValue: "Box de regalo",
       image: "/media/galeria-08-desayuno-mano.jpg",
       alt: "Box de desayuno en mano con budín, alfajores y limonada, olivo de fondo",
-      objectPosition: "50% 60%",
-      objectPositionMobile: "50% 60%",
+      objectPosition: "50% 56%",
+      objectPositionMobile: "50% 61%",
       wide: false,
     },
     {
@@ -242,6 +242,7 @@ export const servicios = {
       image: "/media/box-corporativo.jpg",
       alt: "Boxes corporativos individuales con sándwiches, budín y bebida",
       objectPosition: "50% 55%",
+      objectPositionMobile: "50% 57%",
       wide: true,
     },
   ] as Servicio[],
