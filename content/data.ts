@@ -389,27 +389,27 @@ export const faq = {
   items: [
     {
       q: "¿Tienen opciones sin TACC, veganas o vegetarianas?",
-      a: "Sí. Nos adaptamos a lo que necesités: según el servicio armamos las opciones sin TACC, veganas o vegetarianas que quieras. Contanos en el pedido.",
+      a: "Sí. Elaboramos opciones sin TACC, veganas y vegetarianas según cada servicio. Indicanos tus preferencias al hacer el pedido y las sumamos a la propuesta.",
     },
     {
       q: "¿Con cuánta anticipación tengo que reservar?",
-      a: "Te pedimos al menos 48 hs de anticipación antes de la fecha del evento. Reservás tu fecha con una seña del 50% del servicio.",
+      a: "Solicitamos una anticipación mínima de 48 hs respecto de la fecha del evento. Reservás tu fecha con una seña del 50% del servicio.",
     },
     {
       q: "¿Hay cantidades mínimas?",
-      a: "No tenemos cantidades mínimas. Armamos desde un pedido chico hasta un evento grande con el mismo cuidado.",
+      a: "No trabajamos con cantidades mínimas. Atendemos desde encargos pequeños hasta eventos de gran escala con la misma dedicación.",
     },
     {
       q: "¿El servicio incluye vajilla o personal?",
-      a: "Lo adaptamos a lo que necesités. Según el tipo de evento coordinamos vajilla y personal dentro de la propuesta.",
+      a: "Coordinamos vajilla y personal según el tipo de evento y tus necesidades, como parte de la propuesta.",
     },
     {
       q: "¿Hacen envíos? ¿A qué zonas?",
-      a: "Sí, con delivery en Córdoba capital, dentro del anillo de Circunvalación. El costo de envío se acuerda al hacer el pedido, según la zona.",
+      a: "Sí. Hacemos envíos en Córdoba capital, dentro del anillo de Circunvalación. El costo se define al momento del pedido, según la zona.",
     },
     {
       q: "¿Cómo reservo mi fecha?",
-      a: "Con una seña del 50% quedás confirmado. Podés pagar en efectivo, por transferencia o depósito bancario.",
+      a: "Confirmás la reserva con una seña del 50%. Aceptamos efectivo, transferencia y depósito bancario.",
     },
   ] as FaqItem[],
 };
