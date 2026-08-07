@@ -35,6 +35,7 @@ export function Servicios() {
                 alt={s.alt}
                 fill
                 sizes="(max-width: 760px) 100vw, (max-width: 1160px) 50vw, 580px"
+                style={{ objectPosition: s.objectPosition }}
                 className="object-cover transition-transform duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.05]"
               />
             </div>

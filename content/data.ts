@@ -63,6 +63,8 @@ export interface Servicio {
   servicioValue: string;
   image: string;
   alt: string;
+  /** object-position de la imagen para centrar el sujeto en el recorte de la placa. */
+  objectPosition?: string;
   /** Placa ancha (ocupa la fila completa, imagen a un lado). */
   wide: boolean;
 }
@@ -200,6 +202,7 @@ export const servicios = {
       servicioValue: "Catering para evento",
       image: "/media/catering.jpg",
       alt: "Mesa dulce con alfajores de maicena, pepas y brownies en un evento",
+      objectPosition: "50% 62%",
       wide: true,
     },
     {
@@ -211,6 +214,7 @@ export const servicios = {
       servicioValue: "Pastelería por encargo",
       image: "/media/pasteleria.jpg",
       alt: "Budines de chocolate con glaseado y nuez sobre tabla de madera",
+      objectPosition: "50% 30%",
       wide: false,
     },
     {
@@ -222,6 +226,7 @@ export const servicios = {
       servicioValue: "Box de regalo",
       image: "/media/galeria-08-desayuno-mano.jpg",
       alt: "Box de desayuno en mano con budín, alfajores y limonada, olivo de fondo",
+      objectPosition: "50% 42%",
       wide: false,
     },
     {
@@ -233,6 +238,7 @@ export const servicios = {
       servicioValue: "Box corporativo",
       image: "/media/box-corporativo.jpg",
       alt: "Boxes corporativos individuales con sándwiches, budín y bebida",
+      objectPosition: "50% 50%",
       wide: true,
     },
   ] as Servicio[],
@@ -251,13 +257,13 @@ export const galeria = {
     title: { pre: "El trabajo ", em: "habla solo" } as EmphasisTitle,
   },
   fotos: [
-    { image: "/media/galeria-flatlay-tarta.jpg", caption: "Mesa dulce", alt: "Tarta de rejilla, chocolate blanco y alfajores vistos desde arriba" },
+    { image: "/media/galeria-mesa-dulce.jpg", caption: "Mesa dulce", alt: "Mesa dulce con cookies de chocolate en pedestal y facturas" },
     { image: "/media/galeria-pasteleria.jpg", caption: "Pastelería casera", alt: "Mesa dulce con brownies, cuadrados de limón y budín" },
     { image: "/media/galeria-oficio.jpg", caption: "Hecho a mano", alt: "Armando alfajores a mano sobre la mesa dulce" },
     { image: "/media/galeria-cookies.jpg", caption: "Cookies", alt: "Cookies caseras sobre una tabla de madera" },
-    { image: "/media/galeria-pepas.jpg", caption: "Pepas", alt: "Armando pepas a mano sobre la mesa dulce" },
+    { image: "/media/galeria-pepas.jpg", caption: "Como en casa", alt: "Armando pastelería a mano sobre la mesa dulce" },
     { image: "/media/galeria-noche.jpg", caption: "Eventos de noche", alt: "Facturas en pedestales con luz azul en un evento de noche" },
-    { image: "/media/galeria-coffee-boxes.jpg", caption: "Coffee breaks", alt: "Boxes individuales de coffee break con budín y limonada" },
+    { image: "/media/galeria-coffee.jpg", caption: "Coffee breaks", alt: "Coffee break con sándwiches, mesa dulce y pastelería" },
     { image: "/media/galeria-meriendas.jpg", caption: "Meriendas", alt: "Boxes de desayuno abiertos con budín, pan y mermelada" },
   ] as GaleriaFoto[],
 };
