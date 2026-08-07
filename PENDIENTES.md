@@ -59,11 +59,12 @@ pasó el cliente.
   recortado 4:5), caja 1.61MB, box 1.58MB. No queda en el PATH de shells nuevos: usar la ruta
   completa del `.exe` (`%LOCALAPPDATA%\Microsoft\WinGet\Packages\Gyan.FFmpeg_...\bin\ffmpeg.exe`).
 - ✅ **Poster del hero (LCP)** generado: `public/media/salguero_navidad-poster.jpg` (58KB, 4:5).
-- ⚠️ **Hero: video con texto quemado.** El reel `salguero_navidad` trae texto de marketing
-  quemado en todo el clip. Por decisión del usuario se usa igual, con un recorte agresivo 4:5
-  que saca las bandas de texto; queda un watermark tenue ("crear") que asoma ~2s. Los videos
-  `caja` y `box` también tienen texto y hoy NO se usan (quedan disponibles en `public/media`).
-  Para un hero impecable: conseguir un clip limpio (de los 60+ sin curar) y reemplazar.
+- ✅ **Hero: clip limpio (resuelto).** Se reemplazó el reel con texto quemado por un clip
+  crudo SIN texto (IMG_2140: mesa dulce + coffee break con ventanal), recortado 4:5:
+  `public/media/hero.mp4` (0.19MB) + `hero-poster.jpg` (76KB, LCP). Se **eliminaron** los 3
+  reels con texto de `public/media`. Nota: el clip dura 2.35s (loop corto); si el loop se
+  nota, aplicar boomerang o usar un clip más largo (alternativas: IMG_2135 bambú, IMG_1596
+  salado). Material curado en el estudio gráfico (~121 fotos + ~70 videos revisados).
 - **Nombres de fotos con sufijo descriptivo.** Los archivos reales son
   `galeria-01-alfajores.jpg`, `servicios-catering.jpg`, etc. (el brief los nombraba
   `galeria-01`). Las rutas en `content/data.ts` ya usan los nombres reales.

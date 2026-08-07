@@ -171,11 +171,11 @@ export const hero = {
     { before: "Córdoba capital" },
   ] as TrustItem[],
   media: {
-    /** Video del hero, comprimido y recortado 4:5 (sin texto quemado del reel). */
-    video: "/media/salguero_navidad.mp4",
-    /** Poster JPG (LCP), frame limpio del video recortado. */
-    poster: "/media/salguero_navidad-poster.jpg",
-    alt: "Mesa dulce y salada servida por Salguero Gourmet en un evento",
+    /** Video del hero: clip crudo sin texto quemado (mesa dulce + coffee break). */
+    video: "/media/hero.mp4",
+    /** Poster JPG (LCP), frame limpio del clip. */
+    poster: "/media/hero-poster.jpg",
+    alt: "Mesa de coffee break y mesa dulce servida por Salguero Gourmet en un evento",
     width: 720,
     height: 900, // marco 4:5
   },
@@ -251,14 +251,14 @@ export const galeria = {
     title: { pre: "El trabajo ", em: "habla solo" } as EmphasisTitle,
   },
   fotos: [
-    { image: "/media/galeria-01-alfajores.jpg", caption: "Pastelería casera", alt: "Alfajores de maicena sobre la mesa" },
+    { image: "/media/galeria-mesa-abundante.jpg", caption: "Mesa dulce", alt: "Mesa dulce abundante con scones, facturas y budines" },
     { image: "/media/galeria-02-scones.jpg", caption: "Desayunos y meriendas", alt: "Scones caseros apilados" },
-    { image: "/media/galeria-03-cookies.jpg", caption: "Mesa dulce", alt: "Cookies caseras en pedestal" },
-    { image: "/media/galeria-04-budin-sticker.jpg", caption: "Pastelería casera", alt: "Budín envuelto con el sticker de la marca" },
-    { image: "/media/galeria-05-caja-abierta.jpg", caption: "Box dulce y salado", alt: "Caja de regalo abierta en primer plano" },
+    { image: "/media/galeria-03-cookies.jpg", caption: "Pastelería casera", alt: "Cookies caseras en pedestal" },
+    { image: "/media/galeria-budin-sello.jpg", caption: "Con nuestro sello", alt: "Budines caseros con el sello de la marca" },
+    { image: "/media/galeria-coffee-boxes.jpg", caption: "Coffee breaks", alt: "Boxes individuales de coffee break con budín y limonada" },
     { image: "/media/galeria-06-produccion.jpg", caption: "Boxes corporativos", alt: "Producción de boxes individuales sobre tablones" },
-    { image: "/media/galeria-07-cookies-bowl.jpg", caption: "Mesa dulce", alt: "Cookies caseras en bowl de madera" },
-    { image: "/media/galeria-08-desayuno-mano.jpg", caption: "Desayunos y meriendas", alt: "Box de desayuno en mano con olivo de fondo" },
+    { image: "/media/galeria-07-cookies-bowl.jpg", caption: "Meriendas", alt: "Cookies caseras en bowl de madera" },
+    { image: "/media/galeria-08-desayuno-mano.jpg", caption: "Box de desayuno", alt: "Box de desayuno en mano con olivo de fondo" },
   ] as GaleriaFoto[],
 };
 
@@ -272,12 +272,12 @@ export const flor = {
   body: "Detrás de cada mesa está Flor, al frente de Salguero Gourmet desde hace más de quince años. Cocina casera, atención personalizada y el mismo cuidado para un cumpleaños de diez personas que para un evento de empresa.",
   etiqueta: "Al frente desde el primer día",
   foto: {
-    src: "/media/flor-trabajando.jpg",
-    /** Respaldo si la principal no convence o no es Flor. */
-    fallback: "/media/flor-alternativa.jpg",
-    alt: "Flor armando la mesa dulce en un evento",
-    /** Recortar cerrado para que el backdrop institucional del evento no domine. */
-    cropNote: "encuadre cerrado",
+    src: "/media/flor-alternativa.jpg",
+    /** Respaldo (la de fondo verde institucional). */
+    fallback: "/media/flor-trabajando.jpg",
+    alt: "Flor sirviendo en la mesa de un evento de Salguero Gourmet",
+    /** Encuadre cálido contra la pared de madera; el neón es el lema de la marca. */
+    cropNote: "encuadre cálido",
   },
   /** Confirmado por el cliente: la persona de la foto es Flor. */
   identidadConfirmada: true,
