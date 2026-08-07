@@ -63,8 +63,10 @@ export interface Servicio {
   servicioValue: string;
   image: string;
   alt: string;
-  /** object-position de la imagen para centrar el sujeto en el recorte de la placa. */
+  /** object-position de la imagen (desktop, >=760px). */
   objectPosition?: string;
+  /** object-position SOLO para mobile (<760px). Si falta, usa objectPosition. */
+  objectPositionMobile?: string;
   /** Placa ancha (ocupa la fila completa, imagen a un lado). */
   wide: boolean;
 }
@@ -226,7 +228,8 @@ export const servicios = {
       servicioValue: "Box de regalo",
       image: "/media/galeria-08-desayuno-mano.jpg",
       alt: "Box de desayuno en mano con budín, alfajores y limonada, olivo de fondo",
-      objectPosition: "50% 50%",
+      objectPosition: "50% 60%",
+      objectPositionMobile: "50% 60%",
       wide: false,
     },
     {

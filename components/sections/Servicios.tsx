@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import Image from "next/image";
 import { Section } from "@/components/ui/Section";
 import { SectionHead } from "@/components/ui/SectionHead";
@@ -35,8 +36,13 @@ export function Servicios() {
                 alt={s.alt}
                 fill
                 sizes="(max-width: 760px) 100vw, (max-width: 1160px) 50vw, 580px"
-                style={{ objectPosition: s.objectPosition }}
-                className="object-cover transition-transform duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.05]"
+                style={
+                  {
+                    "--obj-m": s.objectPositionMobile ?? s.objectPosition,
+                    "--obj-d": s.objectPosition,
+                  } as CSSProperties
+                }
+                className="serv-obj object-cover transition-transform duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.05]"
               />
             </div>
             <div className="flex flex-1 flex-col gap-[10px] px-6 pb-6 pt-[22px]">

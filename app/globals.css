@@ -106,3 +106,16 @@ a {
     overflow-x: auto;
   }
 }
+
+/* ==========================================================================
+   Servicios · object-position responsive de la imagen.
+   --obj-m (mobile <760px) y --obj-d (desktop >=760px) se setean por servicio.
+   ========================================================================== */
+.serv-obj {
+  object-position: var(--obj-m, 50% 50%);
+}
+@media (min-width: 760px) {
+  .serv-obj {
+    object-position: var(--obj-d, var(--obj-m, 50% 50%));
+  }
+}
