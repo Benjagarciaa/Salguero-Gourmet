@@ -202,7 +202,7 @@ export const servicios = {
       servicioValue: "Catering para evento",
       image: "/media/catering.jpg",
       alt: "Mesa dulce con alfajores de maicena, pepas y brownies en un evento",
-      objectPosition: "50% 62%",
+      objectPosition: "50% 63%",
       wide: true,
     },
     {
@@ -214,7 +214,7 @@ export const servicios = {
       servicioValue: "Pastelería por encargo",
       image: "/media/pasteleria.jpg",
       alt: "Budines de chocolate con glaseado y nuez sobre tabla de madera",
-      objectPosition: "50% 30%",
+      objectPosition: "50% 43%",
       wide: false,
     },
     {
@@ -226,7 +226,7 @@ export const servicios = {
       servicioValue: "Box de regalo",
       image: "/media/galeria-08-desayuno-mano.jpg",
       alt: "Box de desayuno en mano con budín, alfajores y limonada, olivo de fondo",
-      objectPosition: "50% 42%",
+      objectPosition: "50% 55%",
       wide: false,
     },
     {
@@ -238,7 +238,7 @@ export const servicios = {
       servicioValue: "Box corporativo",
       image: "/media/box-corporativo.jpg",
       alt: "Boxes corporativos individuales con sándwiches, budín y bebida",
-      objectPosition: "50% 50%",
+      objectPosition: "50% 55%",
       wide: true,
     },
   ] as Servicio[],

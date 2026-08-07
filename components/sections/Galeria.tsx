@@ -6,34 +6,36 @@ import { cn } from "@/lib/cn";
 import { galeria, type GaleriaFoto } from "@/content/data";
 
 /**
- * Una cinta del marquee. Duplica las fotos para que el loop con translate3d(-50%)
- * sea continuo; las copias van aria-hidden para no repetir en lectores de pantalla.
+ * Arma dos "unidades" idénticas para que translateX(-50%) haga loop sin cortes.
+ * Repite el set hasta tener >=12 figuras por unidad, así una unidad siempre
+ * supera el ancho del viewport (no aparece hueco al reiniciar el loop).
  */
-function Track({
-  fotos,
-  reverse,
-}: {
-  fotos: GaleriaFoto[];
-  reverse?: boolean;
-}) {
-  const items = [...fotos, ...fotos];
+function buildItems(base: GaleriaFoto[]): GaleriaFoto[] {
+  const MIN_PER_UNIT = 12;
+  const repeats = Math.max(2, Math.ceil(MIN_PER_UNIT / base.length));
+  const unit = Array.from({ length: repeats }, () => base).flat();
+  return [...unit, ...unit];
+}
+
+function Track({ fotos, reverse }: { fotos: GaleriaFoto[]; reverse?: boolean }) {
+  const items = buildItems(fotos);
   return (
     <div className="mq-viewport">
       <div className={cn("mq-track", reverse && "mq-track-rev")}>
         {items.map((f, i) => {
-          const dup = i >= fotos.length;
+          const real = i < fotos.length;
           return (
             <figure
               key={i}
-              className="mr-4 w-[280px] shrink-0"
-              aria-hidden={dup || undefined}
+              className="mr-3 w-[220px] shrink-0 sm:mr-4 sm:w-[260px] min-[860px]:w-[280px]"
+              aria-hidden={!real || undefined}
             >
-              <div className="relative h-[230px] overflow-hidden rounded-lg border border-hairline">
+              <div className="relative h-[170px] overflow-hidden rounded-lg border border-hairline sm:h-[200px] min-[860px]:h-[230px]">
                 <Image
                   src={f.image}
-                  alt={dup ? "" : f.alt}
+                  alt={real ? f.alt : ""}
                   fill
-                  sizes="280px"
+                  sizes="(max-width: 640px) 220px, 280px"
                   className="object-cover"
                 />
               </div>
@@ -57,7 +59,7 @@ export function Galeria() {
       <Container>
         <SectionHead kicker={galeria.head.kicker} title={galeria.head.title} />
       </Container>
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3 sm:gap-4">
         <Track fotos={track1} />
         <Track fotos={track2} reverse />
       </div>

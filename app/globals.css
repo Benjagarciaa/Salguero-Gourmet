@@ -81,7 +81,7 @@ a {
 .mq-track {
   display: flex;
   width: max-content;
-  animation: marquee 42s linear infinite;
+  animation: marquee 55s linear infinite;
   will-change: transform;
 }
 .mq-track-rev {

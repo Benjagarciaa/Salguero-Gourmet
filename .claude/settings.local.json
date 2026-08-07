@@ -23,7 +23,8 @@
       "PowerShell(winget install --id Gyan.FFmpeg -e --accept-package-agreements --accept-source-agreements --disable-interactivity)",
       "Bash(awk '{print $5, $9}')",
       "PowerShell(npx tsc --noEmit; Write-Output \"tsc: $LASTEXITCODE\"; npm run build 2>&1 | Select-String -Pattern 'Compiled|error|Error' | Select-Object -First 5; Write-Output \"build: $LASTEXITCODE\")",
-      "PowerShell(npx tsc --noEmit; Write-Output \"tsc: $LASTEXITCODE\"; npm run build 2>&1 | Select-String -Pattern 'Compiled|error|Error|Failed' | Select-Object -First 8; Write-Output \"build: $LASTEXITCODE\")"
+      "PowerShell(npx tsc --noEmit; Write-Output \"tsc: $LASTEXITCODE\"; npm run build 2>&1 | Select-String -Pattern 'Compiled|error|Error|Failed' | Select-Object -First 8; Write-Output \"build: $LASTEXITCODE\")",
+      "PowerShell(npx tsc --noEmit; Write-Output \"tsc: $LASTEXITCODE\"; npm run build 2>&1 | Select-String -Pattern 'Compiled|error|Error' | Select-Object -First 3; Write-Output \"build: $LASTEXITCODE\")"
     ]
   }
 }
