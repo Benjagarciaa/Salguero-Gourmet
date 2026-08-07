@@ -2,8 +2,10 @@ import Image from "next/image";
 import { Container } from "@/components/ui/Section";
 import { SectionHead } from "@/components/ui/SectionHead";
 import { Etiqueta } from "@/components/ui/Etiqueta";
+import { GaleriaLightbox } from "@/components/ui/GaleriaLightbox";
+import { InstagramIcon } from "@/components/ui/InstagramIcon";
 import { cn } from "@/lib/cn";
-import { galeria, type GaleriaFoto } from "@/content/data";
+import { contacto, galeria, type GaleriaFoto } from "@/content/data";
 
 /**
  * Arma dos "unidades" idénticas para que translateX(-50%) haga loop sin cortes.
@@ -57,7 +59,25 @@ export function Galeria() {
   return (
     <section id="galeria" className="pb-[76px]">
       <Container>
-        <SectionHead kicker={galeria.head.kicker} title={galeria.head.title} />
+        <div className="mb-10 flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
+          <SectionHead
+            kicker={galeria.head.kicker}
+            title={galeria.head.title}
+            className="!mb-0"
+          />
+          <div className="flex flex-wrap items-center gap-3">
+            <GaleriaLightbox fotos={galeria.destacadas} />
+            <a
+              href={contacto.instagramUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-full border border-hairline px-[18px] py-[9px] text-[13.5px] font-medium text-crema-dim transition-colors hover:border-amarillo hover:text-amarillo"
+            >
+              <InstagramIcon className="size-[17px]" />
+              {contacto.instagramHandle}
+            </a>
+          </div>
+        </div>
       </Container>
       <div className="flex flex-col gap-3 sm:gap-4">
         <Track fotos={track1} />

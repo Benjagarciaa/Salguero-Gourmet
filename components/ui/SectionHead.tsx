@@ -1,5 +1,7 @@
 import { cn } from "@/lib/cn";
 import { Kicker } from "./Kicker";
+import { Reveal } from "./Reveal";
+import { TitleEm } from "./TitleEm";
 
 export interface EmphasisTitle {
   pre: string;
@@ -24,16 +26,16 @@ export function SectionHead({
   className?: string;
 }) {
   return (
-    <div className={cn("mb-10", className)}>
+    <Reveal className={cn("mb-10", className)}>
       {kicker ? <Kicker>{kicker}</Kicker> : null}
       <h2 className="mt-[14px] font-display text-[clamp(1.9rem,4vw,2.7rem)] font-medium leading-[1.15] text-crema">
         {title.pre}
-        <em className="italic text-amarillo">{title.em}</em>
+        <TitleEm>{title.em}</TitleEm>
         {title.post}
       </h2>
       {description ? (
         <p className="mt-3 max-w-[56ch] text-crema-dim">{description}</p>
       ) : null}
-    </div>
+    </Reveal>
   );
 }

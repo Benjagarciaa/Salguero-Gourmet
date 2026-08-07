@@ -11,7 +11,10 @@ import { servicios } from "@/content/data";
 
 export function Servicios() {
   return (
-    <Section id="servicios">
+    <Section
+      id="servicios"
+      className="!pt-[40px] min-[860px]:!pt-[76px]"
+    >
       <SectionHead kicker={servicios.head.kicker} title={servicios.head.title} />
       <Reveal className="grid grid-cols-1 gap-[18px] min-[760px]:grid-cols-2">
         {servicios.items.map((s) => (

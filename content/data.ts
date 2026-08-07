@@ -268,7 +268,29 @@ export const galeria = {
     { image: "/media/galeria-pepas.jpg", caption: "Como en casa", alt: "Armando pastelería a mano sobre la mesa dulce" },
     { image: "/media/galeria-noche.jpg", caption: "Eventos de noche", alt: "Facturas en pedestales con luz azul en un evento de noche" },
     { image: "/media/galeria-coffee.jpg", caption: "Coffee breaks", alt: "Coffee break con sándwiches, mesa dulce y pastelería" },
-    { image: "/media/galeria-meriendas.jpg", caption: "Meriendas", alt: "Boxes de desayuno abiertos con budín, pan y mermelada" },
+    { image: "/media/galeria-meriendas.jpg", caption: "Meriendas", alt: "Boxes de desayuno abiertos con budín, pan y limonada" },
+  ] as GaleriaFoto[],
+  // Set curado más amplio para el lightbox "Ver galería completa" (incluye las
+  // del marquee + gemas adicionales de la biblioteca del cliente).
+  destacadas: [
+    { image: "/media/galeria-mesa-dulce.jpg", caption: "Mesa dulce", alt: "Mesa dulce con cookies de chocolate en pedestal y facturas" },
+    { image: "/media/galeria-pasteleria.jpg", caption: "Pastelería casera", alt: "Mesa dulce con brownies, cuadrados de limón y budín" },
+    { image: "/media/galeria-oficio.jpg", caption: "Hecho a mano", alt: "Armando alfajores a mano sobre la mesa dulce" },
+    { image: "/media/galeria-cookies.jpg", caption: "Cookies", alt: "Cookies caseras sobre una tabla de madera" },
+    { image: "/media/galeria-alfajores.jpg", caption: "Alfajores de maicena", alt: "Alfajores de maicena con coco sobre una tabla de madera" },
+    { image: "/media/galeria-scones.jpg", caption: "Scones y meriendas", alt: "Scones caseros y pastelería para una merienda" },
+    { image: "/media/galeria-budin.jpg", caption: "Budín artesanal", alt: "Budín casero con etiqueta de Salguero Gourmet" },
+    { image: "/media/galeria-bowl.jpg", caption: "Recién horneadas", alt: "Bowl con cookies caseras recién horneadas" },
+    { image: "/media/galeria-pepas.jpg", caption: "Como en casa", alt: "Armando pastelería a mano sobre la mesa dulce" },
+    { image: "/media/galeria-produccion.jpg", caption: "Boxes listos", alt: "Cajas de desayuno armadas con panes, budín en bolsa y limonada de la marca, listas para entrega" },
+    { image: "/media/galeria-coffee.jpg", caption: "Coffee breaks", alt: "Coffee break con sándwiches, mesa dulce y pastelería" },
+    { image: "/media/galeria-noche.jpg", caption: "Eventos de noche", alt: "Facturas en pedestales con luz azul en un evento de noche" },
+    { image: "/media/catering.jpg", caption: "Catering de evento", alt: "Mesa dulce y coffee break servidos en un evento con ventanal" },
+    { image: "/media/galeria-08-desayuno-mano.jpg", caption: "Box en mano", alt: "Box de desayuno en mano con budín, alfajores y limonada" },
+    { image: "/media/galeria-caja.jpg", caption: "Box de regalo", alt: "Box de regalo abierto con budín, alfajores y dulces" },
+    { image: "/media/box-corporativo.jpg", caption: "Boxes corporativos", alt: "Boxes corporativos individuales con sándwiches, budín y bebida" },
+    { image: "/media/pasteleria.jpg", caption: "Tortas y budines", alt: "Budines de chocolate con glaseado y nuez sobre tabla de madera" },
+    { image: "/media/galeria-meriendas.jpg", caption: "Meriendas", alt: "Boxes de desayuno abiertos con budín, pan y limonada" },
   ] as GaleriaFoto[],
 };
 

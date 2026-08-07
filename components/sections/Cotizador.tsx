@@ -7,6 +7,9 @@ import { Etiqueta } from "@/components/ui/Etiqueta";
 import { Pill } from "@/components/ui/Pill";
 import { Field, TextArea } from "@/components/ui/Field";
 import { CustomSelect } from "@/components/ui/CustomSelect";
+import { CustomDate } from "@/components/ui/CustomDate";
+import { NumberStepper } from "@/components/ui/NumberStepper";
+import { Reveal } from "@/components/ui/Reveal";
 import { useQuote } from "@/components/chrome/QuoteContext";
 import { buildWhatsappUrl, type QuoteForm } from "@/lib/wa";
 import { cotizador, isPlaceholder } from "@/content/data";
@@ -86,6 +89,7 @@ export function Cotizador() {
         description={cotizador.head.intro}
       />
       <div className="grid gap-9 min-[860px]:grid-cols-[1.15fr_0.85fr] min-[860px]:gap-[52px]">
+        <Reveal>
         <form onSubmit={onSubmit} noValidate>
           <div className="grid gap-x-[14px] sm:grid-cols-2">
             <Field
@@ -119,22 +123,19 @@ export function Cotizador() {
             onChange={(v) => setField("servicio", v)}
           />
           <div className="grid gap-x-[14px] sm:grid-cols-2">
-            <Field
+            <CustomDate
               label={fields.fecha.label}
-              type="date"
               name="fecha"
               value={values.fecha}
-              onChange={(e) => setField("fecha", e.target.value)}
+              onChange={(v) => setField("fecha", v)}
             />
-            <Field
+            <NumberStepper
               label={fields.personas.label}
-              type="number"
-              min={1}
               name="personas"
-              inputMode="numeric"
+              min={1}
               placeholder={fields.personas.placeholder}
               value={values.personas}
-              onChange={(e) => setField("personas", e.target.value)}
+              onChange={(v) => setField("personas", v)}
             />
           </div>
           <TextArea
@@ -149,7 +150,9 @@ export function Cotizador() {
           />
           <Pill type="submit">{cotizador.form.submitLabel}</Pill>
         </form>
+        </Reveal>
 
+        <Reveal delay={0.1} className="self-start">
         <aside className="flex flex-col gap-5 self-start rounded-lg border border-hairline bg-surface p-7 sm:p-8">
           <h3 className="font-display text-[1.3rem] font-medium text-crema">
             {cotizador.aside.title}
@@ -180,6 +183,7 @@ export function Cotizador() {
           })}
           <Etiqueta>{cotizador.aside.etiqueta}</Etiqueta>
         </aside>
+        </Reveal>
       </div>
     </Section>
   );

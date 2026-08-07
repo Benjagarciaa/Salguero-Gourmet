@@ -3,6 +3,8 @@ import { Playfair_Display, DM_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { SmoothScroll } from "@/components/chrome/SmoothScroll";
 import { QuoteProvider } from "@/components/chrome/QuoteContext";
+import { AmbientBackground } from "@/components/chrome/AmbientBackground";
+import { ScrollProgress } from "@/components/chrome/ScrollProgress";
 import { Nav } from "@/components/chrome/Nav";
 import { Footer } from "@/components/chrome/Footer";
 
@@ -41,6 +43,8 @@ export default function RootLayout({
       className={`${playfair.variable} ${dmSans.variable} ${jetbrains.variable}`}
     >
       <body>
+        <AmbientBackground />
+        <ScrollProgress />
         <SmoothScroll>
           <QuoteProvider>
             <Nav />

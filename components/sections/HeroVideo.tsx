@@ -9,14 +9,10 @@ import { cn } from "@/lib/cn";
  * - Con reduced-motion: no renderiza nada (queda el poster).
  * - Difiere la carga (src recién tras montar) para no competir con el LCP (poster).
  * - Aparece con un fade cuando puede reproducir; loop, muted, playsInline, autoPlay.
+ * - Sin atributo `poster`: el poster visible es el <Image priority> de abajo; el
+ *   poster crudo del <video> duplicaba la descarga del LCP (~77KB) sin verse nunca.
  */
-export function HeroVideo({
-  src,
-  poster,
-}: {
-  src: string;
-  poster: string;
-}) {
+export function HeroVideo({ src }: { src: string }) {
   const reduceMotion = useReducedMotion();
   const [deferredSrc, setDeferredSrc] = useState<string | undefined>(undefined);
   const [visible, setVisible] = useState(false);
@@ -46,7 +42,6 @@ export function HeroVideo({
     <video
       ref={ref}
       src={deferredSrc}
-      poster={poster}
       muted
       loop
       playsInline

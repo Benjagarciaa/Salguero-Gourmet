@@ -23,10 +23,12 @@
    ========================================================================== */
 :root {
   color-scheme: dark;
+  /* Color base en el <html>: el fondo ambiental vive por encima, el contenido arriba. */
+  background: var(--color-bg);
 }
 
 body {
-  background: var(--color-bg);
+  background: transparent;
   color: var(--color-crema);
   font-family: var(--font-sans);
   font-size: 17px;
@@ -77,12 +79,15 @@ a {
    ========================================================================== */
 .mq-viewport {
   overflow: hidden;
+  /* Fuera de viewport el subtree se saltea (layout/paint Y la animacion se
+     suspenden) sin JS. `auto` memoriza el alto real -> sin CLS al reingresar. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 260px;
 }
 .mq-track {
   display: flex;
   width: max-content;
   animation: marquee 55s linear infinite;
-  will-change: transform;
 }
 .mq-track-rev {
   animation-direction: reverse;
@@ -139,6 +144,124 @@ a {
 }
 .flash {
   animation: flash 1.4s ease-out 1;
+}
+
+/* ==========================================================================
+   Fondo ambiental · glows ámbar que derivan lento detrás del contenido.
+   Da "vida" constante sin distraer. Fail-open: es pura decoración CSS.
+   Con reduced-motion el reset de arriba congela la animación (queda estático).
+   ========================================================================== */
+.ambient {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  overflow: hidden;
+  pointer-events: none;
+  /* Aísla layout/paint de los glows del resto de la página (los reflows por el
+     dynamic viewport de mobile no se propagan). */
+  contain: layout paint;
+}
+.ambient-glow {
+  position: absolute;
+  border-radius: 50%;
+}
+.ambient-glow-1 {
+  width: 64vmax;
+  height: 64vmax;
+  top: -20vmax;
+  left: -14vmax;
+  background: radial-gradient(
+    circle at center,
+    rgba(233, 188, 79, 0.15),
+    rgba(233, 188, 79, 0) 64%
+  );
+  animation: drift1 26s ease-in-out infinite;
+}
+.ambient-glow-2 {
+  width: 58vmax;
+  height: 58vmax;
+  right: -16vmax;
+  bottom: -22vmax;
+  background: radial-gradient(
+    circle at center,
+    rgba(233, 188, 79, 0.11),
+    rgba(233, 188, 79, 0) 64%
+  );
+  animation: drift2 32s ease-in-out infinite;
+}
+@keyframes drift1 {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(9vmax, 7vmax, 0) scale(1.08);
+  }
+}
+@keyframes drift2 {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(-8vmax, -6vmax, 0) scale(1.07);
+  }
+}
+
+/* ==========================================================================
+   Títulos · shimmer en las palabras amarillas (los <em> destacados).
+   Fail-safe: color sólido amarillo por defecto. Solo con movimiento permitido
+   y soporte de background-clip se activa el brillo (crema barriendo el ámbar,
+   ambos de la paleta). Con reduced-motion queda sólido.
+   ========================================================================== */
+.title-em {
+  color: var(--color-amarillo);
+}
+@media (prefers-reduced-motion: no-preference) {
+  @supports (-webkit-background-clip: text) or (background-clip: text) {
+    .title-em {
+      background: linear-gradient(
+        100deg,
+        var(--color-amarillo) 30%,
+        var(--color-crema) 50%,
+        var(--color-amarillo) 70%
+      );
+      background-size: 230% 100%;
+      /* Reposo: ámbar sólido (la banda crema queda fuera de cuadro). */
+      background-position: 200% 0;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+    }
+    /* Un único barrido al entrar en vista (lo activa TitleEm). */
+    .title-em.is-shimmering {
+      animation: shimmer 2.4s ease-out 1 both;
+    }
+  }
+}
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  50% {
+    background-position: -60% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Ocultar controles nativos que reemplazamos por componentes propios: las
+   flechitas del <input type=number> y el ícono del <input type=date>. */
+input[type="number"].no-spin {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+input[type="number"].no-spin::-webkit-outer-spin-button,
+input[type="number"].no-spin::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 /* FAQ: animación de altura del acordeón (progresivo; navegadores sin soporte

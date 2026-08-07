@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
-import { cn } from "@/lib/cn";
 
 /**
  * Reveal FAIL-OPEN (regla innegociable del proyecto, ver CLAUDE.md):
  * - En SSR y sin JS, el contenido se renderiza VISIBLE (nunca oculto por CSS).
- * - Recién tras montar (JS garantizado) `motion` anima opacity + translateY una
- *   sola vez con `whileInView`.
+ * - Al montar se mide la posición: si el elemento YA está en viewport (o por
+ *   encima) queda visible y estático (evita el flash visible->invisible->fade en
+ *   contenido above-the-fold). Solo el contenido por debajo del fold se anima con
+ *   `motion` (opacity + translateY, una sola vez con `whileInView`).
  * - Con prefers-reduced-motion, todo queda visible y estático.
  * Solo anima `transform` y `opacity`.
  */
@@ -22,24 +23,36 @@ export function Reveal({
   delay?: number;
 }) {
   const reduceMotion = useReducedMotion();
-  const [ready, setReady] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  // "hold": render plano visible (SSR, primer render, reduced-motion o ya en
+  // viewport). "animate": estaba por debajo del fold al montar -> animar al entrar.
+  const [mode, setMode] = useState<"hold" | "animate">("hold");
 
   useEffect(() => {
-    setReady(true);
-  }, []);
+    if (reduceMotion) return;
+    const el = ref.current;
+    if (!el) return;
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+    // Solo animar si el elemento arranca por debajo del fold.
+    if (el.getBoundingClientRect().top >= vh) setMode("animate");
+  }, [reduceMotion]);
 
-  // Fallback visible: SSR, primer render del cliente, o reduced-motion.
-  if (!ready || reduceMotion) {
-    return <div className={className}>{children}</div>;
+  if (mode === "hold") {
+    return (
+      <div ref={ref} className={className}>
+        {children}
+      </div>
+    );
   }
 
   return (
     <motion.div
+      ref={ref}
       className={className}
-      initial={{ opacity: 0, y: 24 }}
+      initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "0px 0px -6% 0px" }}
-      transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay }}
+      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay }}
     >
       {children}
     </motion.div>

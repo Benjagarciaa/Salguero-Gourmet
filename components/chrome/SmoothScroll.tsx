@@ -18,11 +18,17 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
     ).matches;
     if (prefersReduced) return;
 
+    // easeInOutCubic: arranca y frena suave (evita el "pop" al inicio del salto).
+    const easeInOutCubic = (t: number) =>
+      t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
     const lenis = new Lenis({
-      duration: 1.1,
+      duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
-      anchors: { offset: -76 },
+      // El scroll a las anclas (clicks en nav/CTAs) es más largo y con easeInOut
+      // para que no salte de golpe.
+      anchors: { offset: -76, duration: 1.9, easing: easeInOutCubic },
     });
 
     let rafId = 0;
