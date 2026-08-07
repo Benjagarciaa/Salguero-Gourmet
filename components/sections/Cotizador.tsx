@@ -5,7 +5,8 @@ import { Section } from "@/components/ui/Section";
 import { SectionHead } from "@/components/ui/SectionHead";
 import { Etiqueta } from "@/components/ui/Etiqueta";
 import { Pill } from "@/components/ui/Pill";
-import { Field, Select, TextArea } from "@/components/ui/Field";
+import { Field, TextArea } from "@/components/ui/Field";
+import { CustomSelect } from "@/components/ui/CustomSelect";
 import { useQuote } from "@/components/chrome/QuoteContext";
 import { buildWhatsappUrl, type QuoteForm } from "@/lib/wa";
 import { cotizador, isPlaceholder } from "@/content/data";
@@ -37,8 +38,8 @@ export function Cotizador() {
   useEffect(() => {
     if (!servicio) return;
     setValues((v) => ({ ...v, servicio }));
-    const el = document.querySelector<HTMLSelectElement>(
-      '#cotizar select[name="servicio"]',
+    const el = document.querySelector<HTMLElement>(
+      "#cotizar [data-servicio-trigger]",
     );
     if (el) {
       el.classList.remove("flash");
@@ -109,13 +110,13 @@ export function Cotizador() {
               error={touched.contacto ? errors.contacto : undefined}
             />
           </div>
-          <Select
+          <CustomSelect
             label={fields.servicio.label}
             required
             name="servicio"
             options={cotizador.form.servicioOptions}
             value={values.servicio}
-            onChange={(e) => setField("servicio", e.target.value)}
+            onChange={(v) => setField("servicio", v)}
           />
           <div className="grid gap-x-[14px] sm:grid-cols-2">
             <Field
