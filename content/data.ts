@@ -393,7 +393,7 @@ export const faq = {
     },
     {
       q: "¿Con cuánta anticipación tengo que reservar?",
-      a: "Te pedimos al menos 48 hs de anticipación antes de la fecha del evento. Reservás tu fecha con una seña del 50% del servicio o producto.",
+      a: "Te pedimos al menos 48 hs de anticipación antes de la fecha del evento. Reservás tu fecha con una seña del 50% del servicio.",
     },
     {
       q: "¿Hay cantidades mínimas?",
