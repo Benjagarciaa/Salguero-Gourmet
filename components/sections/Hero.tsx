@@ -29,7 +29,7 @@ export function Hero() {
               {hero.ctas.ghost.label}
             </Pill>
           </div>
-          <div className="mt-[34px] flex flex-wrap gap-x-7 gap-y-3">
+          <div className="mt-7 flex flex-col gap-2 min-[560px]:mt-[34px] min-[560px]:flex-row min-[560px]:flex-wrap min-[560px]:gap-x-7 min-[560px]:gap-y-3">
             {hero.trust.map((item, i) => (
               <Etiqueta key={i}>
                 {item.before}

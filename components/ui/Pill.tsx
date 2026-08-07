@@ -3,7 +3,7 @@ import { cn } from "@/lib/cn";
 type PillVariant = "primaria" | "fantasma";
 
 const base =
-  "inline-block cursor-pointer rounded-full px-7 py-[14px] text-center text-[15px] font-medium transition-[transform,filter] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]";
+  "inline-block cursor-pointer rounded-full px-5 py-3 text-center text-[14px] font-medium transition-[transform,filter] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] sm:px-7 sm:py-[14px] sm:text-[15px]";
 
 const variants: Record<PillVariant, string> = {
   primaria:

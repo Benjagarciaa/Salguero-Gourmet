@@ -226,7 +226,7 @@ export const servicios = {
       servicioValue: "Box de regalo",
       image: "/media/galeria-08-desayuno-mano.jpg",
       alt: "Box de desayuno en mano con budín, alfajores y limonada, olivo de fondo",
-      objectPosition: "50% 55%",
+      objectPosition: "50% 50%",
       wide: false,
     },
     {
@@ -326,7 +326,7 @@ export const resenas = {
     {
       quote:
         "Excelente servicio! Abundante, delicioso y ni hablar de la atencion! Quede mas que conforme. Gracias nuevamente",
-      author: "Nahir",
+      author: "Nahir Castro",
       servicio: "Box de regalo",
       // Confirmado por el cliente: la reseña de Nahir es de un box de regalo.
       servicioConfirmado: true,
