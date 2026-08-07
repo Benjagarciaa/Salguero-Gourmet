@@ -199,7 +199,7 @@ export const servicios = {
       ctaLabel: "Cotizar catering",
       servicioValue: "Catering para evento",
       image: "/media/servicios-catering.jpg",
-      alt: "Mesa de catering con mesa dulce y salada en un evento",
+      alt: "Mesa dulce con alfajores de maicena, pepas y brownies en un evento",
       wide: true,
     },
     {
@@ -210,7 +210,7 @@ export const servicios = {
       ctaLabel: "Cotizar pastelería",
       servicioValue: "Pastelería por encargo",
       image: "/media/servicios-pasteleria.jpg",
-      alt: "Budines de chocolate caseros sobre una tabla",
+      alt: "Budines de chocolate con glaseado y nuez sobre tabla de madera",
       wide: false,
     },
     {
@@ -220,8 +220,8 @@ export const servicios = {
       etiqueta: "Envíos en Córdoba",
       ctaLabel: "Cotizar un box",
       servicioValue: "Box de regalo",
-      image: "/media/servicios-box-regalo.jpg",
-      alt: "Box de regalo con el sticker de la marca en mano",
+      image: "/media/galeria-08-desayuno-mano.jpg",
+      alt: "Box de desayuno en mano con budín, alfajores y limonada, olivo de fondo",
       wide: false,
     },
     {
@@ -232,7 +232,7 @@ export const servicios = {
       ctaLabel: "Cotizar box corporativo",
       servicioValue: "Box corporativo",
       image: "/media/servicios-box-corporativo.jpg",
-      alt: "Fila de boxes corporativos individuales en producción",
+      alt: "Boxes corporativos individuales con sándwiches, budín y bebida",
       wide: true,
     },
   ] as Servicio[],

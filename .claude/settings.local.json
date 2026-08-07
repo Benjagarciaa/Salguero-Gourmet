@@ -21,7 +21,8 @@
       "PowerShell(npx tsc --noEmit; Write-Output \"tsc exit: $LASTEXITCODE\"; Write-Output \"=== build ===\"; npm run build 2>&1 | Out-String; Write-Output \"build exit: $LASTEXITCODE\")",
       "PowerShell($w = Get-Command winget -ErrorAction SilentlyContinue; if \\($w\\) { Write-Output \"winget: $\\($w.Source\\)\"; winget --version } else { Write-Output \"winget: NOT FOUND\" })",
       "PowerShell(winget install --id Gyan.FFmpeg -e --accept-package-agreements --accept-source-agreements --disable-interactivity)",
-      "Bash(awk '{print $5, $9}')"
+      "Bash(awk '{print $5, $9}')",
+      "PowerShell(npx tsc --noEmit; Write-Output \"tsc: $LASTEXITCODE\"; npm run build 2>&1 | Select-String -Pattern 'Compiled|error|Error' | Select-Object -First 5; Write-Output \"build: $LASTEXITCODE\")"
     ]
   }
 }
