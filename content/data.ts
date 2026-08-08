@@ -161,19 +161,19 @@ export const nav = {
  * ========================================================================== */
 
 export const hero = {
-  kicker: "Catering · Pastelería · Córdoba",
-  title: { pre: "La mesa que se ", em: "recuerda" } as EmphasisTitle,
+  kicker: "Catering · Córdoba",
+  title: { pre: "Cada encuentro, ", em: "algo especial" } as EmphasisTitle,
   sub: {
-    pre: "Catering gourmet, pastelería para eventos, boxes de regalo y propuestas corporativas. ",
-    strong: "Comida casera, abundante y bien servida",
-    post: ", como la describen las reseñas.",
+    pre: "Gastronomía de autor para empresas, instituciones y eventos en Córdoba: desayunos, coffee breaks y mesas gourmet, ",
+    strong: "cuidadas hasta el último detalle",
+    post: ".",
   } as RichLead,
   ctas: {
     primary: { label: "Pedir presupuesto", href: "#cotizar" } as CTA,
     ghost: { label: "Ver el trabajo", href: "#galeria" } as CTA,
   },
   trust: [
-    { before: "5.0 en Google · ", count: 33, after: " reseñas" },
+    { before: "5.0 en Google" },
     { before: "+", count: 15, after: " años de trayectoria" },
     { before: "+", count: 200, after: " eventos realizados" },
   ] as TrustItem[],
@@ -195,7 +195,7 @@ export const hero = {
 export const servicios = {
   head: {
     kicker: "Servicios",
-    title: { pre: "Cuatro formas de ", em: "servirte" } as EmphasisTitle,
+    title: { pre: "Nuestras formas de ", em: "servirte" } as EmphasisTitle,
   },
   items: [
     {
@@ -242,10 +242,10 @@ export const servicios = {
       etiqueta: "Empresas · eventos y ocasiones especiales",
       ctaLabel: "Cotizar box corporativo",
       servicioValue: "Box corporativo",
-      image: "/media/box-corporativo.jpg",
-      alt: "Boxes corporativos individuales con sándwiches, budín y bebida",
-      objectPosition: "50% 55%",
-      objectPositionMobile: "50% 57%",
+      image: "/media/box-corporativo-gift.jpg",
+      alt: "Box gourmet con budín, focaccia, queso, mermelada y nueces, con luces y sticker de Salguero Gourmet",
+      objectPosition: "50% 52%",
+      objectPositionMobile: "50% 53%",
       wide: true,
     },
   ] as Servicio[],
@@ -261,7 +261,7 @@ export const servicios = {
 export const galeria = {
   head: {
     kicker: "Galería",
-    title: { pre: "El trabajo ", em: "habla solo" } as EmphasisTitle,
+    title: { pre: "Las mesas ", em: "hablan solas" } as EmphasisTitle,
   },
   fotos: [
     { image: "/media/galeria-mesa-dulce.jpg", caption: "Mesa dulce", alt: "Mesa dulce con cookies de chocolate en pedestal y facturas" },
@@ -296,7 +296,7 @@ export const galeria = {
     { image: "/media/galeria-08-desayuno-mano.jpg", caption: "Box en mano", alt: "Box de desayuno en mano con budín, alfajores y limonada" },
     { image: "/media/galeria-caja.jpg", caption: "Box de regalo", alt: "Box de regalo abierto con budín, alfajores y dulces" },
     { image: "/media/galeria-clip-3-poster.jpg", video: "/media/galeria-clip-3.mp4", caption: "En una empresa", alt: "Video de una mesa de alfajores y budines en un evento corporativo" },
-    { image: "/media/box-corporativo.jpg", caption: "Boxes corporativos", alt: "Boxes corporativos individuales con sándwiches, budín y bebida" },
+    { image: "/media/box-corporativo-gift.jpg", caption: "Boxes corporativos", alt: "Box gourmet con budín, focaccia, queso, mermelada y nueces, con luces y sticker de Salguero Gourmet" },
     { image: "/media/pasteleria.jpg", caption: "Tortas y budines", alt: "Budines de chocolate con glaseado y nuez sobre tabla de madera" },
     { image: "/media/galeria-meriendas.jpg", caption: "Meriendas", alt: "Boxes de desayuno abiertos con budín, pan y limonada" },
   ] as GaleriaFoto[],
@@ -308,7 +308,7 @@ export const galeria = {
 
 export const flor = {
   kicker: "La casa",
-  title: { pre: "La cocina de ", em: "Flor" } as EmphasisTitle,
+  title: { pre: "La cocina y ", em: "Flor" } as EmphasisTitle,
   body: "Detrás de cada mesa está Flor, al frente de Salguero Gourmet desde hace más de quince años. Cocina casera, atención personalizada y el mismo cuidado para un cumpleaños de diez personas que para un evento de empresa.",
   etiqueta: "Al frente desde el primer día",
   foto: {
@@ -428,15 +428,15 @@ export const faq = {
   items: [
     {
       q: "¿Tienen opciones sin TACC, veganas o vegetarianas?",
-      a: "Sí. Elaboramos opciones sin TACC, veganas y vegetarianas según cada servicio. Indicanos tus preferencias al hacer el pedido y las sumamos a la propuesta.",
+      a: "Sí. Contamos con opciones sin TACC, veganas y vegetarianas según cada servicio. Indicanos tus preferencias al hacer el pedido y las sumamos a la propuesta.",
     },
     {
       q: "¿Con cuánta anticipación tengo que reservar?",
-      a: "Solicitamos una anticipación mínima de 48 hs respecto de la fecha del evento. Reservás tu fecha con una seña del 50% del servicio.",
+      a: "Cuanto antes reserves, mejor: con más tiempo diseñamos una propuesta de autor a tu medida y cuidamos cada detalle, del menú a la presentación.",
     },
     {
       q: "¿Hay cantidades mínimas?",
-      a: "No trabajamos con cantidades mínimas. Atendemos desde encargos pequeños hasta eventos de gran escala con la misma dedicación.",
+      a: "No, atendemos desde encargos pequeños hasta eventos de mediana escala con la misma dedicación.",
     },
     {
       q: "¿El servicio incluye vajilla o personal?",

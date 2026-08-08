@@ -16,16 +16,11 @@ export function Resenas() {
             <b className="font-display text-[4rem] font-medium leading-none text-crema">
               {resenas.rating.toFixed(1)}
             </b>
-            <div>
-              <div
-                className="text-[19px] tracking-[3px] text-amarillo"
-                aria-hidden
-              >
-                {"★".repeat(resenas.stars)}
-              </div>
-              <small className="mt-1 block text-[14px] text-crema-dim">
-                {resenas.reviewCount} {resenas.ratingCaption}
-              </small>
+            <div
+              className="text-[19px] tracking-[3px] text-amarillo"
+              aria-hidden
+            >
+              {"★".repeat(resenas.stars)}
             </div>
           </div>
           {showProfile ? (

@@ -15,7 +15,9 @@ export function Empresas() {
           <Kicker>{empresas.kicker}</Kicker>
           <h2 className="mt-3 font-display text-[1.7rem] font-medium leading-tight text-crema">
             {empresas.title.pre}
-            <TitleEm>{empresas.title.em}</TitleEm>
+            <TitleEm className="text-[2.15rem] font-semibold">
+              {empresas.title.em}
+            </TitleEm>
             {empresas.title.post}
           </h2>
           <div className="mt-[14px] flex flex-wrap gap-x-5 gap-y-2">
