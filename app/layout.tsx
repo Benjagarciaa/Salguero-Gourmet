@@ -1,10 +1,12 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Playfair_Display, DM_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { site } from "@/content/data";
 import { SmoothScroll } from "@/components/chrome/SmoothScroll";
 import { QuoteProvider } from "@/components/chrome/QuoteContext";
 import { AmbientBackground } from "@/components/chrome/AmbientBackground";
 import { ScrollProgress } from "@/components/chrome/ScrollProgress";
+import { JsonLd } from "@/components/chrome/JsonLd";
 import { Nav } from "@/components/chrome/Nav";
 import { Footer } from "@/components/chrome/Footer";
 
@@ -27,11 +29,44 @@ const jetbrains = JetBrains_Mono({
   display: "swap",
 });
 
-// SEO completo (OG, JSON-LD, sitemap, metadataBase) se arma en FASE 5.
+const metaTitle = `${site.name} · ${site.tagline}`;
+
 export const metadata: Metadata = {
-  title: "Salguero Gourmet · Catering y pastelería en Córdoba",
-  description:
-    "Catering gourmet, pastelería para eventos, boxes de regalo y propuestas corporativas en Córdoba capital. Pedí tu presupuesto por WhatsApp.",
+  metadataBase: new URL(site.url),
+  title: {
+    default: metaTitle,
+    template: `%s · ${site.name}`,
+  },
+  description: site.description,
+  applicationName: site.name,
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    locale: "es_AR",
+    url: "/",
+    siteName: site.name,
+    title: metaTitle,
+    description: site.description,
+    images: [
+      {
+        url: "/media/og-base.jpg",
+        width: 1200,
+        height: 630,
+        alt: `${site.name} · catering gourmet de autor en Córdoba`,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: metaTitle,
+    description: site.description,
+    images: ["/media/og-base.jpg"],
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#241c15",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({
@@ -43,6 +78,7 @@ export default function RootLayout({
       className={`${playfair.variable} ${dmSans.variable} ${jetbrains.variable}`}
     >
       <body>
+        <JsonLd />
         <AmbientBackground />
         <ScrollProgress />
         <SmoothScroll>
