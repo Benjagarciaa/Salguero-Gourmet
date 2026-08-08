@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useReducedMotion } from "motion/react";
 import Image from "next/image";
 import { X, ChevronLeft, ChevronRight, ZoomIn, Play } from "lucide-react";
 import { InstagramIcon } from "@/components/ui/InstagramIcon";
@@ -44,6 +45,7 @@ export function GaleriaLightbox({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<HTMLDivElement>(null);
+  const reduceMotion = useReducedMotion();
 
   const close = useCallback(() => {
     setOpen(false);
@@ -247,7 +249,7 @@ export function GaleriaLightbox({
 
             <div className="mx-auto max-w-[1160px] px-4 pb-10 pt-4 text-center sm:px-6">
               <p className="text-[14px] text-crema-dim">
-                Todo esto y las novedades, todos los días en nuestro Instagram
+                Todo esto y las novedades en nuestro Instagram
               </p>
               <a
                 href={contacto.instagramUrl}
@@ -316,11 +318,13 @@ export function GaleriaLightbox({
                   <video
                     key={foto.video}
                     src={foto.video}
-                    poster={foto.image}
-                    autoPlay
-                    loop
+                    poster={viewerSrc(foto.image)}
+                    aria-label={foto.alt}
+                    autoPlay={!reduceMotion}
+                    loop={!reduceMotion}
                     muted
                     playsInline
+                    controls={!!reduceMotion}
                     className="max-h-[80vh] max-w-[92vw] rounded-lg bg-black"
                   />
                 ) : (
