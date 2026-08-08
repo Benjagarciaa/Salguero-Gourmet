@@ -40,6 +40,9 @@ export const metadata: Metadata = {
   description: site.description,
   applicationName: site.name,
   alternates: { canonical: "/" },
+  verification: {
+    google: "qMlEPcAri2Kn8moKzbP_hu4ulnQR_VHGWnLxLIO9Ong",
+  },
   openGraph: {
     type: "website",
     locale: "es_AR",
