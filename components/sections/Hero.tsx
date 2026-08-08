@@ -20,6 +20,7 @@ export function Hero() {
           <Kicker>{hero.kicker}</Kicker>
           <h1 className="mb-4 mt-[18px] font-display text-[clamp(2.6rem,5.6vw,4.2rem)] font-medium leading-[1.08] text-crema">
             {hero.title.pre}
+            <br />
             <TitleEm>{hero.title.em}</TitleEm>
             {hero.title.post}
           </h1>
