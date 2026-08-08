@@ -47,20 +47,12 @@ export const metadata: Metadata = {
     siteName: site.name,
     title: metaTitle,
     description: site.description,
-    images: [
-      {
-        url: "/media/og-base.jpg",
-        width: 1200,
-        height: 630,
-        alt: `${site.name} · catering gourmet de autor en Córdoba`,
-      },
-    ],
+    // La imagen la genera app/opengraph-image.tsx (diseñada, con texto de marca).
   },
   twitter: {
     card: "summary_large_image",
     title: metaTitle,
     description: site.description,
-    images: ["/media/og-base.jpg"],
   },
 };
 
