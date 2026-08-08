@@ -4,7 +4,7 @@ type PillVariant = "primaria" | "fantasma";
 type PillSize = "md" | "sm";
 
 const base =
-  "inline-block cursor-pointer rounded-full text-center font-medium transition-[transform,filter] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]";
+  "inline-block cursor-pointer rounded-full text-center font-medium transition-[transform,filter,border-color] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.97]";
 
 const sizes: Record<PillSize, string> = {
   // CTA principal: compacta en mobile, completa desde sm.
@@ -16,7 +16,8 @@ const sizes: Record<PillSize, string> = {
 const variants: Record<PillVariant, string> = {
   primaria:
     "bg-amarillo text-[#241C15] hover:-translate-y-0.5 hover:brightness-[1.06] active:translate-y-0",
-  fantasma: "border border-hairline bg-transparent text-crema hover:border-crema-dim",
+  fantasma:
+    "border border-hairline bg-transparent text-crema hover:-translate-y-0.5 hover:border-crema-dim active:translate-y-0",
 };
 
 interface PillProps {

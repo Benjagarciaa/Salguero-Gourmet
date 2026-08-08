@@ -43,7 +43,7 @@ export function Resenas() {
       <div className="grid gap-4 min-[760px]:grid-cols-2">
         {resenas.items.map((r, i) => (
           <Reveal key={i} delay={(i % 2) * 0.08}>
-            <figure className="flex h-full flex-col gap-[14px] rounded-lg border border-hairline bg-surface p-6">
+            <figure className="flex h-full flex-col gap-[14px] rounded-lg border border-hairline bg-surface p-6 transition-[transform,border-color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:border-[rgba(233,188,79,0.4)]">
               <blockquote className="flex-1 text-[15.5px] leading-[1.6] text-crema">
                 {r.quote}
               </blockquote>
