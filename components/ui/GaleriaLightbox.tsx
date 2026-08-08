@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { X, ChevronLeft, ChevronRight, ZoomIn } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, ZoomIn, Play } from "lucide-react";
 import { InstagramIcon } from "@/components/ui/InstagramIcon";
 import { contacto, type GaleriaFoto } from "@/content/data";
 
@@ -153,6 +153,8 @@ export function GaleriaLightbox({
   };
 
   const foto = active !== null ? fotos[active] : null;
+  const videoCount = fotos.filter((f) => f.video).length;
+  const photoCount = fotos.length - videoCount;
 
   return (
     <>
@@ -181,7 +183,8 @@ export function GaleriaLightbox({
           >
             <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-hairline bg-[rgba(18,13,9,0.7)] px-4 py-3 backdrop-blur sm:px-6">
               <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-crema-dim">
-                Galería · {fotos.length} fotos
+                Galería · {photoCount} fotos
+                {videoCount ? ` · ${videoCount} videos` : ""}
               </span>
               <div className="flex items-center gap-2">
                 <a
@@ -210,7 +213,7 @@ export function GaleriaLightbox({
                   key={i}
                   type="button"
                   onClick={() => setActive(i)}
-                  aria-label={`Ampliar: ${f.caption}`}
+                  aria-label={`${f.video ? "Reproducir" : "Ampliar"}: ${f.caption}`}
                   className="group relative aspect-[4/3] overflow-hidden rounded-lg border border-hairline"
                 >
                   <Image
@@ -220,6 +223,19 @@ export function GaleriaLightbox({
                     sizes="(max-width: 640px) 50vw, (max-width: 900px) 33vw, 280px"
                     className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105"
                   />
+                  {f.video ? (
+                    <span
+                      aria-hidden
+                      className="pointer-events-none absolute inset-0 grid place-items-center"
+                    >
+                      <span className="grid size-11 place-items-center rounded-full bg-[rgba(18,13,9,0.55)] ring-1 ring-[rgba(245,238,224,0.6)] backdrop-blur-sm transition-transform duration-300 group-hover:scale-110">
+                        <Play
+                          className="size-5 translate-x-[1px] text-crema"
+                          fill="currentColor"
+                        />
+                      </span>
+                    </span>
+                  ) : null}
                   <span className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-[rgba(18,13,9,0.9)] to-transparent px-3 pb-2 pt-9 text-left">
                     <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-crema">
                       {f.caption}
@@ -296,25 +312,38 @@ export function GaleriaLightbox({
                 className="flex max-h-full max-w-full flex-col items-center gap-3"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div
-                  onClick={() => setZoom((z) => !z)}
-                  onMouseMove={onMove}
-                  onMouseLeave={() => setOrigin("center center")}
-                  style={{ cursor: zoom ? "zoom-out" : "zoom-in" }}
-                  className="overflow-hidden rounded-lg"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={viewerSrc(foto.image)}
-                    alt={foto.alt}
-                    draggable={false}
-                    style={{
-                      transform: zoom ? "scale(2)" : "scale(1)",
-                      transformOrigin: origin,
-                    }}
-                    className="max-h-[80vh] max-w-[92vw] select-none object-contain transition-transform duration-300 ease-out"
+                {foto.video ? (
+                  <video
+                    key={foto.video}
+                    src={foto.video}
+                    poster={foto.image}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="max-h-[80vh] max-w-[92vw] rounded-lg bg-black"
                   />
-                </div>
+                ) : (
+                  <div
+                    onClick={() => setZoom((z) => !z)}
+                    onMouseMove={onMove}
+                    onMouseLeave={() => setOrigin("center center")}
+                    style={{ cursor: zoom ? "zoom-out" : "zoom-in" }}
+                    className="overflow-hidden rounded-lg"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={viewerSrc(foto.image)}
+                      alt={foto.alt}
+                      draggable={false}
+                      style={{
+                        transform: zoom ? "scale(2)" : "scale(1)",
+                        transformOrigin: origin,
+                      }}
+                      className="max-h-[80vh] max-w-[92vw] select-none object-contain transition-transform duration-300 ease-out"
+                    />
+                  </div>
+                )}
                 <figcaption className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.12em] text-crema-dim">
                   <span className="text-crema">{foto.caption}</span>
                   <span aria-hidden>·</span>

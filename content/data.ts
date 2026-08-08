@@ -72,10 +72,13 @@ export interface Servicio {
 }
 
 export interface GaleriaFoto {
+  /** Imagen (o poster del video, si `video` está seteado). */
   image: string;
   /** Etiqueta descriptiva. Asignada por contenido de la foto (a revisar). */
   caption: string;
   alt: string;
+  /** Si está seteado, el ítem es un clip: `image` es el poster y esto el .mp4. */
+  video?: string;
 }
 
 export interface Resena {
@@ -172,16 +175,16 @@ export const hero = {
   trust: [
     { before: "5.0 en Google · ", count: 33, after: " reseñas" },
     { before: "+", count: 15, after: " años de trayectoria" },
-    { before: "Córdoba capital" },
+    { before: "+", count: 200, after: " eventos realizados" },
   ] as TrustItem[],
   media: {
-    /** Video del hero: clip crudo sin texto quemado (mesa dulce + coffee break). */
+    /** Video del hero: mesa dulce servida (budines, alfajores y facturas), recorte 4:5. */
     video: "/media/hero.mp4",
     /** Poster JPG (LCP), frame limpio del clip. */
     poster: "/media/hero-poster.jpg",
-    alt: "Mesa de coffee break y mesa dulce servida por Salguero Gourmet en un evento",
-    width: 720,
-    height: 900, // marco 4:5
+    alt: "Mesa dulce con budines, alfajores y facturas servida por Salguero Gourmet en un evento",
+    width: 800,
+    height: 1000, // marco 4:5
   },
 };
 
@@ -270,24 +273,29 @@ export const galeria = {
     { image: "/media/galeria-coffee.jpg", caption: "Coffee breaks", alt: "Coffee break con sándwiches, mesa dulce y pastelería" },
     { image: "/media/galeria-meriendas.jpg", caption: "Meriendas", alt: "Boxes de desayuno abiertos con budín, pan y limonada" },
   ] as GaleriaFoto[],
-  // Set curado más amplio para el lightbox "Ver galería completa" (incluye las
-  // del marquee + gemas adicionales de la biblioteca del cliente).
+  // Set curado más amplio para el lightbox "Ver galería completa": fotos + clips
+  // (los ítems con `video` se reproducen en el visor; en la grilla llevan un ▶).
   destacadas: [
+    { image: "/media/galeria-clip-1-poster.jpg", video: "/media/galeria-clip-1.mp4", caption: "La mesa servida", alt: "Video de la mesa dulce con budines, alfajores y facturas sobre tablas de madera" },
     { image: "/media/galeria-mesa-dulce.jpg", caption: "Mesa dulce", alt: "Mesa dulce con cookies de chocolate en pedestal y facturas" },
     { image: "/media/galeria-pasteleria.jpg", caption: "Pastelería casera", alt: "Mesa dulce con brownies, cuadrados de limón y budín" },
     { image: "/media/galeria-oficio.jpg", caption: "Hecho a mano", alt: "Armando alfajores a mano sobre la mesa dulce" },
     { image: "/media/galeria-cookies.jpg", caption: "Cookies", alt: "Cookies caseras sobre una tabla de madera" },
+    { image: "/media/galeria-clip-4-poster.jpg", video: "/media/galeria-clip-4.mp4", caption: "Finger food", alt: "Video de wraps, sándwiches de miga, ensaladas en vasitos y canapés salados" },
     { image: "/media/galeria-alfajores.jpg", caption: "Alfajores de maicena", alt: "Alfajores de maicena con coco sobre una tabla de madera" },
     { image: "/media/galeria-scones.jpg", caption: "Scones y meriendas", alt: "Scones caseros y pastelería para una merienda" },
     { image: "/media/galeria-budin.jpg", caption: "Budín artesanal", alt: "Budín casero con etiqueta de Salguero Gourmet" },
     { image: "/media/galeria-bowl.jpg", caption: "Recién horneadas", alt: "Bowl con cookies caseras recién horneadas" },
+    { image: "/media/galeria-clip-2-poster.jpg", video: "/media/galeria-clip-2.mp4", caption: "Con limonada casera", alt: "Video de un coffee break con dispensador de limonada, alfajores y bocaditos" },
     { image: "/media/galeria-pepas.jpg", caption: "Como en casa", alt: "Armando pastelería a mano sobre la mesa dulce" },
     { image: "/media/galeria-produccion.jpg", caption: "Boxes listos", alt: "Cajas de desayuno armadas con panes, budín en bolsa y limonada de la marca, listas para entrega" },
     { image: "/media/galeria-coffee.jpg", caption: "Coffee breaks", alt: "Coffee break con sándwiches, mesa dulce y pastelería" },
     { image: "/media/galeria-noche.jpg", caption: "Eventos de noche", alt: "Facturas en pedestales con luz azul en un evento de noche" },
+    { image: "/media/galeria-clip-5-poster.jpg", video: "/media/galeria-clip-5.mp4", caption: "Bocaditos salados", alt: "Video de canapés, pinchos de tomate y bocaditos salados sobre tablas" },
     { image: "/media/catering.jpg", caption: "Catering de evento", alt: "Mesa dulce y coffee break servidos en un evento con ventanal" },
     { image: "/media/galeria-08-desayuno-mano.jpg", caption: "Box en mano", alt: "Box de desayuno en mano con budín, alfajores y limonada" },
     { image: "/media/galeria-caja.jpg", caption: "Box de regalo", alt: "Box de regalo abierto con budín, alfajores y dulces" },
+    { image: "/media/galeria-clip-3-poster.jpg", video: "/media/galeria-clip-3.mp4", caption: "En una empresa", alt: "Video de una mesa de alfajores y budines en un evento corporativo" },
     { image: "/media/box-corporativo.jpg", caption: "Boxes corporativos", alt: "Boxes corporativos individuales con sándwiches, budín y bebida" },
     { image: "/media/pasteleria.jpg", caption: "Tortas y budines", alt: "Budines de chocolate con glaseado y nuez sobre tabla de madera" },
     { image: "/media/galeria-meriendas.jpg", caption: "Meriendas", alt: "Boxes de desayuno abiertos con budín, pan y limonada" },
@@ -351,10 +359,9 @@ export const resenas = {
     },
     {
       quote:
-        "Excelente servicio! Abundante, delicioso y ni hablar de la atencion! Quede mas que conforme. Gracias nuevamente",
-      author: "Nahir Castro",
-      servicio: "Box de regalo",
-      // Confirmado por el cliente: la reseña de Nahir es de un box de regalo.
+        "Mucho foco puesto en el detalle, tanto en la producción, presentación y atención personal! Hermosa calidez humana, pasión y dedicación! He compartido muchos eventos con Flor, y recomiendo muchísimo su servicio!",
+      author: "Franco Businello",
+      servicio: "Evento a medida",
       servicioConfirmado: true,
     },
   ] as Resena[],
