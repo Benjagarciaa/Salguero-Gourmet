@@ -22,10 +22,11 @@ export function ScrollingTitle() {
     // Unidad con separador para que el loop cierre prolijo.
     const text = `${base}   ·   `;
     let i = 0;
+    // Paso rápido y parejo: se percibe como flujo continuo en vez de saltos.
     const id = window.setInterval(() => {
       document.title = text.slice(i) + text.slice(0, i);
       i = (i + 1) % text.length;
-    }, 300);
+    }, 180);
     return () => {
       window.clearInterval(id);
       document.title = base;
