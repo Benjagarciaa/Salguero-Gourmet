@@ -37,6 +37,7 @@ function Track({ fotos, reverse }: { fotos: GaleriaFoto[]; reverse?: boolean }) 
                   src={f.image}
                   alt={real ? f.alt : ""}
                   fill
+                  quality={88}
                   sizes="(max-width: 640px) 220px, 280px"
                   className="object-cover"
                 />

@@ -15,6 +15,7 @@ export function Flor() {
             src={flor.foto.src}
             alt={flor.foto.alt}
             fill
+            quality={88}
             sizes="180px"
             className="object-cover object-[30%_30%]"
           />

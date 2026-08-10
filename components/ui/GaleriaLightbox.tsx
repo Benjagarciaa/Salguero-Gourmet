@@ -10,11 +10,12 @@ import { contacto, type GaleriaFoto } from "@/content/data";
 /**
  * URL del visor ruteada por el optimizador de Next (avif/webp, resize a 1200px de
  * ancho: suficiente para el visor + zoom, mucho mas liviana que el JPG crudo).
- * w=1200 esta en los deviceSizes por defecto y q=75 es la calidad permitida por
- * defecto (Next 16 rechaza con 400 los `q` fuera de la allowlist).
+ * w=1200 esta en los deviceSizes por defecto y q=88 esta habilitado en
+ * `images.qualities` del next.config (Next 16 rechaza con 400 los `q` fuera de esa
+ * allowlist). 88 da un visor mas nitido para el zoom sin pesar de mas.
  */
 const viewerSrc = (src: string) =>
-  `/_next/image?url=${encodeURIComponent(src)}&w=1200&q=75`;
+  `/_next/image?url=${encodeURIComponent(src)}&w=1200&q=88`;
 
 /**
  * Galería completa en lightbox. Un botón "Ver galería completa" abre un modal con
@@ -222,6 +223,7 @@ export function GaleriaLightbox({
                     src={f.image}
                     alt={f.alt}
                     fill
+                    quality={88}
                     sizes="(max-width: 640px) 50vw, (max-width: 900px) 33vw, 280px"
                     className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105"
                   />

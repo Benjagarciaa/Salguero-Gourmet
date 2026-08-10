@@ -38,6 +38,7 @@ export function Servicios() {
                 src={s.image}
                 alt={s.alt}
                 fill
+                quality={88}
                 sizes="(max-width: 760px) 100vw, (max-width: 1160px) 50vw, 580px"
                 style={
                   {
