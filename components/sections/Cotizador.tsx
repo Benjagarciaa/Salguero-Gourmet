@@ -24,6 +24,14 @@ const MESSAGES: Record<ReqKey, string> = {
   descripcion: "Contanos qué estás organizando.",
 };
 
+// El contacto tiene que servir para responder: un email (con @ y dominio) o un
+// número de WhatsApp (al menos 8 dígitos). Así palabras sueltas como "mail" o
+// "no sé" no pasan como contacto válido y se le pide al usuario que lo complete.
+const EMAIL_RE = /^\S+@\S+\.\S+$/;
+const countDigits = (s: string) => (s.match(/\d/g) ?? []).length;
+const CONTACTO_INVALIDO =
+  "Poné un email (con @) o tu WhatsApp con el número completo.";
+
 export function Cotizador() {
   const { servicio, nonce } = useQuote();
   const [values, setValues] = useState<QuoteForm>({
@@ -51,7 +59,14 @@ export function Cotizador() {
     }
   }, [servicio, nonce]);
 
-  const check = (k: ReqKey, val: string) => (val.trim() ? undefined : MESSAGES[k]);
+  const check = (k: ReqKey, val: string): string | undefined => {
+    const v = val.trim();
+    if (!v) return MESSAGES[k];
+    if (k === "contacto" && !EMAIL_RE.test(v) && countDigits(v) < 8) {
+      return CONTACTO_INVALIDO;
+    }
+    return undefined;
+  };
 
   const setField = (k: keyof QuoteForm, val: string) => {
     setValues((v) => ({ ...v, [k]: val }));
