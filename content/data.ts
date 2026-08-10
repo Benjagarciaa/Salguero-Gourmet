@@ -184,8 +184,8 @@ export const hero = {
     { before: "+", count: 200, after: " eventos realizados" },
   ] as TrustItem[],
   media: {
-    /** Video del hero: mesa dulce servida (budines, alfajores y facturas), recorte 4:5. */
-    video: "/media/hero.mp4",
+    /** Video del hero: montaje 2 escenas (mesa dulce + bocaditos salados), 4:5, ~386KB liviano. */
+    video: "/media/hero-montage.mp4",
     /** Poster JPG (LCP), frame limpio del clip. */
     poster: "/media/hero-poster.jpg",
     alt: "Mesa dulce con budines, alfajores y facturas servida por Salguero Gourmet en un evento",

@@ -7,9 +7,9 @@ import { cn } from "@/lib/cn";
 /**
  * Video del hero superpuesto al poster.
  * - Con reduced-motion: no renderiza nada (queda el poster).
- * - Solo carga en pantallas >= 768px y con buena conexión (no Save-Data, no 2G):
- *   en mobile queda el poster (48KB) y no se baja el .mp4 (~1.7MB), lo que mejora
- *   mucho la performance en celulares sin tocar la calidad.
+ * - Carga en todas las pantallas siempre que la conexión sea decente (no Save-Data,
+ *   no 2G). El clip es un montaje liviano (~570KB) con +faststart, así que también
+ *   corre en mobile sin castigar la performance; en Save-Data / 2G queda el poster.
  * - Difiere la carga (src recién en idle) para no competir con el LCP (poster).
  * - Aparece con un fade cuando puede reproducir; loop, muted, playsInline, autoPlay.
  */
@@ -20,7 +20,7 @@ export function HeroVideo({ src }: { src: string }) {
   const [visible, setVisible] = useState(false);
   const ref = useRef<HTMLVideoElement>(null);
 
-  // Decide si vale la pena cargar el video: pantalla grande + conexión decente.
+  // Decide si vale la pena cargar el video: alcanza con una conexión decente.
   useEffect(() => {
     const conn = (
       navigator as Navigator & {
@@ -29,8 +29,7 @@ export function HeroVideo({ src }: { src: string }) {
     ).connection;
     const saveData = !!conn?.saveData;
     const slow = /(^|-)2g$/.test(conn?.effectiveType ?? "");
-    const bigScreen = window.matchMedia("(min-width: 768px)").matches;
-    setAllowed(bigScreen && !saveData && !slow);
+    setAllowed(!saveData && !slow);
   }, []);
 
   // Carga el src recién cuando está permitido y el navegador está idle.
@@ -52,7 +51,7 @@ export function HeroVideo({ src }: { src: string }) {
     };
   }, [allowed, src]);
 
-  // En mobile / reduced-motion / conexión lenta: queda el poster (Image priority).
+  // Con reduced-motion / Save-Data / 2G: queda el poster (Image priority).
   if (reduceMotion || !allowed) return null;
 
   return (

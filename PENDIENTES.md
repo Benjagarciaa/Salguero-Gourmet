@@ -64,12 +64,13 @@ pasó el cliente.
   recortado 4:5), caja 1.61MB, box 1.58MB. No queda en el PATH de shells nuevos: usar la ruta
   completa del `.exe` (`%LOCALAPPDATA%\Microsoft\WinGet\Packages\Gyan.FFmpeg_...\bin\ffmpeg.exe`).
 - ✅ **Poster del hero (LCP)** generado: `public/media/salguero_navidad-poster.jpg` (58KB, 4:5).
-- ✅ **Hero: clip limpio (resuelto).** Se reemplazó el reel con texto quemado por un clip
-  crudo SIN texto (IMG_2140: mesa dulce + coffee break con ventanal), recortado 4:5:
-  `public/media/hero.mp4` (0.19MB) + `hero-poster.jpg` (76KB, LCP). Se **eliminaron** los 3
-  reels con texto de `public/media`. Nota: el clip dura 2.35s (loop corto); si el loop se
-  nota, aplicar boomerang o usar un clip más largo (alternativas: IMG_2135 bambú, IMG_1596
-  salado). Material curado en el estudio gráfico (~121 fotos + ~70 videos revisados).
+- ✅ **Hero: montaje liviano (resuelto).** El clip único de 1.74MB castigaba Lighthouse
+  mobile (94→77), así que se reemplazó por un **montaje de 2 escenas en un archivo**
+  (mesa dulce + bocaditos salados, crudos `cortados-2` y `cortados-6`), crossfade de 0.5s,
+  recorte 4:5, 800×1000, 6.4s, `-an -crf 30 +faststart`:
+  `public/media/hero-montage.mp4` (**386KB**) + `hero-poster.jpg`
+  (LCP). El video ahora también corre en mobile (solo se omite en Save-Data / 2G /
+  reduced-motion). Se eliminó el `hero.mp4` viejo. Material curado en el estudio gráfico.
 - **Nombres de fotos con sufijo descriptivo.** Los archivos reales son
   `galeria-01-alfajores.jpg`, `servicios-catering.jpg`, etc. (el brief los nombraba
   `galeria-01`). Las rutas en `content/data.ts` ya usan los nombres reales.
