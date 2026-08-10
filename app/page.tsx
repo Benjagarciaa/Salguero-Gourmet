@@ -6,7 +6,7 @@ import { Resenas } from "@/components/sections/Resenas";
 import { Proceso } from "@/components/sections/Proceso";
 import { Empresas } from "@/components/sections/Empresas";
 import { Faq } from "@/components/sections/Faq";
-import { Cotizador } from "@/components/sections/Cotizador";
+import { CotizadorLazy } from "@/components/sections/CotizadorLazy";
 
 export default function Page() {
   return (
@@ -19,7 +19,7 @@ export default function Page() {
       <Proceso />
       <Empresas />
       <Faq />
-      <Cotizador />
+      <CotizadorLazy />
     </main>
   );
 }

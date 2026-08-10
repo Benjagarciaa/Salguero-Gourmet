@@ -2,7 +2,7 @@ import Image from "next/image";
 import { Container } from "@/components/ui/Section";
 import { SectionHead } from "@/components/ui/SectionHead";
 import { Etiqueta } from "@/components/ui/Etiqueta";
-import { GaleriaLightbox } from "@/components/ui/GaleriaLightbox";
+import { GaleriaLightboxLazy } from "@/components/ui/GaleriaLightboxLazy";
 import { InstagramIcon } from "@/components/ui/InstagramIcon";
 import { cn } from "@/lib/cn";
 import { contacto, galeria, type GaleriaFoto } from "@/content/data";
@@ -66,7 +66,7 @@ export function Galeria() {
             className="!mb-0"
           />
           <div className="flex flex-wrap items-center gap-3">
-            <GaleriaLightbox fotos={galeria.destacadas} />
+            <GaleriaLightboxLazy fotos={galeria.destacadas} />
             <a
               href={contacto.instagramUrl}
               target="_blank"

@@ -79,9 +79,18 @@ pasó el cliente.
   (`SmoothScroll`), (2) `ScrollProgress` se monta recién en idle (`lib/useAfterIdle.ts`),
   (3) `LazyMotion` + `m.*` en vez de `motion.*` (saca drag/layout del runtime; aporte de
   bundle chico pero baja el costo por componente), (4) el video del hero espera al evento
-  `load` antes de bajar para no competir con el poster (LCP). Palancas que quedan si hace
-  falta más: diferir hidratación de secciones pesadas below-the-fold (Cotizador,
-  GaleriaLightbox) sin perder SSR, y revisar el peso de `motion` (dep más pesada).
+  `load` antes de bajar para no competir con el poster (LCP). **Resultado: 74 → 80**
+  (LCP 73 → 88, TBT 40 → 47).
+- ✅ **Performance mobile · pasada 2 (lazy hydration below-the-fold).** Para bajar el TBT
+  que queda (todo hidratación), se difieren las dos secciones client más pesadas con
+  code-split + IntersectionObserver (`lib/useNearViewport.ts`): el **Cotizador**
+  (`CotizadorLazy`, form + select/date/stepper custom + validación) y el **lightbox de
+  galería** (`GaleriaLightboxLazy`, grilla + visor + íconos lucide) montan recién al
+  acercarse al viewport. El placeholder del Cotizador mantiene el ancla `#cotizar` en el
+  SSR (para "Pedir presupuesto" / "Cotizar X") y reserva alto; el swap ocurre 800px antes
+  de entrar en pantalla (fuera de vista) => sin CLS. Verificado en prod: preselección de
+  servicio, submit, apertura del lightbox (23 fotos) y anclas OK. Si hace falta MÁS: el
+  grueso restante es `motion` (dep más pesada) — evaluar reducir animaciones o su runtime.
 - **Nombres de fotos con sufijo descriptivo.** Los archivos reales son
   `galeria-01-alfajores.jpg`, `servicios-catering.jpg`, etc. (el brief los nombraba
   `galeria-01`). Las rutas en `content/data.ts` ya usan los nombres reales.
