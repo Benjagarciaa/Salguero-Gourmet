@@ -37,6 +37,19 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* Ocultar la scrollbar del navegador SIN perder el scroll (decisión de diseño:
+   el smooth scroll de Lenis + la barra de progreso ámbar del top alcanzan como
+   feedback de posición). Cubre los tres motores. */
+html {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Edge / IE legacy */
+}
+html::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none; /* Chromium / WebKit */
+}
+
 img {
   display: block;
   max-width: 100%;
