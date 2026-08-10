@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import { m, useReducedMotion } from "motion/react";
 
 /**
  * Reveal FAIL-OPEN (regla innegociable del proyecto, ver CLAUDE.md):
@@ -46,7 +46,7 @@ export function Reveal({
   }
 
   return (
-    <motion.div
+    <m.div
       ref={ref}
       className={className}
       initial={{ opacity: 0, y: 30 }}
@@ -55,6 +55,6 @@ export function Reveal({
       transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay }}
     >
       {children}
-    </motion.div>
+    </m.div>
   );
 }

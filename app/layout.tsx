@@ -5,6 +5,7 @@ import { site } from "@/content/data";
 import { SmoothScroll } from "@/components/chrome/SmoothScroll";
 import { QuoteProvider } from "@/components/chrome/QuoteContext";
 import { AmbientBackground } from "@/components/chrome/AmbientBackground";
+import { MotionProvider } from "@/components/chrome/MotionProvider";
 import { ScrollProgress } from "@/components/chrome/ScrollProgress";
 import { JsonLd } from "@/components/chrome/JsonLd";
 import { ScrollingTitle } from "@/components/chrome/ScrollingTitle";
@@ -77,14 +78,16 @@ export default function RootLayout({
         <JsonLd />
         <ScrollingTitle />
         <AmbientBackground />
-        <ScrollProgress />
-        <SmoothScroll>
-          <QuoteProvider>
-            <Nav />
-            {children}
-            <Footer />
-          </QuoteProvider>
-        </SmoothScroll>
+        <MotionProvider>
+          <ScrollProgress />
+          <SmoothScroll>
+            <QuoteProvider>
+              <Nav />
+              {children}
+              <Footer />
+            </QuoteProvider>
+          </SmoothScroll>
+        </MotionProvider>
       </body>
     </html>
   );

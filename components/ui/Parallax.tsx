@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useScroll, useTransform, useReducedMotion } from "motion/react";
+import { m, useScroll, useTransform, useReducedMotion } from "motion/react";
 
 /**
  * Parallax sutil ligado al scroll de la página (útil para elementos arriba del
@@ -25,8 +25,8 @@ export function Parallax({
   const { scrollY } = useScroll();
   const y = useTransform(scrollY, [0, over], [0, to]);
   return (
-    <motion.div className={className} style={{ y: reduce ? 0 : y }}>
+    <m.div className={className} style={{ y: reduce ? 0 : y }}>
       {children}
-    </motion.div>
+    </m.div>
   );
 }

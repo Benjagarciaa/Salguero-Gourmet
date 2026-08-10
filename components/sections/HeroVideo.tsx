@@ -32,7 +32,9 @@ export function HeroVideo({ src }: { src: string }) {
     setAllowed(!saveData && !slow);
   }, []);
 
-  // Carga el src recién cuando está permitido y el navegador está idle.
+  // Carga el src recién cuando está permitido, después del evento `load` y con
+  // el navegador idle. Esperar a `load` evita que la descarga del video compita
+  // con el poster (que es el LCP): primero pinta el poster, después baja el video.
   useEffect(() => {
     if (!allowed) return;
     const w = window as Window & {
@@ -40,12 +42,20 @@ export function HeroVideo({ src }: { src: string }) {
     };
     let idleId = 0;
     let timeoutId = 0;
-    if (typeof w.requestIdleCallback === "function") {
-      idleId = w.requestIdleCallback(() => setDeferredSrc(src));
+    const schedule = () => {
+      if (typeof w.requestIdleCallback === "function") {
+        idleId = w.requestIdleCallback(() => setDeferredSrc(src));
+      } else {
+        timeoutId = window.setTimeout(() => setDeferredSrc(src), 200);
+      }
+    };
+    if (document.readyState === "complete") {
+      schedule();
     } else {
-      timeoutId = window.setTimeout(() => setDeferredSrc(src), 200);
+      window.addEventListener("load", schedule, { once: true });
     }
     return () => {
+      window.removeEventListener("load", schedule);
       if (idleId) window.cancelIdleCallback?.(idleId);
       if (timeoutId) window.clearTimeout(timeoutId);
     };

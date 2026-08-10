@@ -26,7 +26,7 @@ export function ScrollingTitle() {
     const id = window.setInterval(() => {
       document.title = text.slice(i) + text.slice(0, i);
       i = (i + 1) % text.length;
-    }, 180);
+    }, 100);
     return () => {
       window.clearInterval(id);
       document.title = base;

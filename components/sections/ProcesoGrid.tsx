@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import { m, useReducedMotion } from "motion/react";
 import { Reveal } from "@/components/ui/Reveal";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
@@ -24,7 +24,7 @@ export function ProcesoGrid({ pasos }: { pasos: Paso[] }) {
         <Reveal key={p.n} delay={i * 0.12}>
           <div className="group relative border-t border-hairline pt-[18px]">
             {reduce ? null : (
-              <motion.span
+              <m.span
                 aria-hidden
                 className="absolute inset-x-0 top-[-1.5px] h-[2px] origin-left bg-amarillo"
                 initial={{ scaleX: 0, opacity: 1 }}

@@ -71,6 +71,17 @@ pasó el cliente.
   `public/media/hero-montage.mp4` (**386KB**) + `hero-poster.jpg`
   (LCP). El video ahora también corre en mobile (solo se omite en Save-Data / 2G /
   reduced-motion). Se eliminó el `hero.mp4` viejo. Material curado en el estudio gráfico.
+- ✅ **Performance mobile: TBT/LCP son de JS, no de imágenes.** Lighthouse mobile ~74:
+  lo bajan TBT (751ms, peso 30%) y LCP (3.2s, peso 25%), los dos por hidratación/JS
+  (CLS 0, SI 98, FCP 89). Bundle real de prod: ~197KB transfer / ~640KB decoded de JS.
+  Medir SIEMPRE con `next start` (prod), no con `next dev` (dev infla el JS a ~4.7MB con
+  HMR y React en modo desarrollo). Optimizaciones aplicadas: (1) Lenis se difiere a idle
+  (`SmoothScroll`), (2) `ScrollProgress` se monta recién en idle (`lib/useAfterIdle.ts`),
+  (3) `LazyMotion` + `m.*` en vez de `motion.*` (saca drag/layout del runtime; aporte de
+  bundle chico pero baja el costo por componente), (4) el video del hero espera al evento
+  `load` antes de bajar para no competir con el poster (LCP). Palancas que quedan si hace
+  falta más: diferir hidratación de secciones pesadas below-the-fold (Cotizador,
+  GaleriaLightbox) sin perder SSR, y revisar el peso de `motion` (dep más pesada).
 - **Nombres de fotos con sufijo descriptivo.** Los archivos reales son
   `galeria-01-alfajores.jpg`, `servicios-catering.jpg`, etc. (el brief los nombraba
   `galeria-01`). Las rutas en `content/data.ts` ya usan los nombres reales.
