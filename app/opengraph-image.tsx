@@ -1,6 +1,4 @@
 import { ImageResponse } from "next/og";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { site } from "@/content/data";
 
 export const size = { width: 1200, height: 630 };
@@ -34,14 +32,7 @@ const spoon = `data:image/svg+xml,${encodeURIComponent(
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 34 180"><g fill="#E9BC4F"><ellipse cx="17" cy="27" rx="17" ry="27"/><rect x="12.25" y="48" width="9.5" height="132" rx="4.75"/></g></svg>',
 )}`;
 
-const star = `data:image/svg+xml,${encodeURIComponent(
-  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17.8 5.9 20.4l1.5-6.8L2.2 9l6.9-.7z" fill="#E9BC4F"/></svg>',
-)}`;
-
 export default async function OgImage() {
-  const photo = readFileSync(join(process.cwd(), "public/media/hero-poster.jpg"));
-  const photoSrc = `data:image/jpeg;base64,${photo.toString("base64")}`;
-
   const [p700, p500, p700i] = await Promise.all([
     loadPlayfair(700),
     loadPlayfair(500),
@@ -62,75 +53,68 @@ export default async function OgImage() {
           width: "100%",
           height: "100%",
           display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
           background: BG,
           color: CREMA,
           fontFamily: "Playfair Display, serif",
+          position: "relative",
         }}
       >
+        {/* glow ambiental */}
         <div
           style={{
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            padding: "72px",
+            position: "absolute",
+            inset: 0,
+            background:
+              "radial-gradient(circle at 50% 42%, rgba(233,188,79,0.18) 0%, rgba(233,188,79,0) 58%)",
           }}
-        >
-          <div
+        />
+        {/* marco fino */}
+        <div
+          style={{
+            position: "absolute",
+            top: 42,
+            left: 42,
+            right: 42,
+            bottom: 42,
+            border: "1px solid rgba(245,238,224,0.16)",
+            borderRadius: 20,
+          }}
+        />
+
+        {/* kicker */}
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <div style={{ width: 9, height: 9, background: AMBER }} />
+          <span
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 14,
-              fontSize: 28,
-              letterSpacing: 6,
-              fontWeight: 700,
+              fontSize: 22,
+              fontWeight: 500,
+              letterSpacing: 8,
+              color: DIM,
             }}
           >
-            <span>SALGUERO</span>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={spoon} width={11} height={58} alt="" />
-            <span>GOURMET</span>
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", marginTop: 30 }}>
-            <span style={{ fontSize: 82, fontWeight: 700, lineHeight: 1.02, color: AMBER, fontStyle: "italic" }}>
-              Gastronomía
-            </span>
-            <span style={{ fontSize: 82, fontWeight: 700, lineHeight: 1.02, color: AMBER, fontStyle: "italic" }}>
-              de autor
-            </span>
-          </div>
-
-          <span style={{ fontSize: 31, fontWeight: 500, color: DIM, marginTop: 26, maxWidth: 540 }}>
-            Catering para empresas, instituciones y eventos en Córdoba.
+            CATERING GOURMET · CÓRDOBA
           </span>
-
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 30, fontSize: 26, fontWeight: 500 }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={star} width={26} height={26} alt="" />
-            <span style={{ color: AMBER }}>5.0</span>
-            <span>en Google</span>
-            <span style={{ color: DIM, marginLeft: 6 }}>·</span>
-            <span>+200 eventos</span>
-          </div>
         </div>
 
-        <div style={{ width: 468, height: "100%", display: "flex", position: "relative" }}>
+        {/* wordmark */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 20,
+            marginTop: 30,
+            fontSize: 78,
+            fontWeight: 700,
+            letterSpacing: 10,
+          }}
+        >
+          <span>SALGUERO</span>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={photoSrc}
-            width={468}
-            height={630}
-            alt=""
-            style={{ objectFit: "cover" }}
-          />
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              background: "linear-gradient(90deg, #241C15 0%, rgba(36,28,21,0) 34%)",
-            }}
-          />
+          <img src={spoon} width={18} height={95} alt="" />
+          <span>GOURMET</span>
         </div>
       </div>
     ),
