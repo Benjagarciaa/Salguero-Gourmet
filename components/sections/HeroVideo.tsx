@@ -7,19 +7,35 @@ import { cn } from "@/lib/cn";
 /**
  * Video del hero superpuesto al poster.
  * - Con reduced-motion: no renderiza nada (queda el poster).
- * - Difiere la carga (src recién tras montar) para no competir con el LCP (poster).
+ * - Solo carga en pantallas >= 768px y con buena conexión (no Save-Data, no 2G):
+ *   en mobile queda el poster (48KB) y no se baja el .mp4 (~1.7MB), lo que mejora
+ *   mucho la performance en celulares sin tocar la calidad.
+ * - Difiere la carga (src recién en idle) para no competir con el LCP (poster).
  * - Aparece con un fade cuando puede reproducir; loop, muted, playsInline, autoPlay.
- * - Sin atributo `poster`: el poster visible es el <Image priority> de abajo; el
- *   poster crudo del <video> duplicaba la descarga del LCP (~77KB) sin verse nunca.
  */
 export function HeroVideo({ src }: { src: string }) {
   const reduceMotion = useReducedMotion();
+  const [allowed, setAllowed] = useState<boolean | null>(null);
   const [deferredSrc, setDeferredSrc] = useState<string | undefined>(undefined);
   const [visible, setVisible] = useState(false);
   const ref = useRef<HTMLVideoElement>(null);
 
+  // Decide si vale la pena cargar el video: pantalla grande + conexión decente.
   useEffect(() => {
-    // Espera al idle del navegador (o un pequeño delay) antes de cargar el video.
+    const conn = (
+      navigator as Navigator & {
+        connection?: { saveData?: boolean; effectiveType?: string };
+      }
+    ).connection;
+    const saveData = !!conn?.saveData;
+    const slow = /(^|-)2g$/.test(conn?.effectiveType ?? "");
+    const bigScreen = window.matchMedia("(min-width: 768px)").matches;
+    setAllowed(bigScreen && !saveData && !slow);
+  }, []);
+
+  // Carga el src recién cuando está permitido y el navegador está idle.
+  useEffect(() => {
+    if (!allowed) return;
     const w = window as Window & {
       requestIdleCallback?: (cb: () => void) => number;
     };
@@ -34,9 +50,10 @@ export function HeroVideo({ src }: { src: string }) {
       if (idleId) window.cancelIdleCallback?.(idleId);
       if (timeoutId) window.clearTimeout(timeoutId);
     };
-  }, [src]);
+  }, [allowed, src]);
 
-  if (reduceMotion) return null;
+  // En mobile / reduced-motion / conexión lenta: queda el poster (Image priority).
+  if (reduceMotion || !allowed) return null;
 
   return (
     <video
