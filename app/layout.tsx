@@ -76,9 +76,10 @@ export default function RootLayout({
       className={`${playfair.variable} ${dmSans.variable} ${jetbrains.variable}`}
     >
       <body>
-        {/* Microsoft Clarity: heatmaps + grabación de sesiones. afterInteractive
-            = carga apenas hidrata (captura la sesión sin bloquear el render). */}
-        <Script id="ms-clarity" strategy="afterInteractive">
+        {/* Microsoft Clarity: heatmaps + grabación de sesiones. lazyOnload = carga
+            en el idle, DESPUÉS del LCP, para que sus requests (collect) no le
+            compitan el ancho de banda al hero en mobile. Graba la sesión igual. */}
+        <Script id="ms-clarity" strategy="lazyOnload">
           {`(function(c,l,a,r,i,t,y){
               c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
               t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
