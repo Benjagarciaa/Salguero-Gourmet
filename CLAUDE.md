@@ -33,7 +33,7 @@ Solo delivery dentro del anillo de Circunvalación. No hay retiro.
 
 1. **Logo:** el wordmark con cuchara `SALGUERO 🥄 GOURMET` (cuchara SVG amarilla como
    separador). Es el del header/footer del mockup. NO usar sello circular, NO usar trío de
-   utensilios. Favicon (`app/icon.svg`): la cuchara sola en `#E9BC4F` sobre `#241C15`.
+   utensilios. Favicon (`app/icon.tsx`): la cuchara sola en `#E9BC4F` sobre `#241C15`.
    SVG exacto de la cuchara:
    `<svg viewBox="0 0 34 180"><g fill="#E9BC4F"><ellipse cx="17" cy="27" rx="17" ry="27"/><rect x="12.25" y="48" width="9.5" height="132" rx="4.75"/></g></svg>`
 2. **Sin sticky bar inferior en mobile.** El nav sticky superior con la pill de presupuesto
@@ -124,7 +124,7 @@ Fuentes `display: swap`. Foco visible amarillo. Contraste AA. Objetivo Lighthous
 ## 10. Estructura de carpetas
 
 ```
-app/                      # Next app router (layout, page, icon.svg, opengraph, sitemap, robots)
+app/                      # Next app router (layout, page, icon.tsx, opengraph, sitemap, robots)
 components/
   chrome/                 # nav, footer, smooth-scroll provider
   sections/               # una por sección de la landing
@@ -139,7 +139,7 @@ _assets/                  # material original del cliente (referencia; videos cr
 
 - **FASE 0** · Lectura + scaffold + documentos (este set). **Frenar y mostrar.**
 - **FASE 1** · Base: tokens en `globals.css`, fuentes, Lenis, primitivas UI, `Wordmark`,
-  `app/icon.svg`, página de muestra.
+  `app/icon.tsx`, página de muestra.
 - **FASE 2** · Hero (video + poster) + Servicios (fotos + preselección).
 - **FASE 3** · Galería + Flor + Reseñas.
 - **FASE 4** · Proceso + Empresas + FAQ + Cotizador + Footer + `lib/wa.ts`.
