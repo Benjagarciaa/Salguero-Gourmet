@@ -127,8 +127,9 @@ export const site = {
   aniosTrayectoria: 15,
   rating: 5.0,
   reviewCount: 33,
-  // Dominio de produccion (provisorio de Vercel; cambiar al definitivo mas adelante).
-  url: "https://salguerogourmet.vercel.app",
+  // Dominio de produccion definitivo (comprado en Vercel). Es el apex, sin www:
+  // Vercel redirige www -> apex. Alimenta canonical, metadataBase, sitemap, robots y JSON-LD.
+  url: "https://salguerogourmet.com",
   // Descripcion base para meta/OG/JSON-LD (alineada al posicionamiento de autor).
   description:
     "Gastronomía de autor para empresas, instituciones y eventos en Córdoba: desayunos, coffee breaks y mesas gourmet, cuidadas hasta el último detalle. Pedí tu presupuesto por WhatsApp.",

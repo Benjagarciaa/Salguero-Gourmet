@@ -52,6 +52,17 @@ pasó el cliente.
 
 ## C · Notas técnicas / de assets
 
+- ✅ **Dominio definitivo: `salguerogourmet.com`** (comprado en Vercel, agosto 2026).
+  En el código todo deriva de `site.url` (`content/data.ts`): canonical, metadataBase,
+  OG, sitemap, robots y JSON-LD. Es el **apex** (sin www); Vercel redirige www -> apex.
+  Config externa a completar (fuera del código): (1) en Vercel, asignar el dominio al
+  proyecto y ponerlo como **Primary**; (2) en Google Search Console, crear una **propiedad
+  de Dominio** verificada por **TXT en el DNS de Vercel** y reenviar el sitemap
+  (`https://salguerogourmet.com/sitemap.xml`); (3) actualizar la URL del sitio en el perfil
+  de Google Business. El `.vercel.app` sigue funcionando pero el canonical ya apunta al
+  dominio real. El meta `google-site-verification` viejo (de la propiedad vercel.app) queda
+  inofensivo.
+
 - **Nombres de video con doble extensión.** Los originales llegaron como
   `salguero_navidad.mp4.mp4`, `salguero_caja_navidena.mp4.mp4`, `salguero_box.mp4.mp4`.
   En FASE 2 se comprimen y se guardan en `public/media/` con nombre normalizado
