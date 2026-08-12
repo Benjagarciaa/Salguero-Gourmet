@@ -36,8 +36,11 @@ export function JsonLd() {
   return (
     <script
       type="application/ld+json"
-      // JSON.stringify escapa el contenido; es data propia, no input de usuario.
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+      // Es data propia (no input de usuario), pero igual escapamos los `<`
+      // como defensa: evita que un `</script>` inyectado rompa el tag.
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify(data).replace(/</g, "\\u003c"),
+      }}
     />
   );
 }
