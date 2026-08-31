@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { m, useReducedMotion } from "motion/react";
 import { Reveal } from "@/components/ui/Reveal";
 
@@ -18,12 +19,22 @@ type Paso = { n: string; title: string; desc: string };
  */
 export function ProcesoGrid({ pasos }: { pasos: Paso[] }) {
   const reduce = useReducedMotion();
+  // Arranca sin el barrido (SSR y primer render del cliente coinciden en no
+  // mostrarlo): `useReducedMotion` recién conoce el valor real del dispositivo
+  // en ese primer render, y puede diferir de lo que asumió el servidor, lo que
+  // rompía la hidratación cuando el barrido se decidía directo en el render.
+  const [showSweep, setShowSweep] = useState(false);
+
+  useEffect(() => {
+    if (!reduce) setShowSweep(true);
+  }, [reduce]);
+
   return (
     <div className="grid grid-cols-1 gap-[18px] min-[520px]:grid-cols-2 min-[860px]:grid-cols-4">
       {pasos.map((p, i) => (
         <Reveal key={p.n} delay={i * 0.12}>
           <div className="group relative border-t border-hairline pt-[18px]">
-            {reduce ? null : (
+            {showSweep ? (
               <m.span
                 aria-hidden
                 className="absolute inset-x-0 top-[-1.5px] h-[2px] origin-left bg-amarillo"
@@ -37,7 +48,7 @@ export function ProcesoGrid({ pasos }: { pasos: Paso[] }) {
                   delay: i * 0.12 + 0.1,
                 }}
               />
-            )}
+            ) : null}
             <b className="mb-2 block font-display text-[2.1rem] font-medium italic text-amarillo transition-transform duration-300 ease-out group-hover:-translate-y-1">
               {p.n}
             </b>

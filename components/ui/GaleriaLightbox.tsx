@@ -165,7 +165,7 @@ export function GaleriaLightbox({
         ref={triggerRef}
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex shrink-0 items-center gap-2 rounded-full border border-hairline px-5 py-[10px] text-[14px] font-medium text-crema transition-colors hover:border-amarillo hover:text-amarillo"
+        className="inline-flex shrink-0 items-center gap-2 rounded-full bg-amarillo px-5 py-[10px] text-[14px] font-medium text-[#241C15] transition-[transform,filter] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:brightness-[1.06] active:translate-y-0 active:scale-[0.97]"
       >
         <ZoomIn className="size-4" aria-hidden />
         {label}
