@@ -120,8 +120,18 @@ a {
   .mq-track {
     animation: none !important;
   }
+  /* Scrolleable a mano, pero sin la scrollbar gris del navegador (misma
+     decisión que la barra global de la página; el recorte de la última
+     figura en el borde ya insinúa que hay más contenido). */
   .mq-viewport {
     overflow-x: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Edge / IE legacy */
+  }
+  .mq-viewport::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none; /* Chromium / WebKit */
   }
 }
 
