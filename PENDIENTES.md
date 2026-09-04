@@ -104,6 +104,17 @@ pasó el cliente.
 - **Nombres de fotos con sufijo descriptivo.** Los archivos reales son
   `galeria-01-alfajores.jpg`, `servicios-catering.jpg`, etc. (el brief los nombraba
   `galeria-01`). Las rutas en `content/data.ts` ya usan los nombres reales.
+- **Captura de leads hacia el panel (sept 2026).** El submit del cotizador ahora
+  también dispara un POST fail-open a `https://admin.salguerogourmet.com/api/leads`
+  (repo `D:\salguero-admin`), que crea cliente + evento "cotizado" en el panel. Si la
+  API falla o no existe, el flujo de WhatsApp no se entera (fetch con `keepalive`,
+  catch vacío). En dev apunta a `http://localhost:3001` (permitido en el connect-src
+  de la CSP solo en development; la CSP de prod solo suma el dominio del admin).
+  El subdominio `admin.salguerogourmet.com` ya está asignado y andando (verificado
+  2026-09-04). **Pendiente:** confirmar con el cliente el mapeo de servicios
+  landing → panel: "Pastelería por encargo" → `mesa_dulce`, "Box de regalo" y
+  "Box corporativo" → `box`, "Catering para evento" → `catering`, resto → `otro`
+  (tabla en `salguero-admin/app/api/leads/route.ts`).
 - **npm: postinstall diferido.** `unrs-resolver` (dependencia de ESLint) tiene un
   postinstall no ejecutado por la política de scripts de npm 11. Se resolverá solo si el
   gate de build/lint lo pide (`npm approve-scripts`).

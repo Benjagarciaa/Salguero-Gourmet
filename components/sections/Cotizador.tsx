@@ -32,6 +32,35 @@ const countDigits = (s: string) => (s.match(/\d/g) ?? []).length;
 const CONTACTO_INVALIDO =
   "Poné un email (con @) o tu WhatsApp con el número completo.";
 
+// Aviso silencioso al panel de gestión (crea el lead solo). TOTALMENTE
+// fail-open: no se espera la respuesta ni se bloquea el flujo de WhatsApp;
+// si la API no existe o falla, acá no pasa nada. "empresa" es un honeypot
+// anti-bots que los humanos nunca ven (siempre viaja vacío).
+function enviarLeadAlPanel(f: QuoteForm) {
+  try {
+    const url =
+      window.location.hostname === "localhost"
+        ? "http://localhost:3001/api/leads"
+        : "https://admin.salguerogourmet.com/api/leads";
+    void fetch(url, {
+      method: "POST",
+      keepalive: true,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        nombre: f.nombre.trim(),
+        contacto: f.contacto.trim(),
+        servicio: f.servicio,
+        fecha: f.fecha || null,
+        personas: f.personas?.trim() || null,
+        descripcion: f.descripcion.trim(),
+        empresa: "",
+      }),
+    }).catch(() => {});
+  } catch {
+    // Nunca romper el envío por WhatsApp por culpa del panel.
+  }
+}
+
 export function Cotizador() {
   const { servicio, nonce } = useQuote();
   const [values, setValues] = useState<QuoteForm>({
@@ -93,6 +122,7 @@ export function Cotizador() {
         ?.focus();
       return;
     }
+    enviarLeadAlPanel(values);
     window.open(buildWhatsappUrl(values), "_blank", "noopener");
   };
 

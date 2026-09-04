@@ -14,7 +14,11 @@ const csp = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "img-src 'self' data: https:",
   "font-src 'self' https://fonts.gstatic.com",
-  "connect-src 'self' https://*.clarity.ms https://c.bing.com",
+  // admin.salguerogourmet.com: el cotizador avisa al panel de gestión (lead).
+  // Next sirve estos headers también en dev, donde el panel corre en
+  // localhost:3001: se permite solo ahí (la CSP de producción no cambia).
+  "connect-src 'self' https://*.clarity.ms https://c.bing.com https://admin.salguerogourmet.com" +
+    (process.env.NODE_ENV === "development" ? " http://localhost:3001" : ""),
   "media-src 'self'",
   "frame-ancestors 'self'",
   "base-uri 'self'",
