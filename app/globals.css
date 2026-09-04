@@ -27,6 +27,19 @@
   background: var(--color-bg);
 }
 
+/* Ocultar la barra de scroll del navegador (mobile y desktop) sin perder el
+   scroll. El desplazamiento sigue funcionando con rueda, touch y teclado.
+   Firefox/IE via scrollbar-width; Chrome/Safari/Edge via ::-webkit-scrollbar. */
+html {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE y Edge legacy */
+}
+html::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none; /* Chrome, Safari, Edge */
+}
+
 body {
   background: transparent;
   color: var(--color-crema);
