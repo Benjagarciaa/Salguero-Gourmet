@@ -35,7 +35,7 @@ export function NumberStepper({
       <label htmlFor={id} className="text-[13.5px] font-medium text-crema">
         {label}
       </label>
-      <div className="flex items-stretch overflow-hidden rounded border border-hairline bg-surface focus-within:ring-1 focus-within:ring-amarillo">
+      <div className="flex items-stretch overflow-hidden rounded border border-hairline bg-surface transition-[border-color,box-shadow] duration-200 focus-within:ring-1 focus-within:ring-amarillo">
         <input
           id={id}
           name={name}

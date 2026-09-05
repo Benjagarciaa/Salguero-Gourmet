@@ -4,6 +4,7 @@ import { Kicker } from "@/components/ui/Kicker";
 import { Etiqueta } from "@/components/ui/Etiqueta";
 import { Pill } from "@/components/ui/Pill";
 import { Counter } from "@/components/ui/Counter";
+import { Entrada } from "@/components/ui/Entrada";
 import { Parallax } from "@/components/ui/Parallax";
 import { TitleEm } from "@/components/ui/TitleEm";
 import { HeroVideo } from "./HeroVideo";
@@ -17,37 +18,53 @@ export function Hero() {
     >
       <Container className="grid items-center gap-9 min-[860px]:grid-cols-[1.15fr_0.75fr] min-[860px]:gap-14">
         <div>
-          <Kicker>{hero.kicker}</Kicker>
-          <h1 className="mb-4 mt-[18px] font-display text-[clamp(2.6rem,5.6vw,4.2rem)] font-medium leading-[1.08] text-crema">
-            {hero.title.pre}
-            <br />
-            <TitleEm>{hero.title.em}</TitleEm>
-            {hero.title.post}
-          </h1>
-          <p className="mb-7 max-w-[46ch] text-crema-dim">
-            {hero.sub.pre}
-            <strong className="font-medium text-crema">{hero.sub.strong}</strong>
-            {hero.sub.post}
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <Pill href={hero.ctas.primary.href}>{hero.ctas.primary.label}</Pill>
-            <Pill variant="fantasma" href={hero.ctas.ghost.href}>
-              {hero.ctas.ghost.label}
-            </Pill>
-          </div>
-          <div className="mt-7 flex flex-col gap-2 min-[560px]:mt-[34px] min-[560px]:flex-row min-[560px]:flex-wrap min-[560px]:gap-x-7 min-[560px]:gap-y-3">
-            {hero.trust.map((item, i) => (
-              <Etiqueta key={i}>
-                {item.before}
-                {item.count != null ? (
-                  <b className="font-bold">
-                    <Counter to={item.count} />
-                  </b>
-                ) : null}
-                {item.after}
-              </Etiqueta>
-            ))}
-          </div>
+          {/* Entrada coreografiada por bloques enteros (el título no se parte:
+              no interferir con el shimmer de TitleEm). */}
+          <Entrada>
+            <Kicker>{hero.kicker}</Kicker>
+          </Entrada>
+          <Entrada delay={0.08}>
+            <h1 className="mb-4 mt-[18px] font-display text-[clamp(2.6rem,5.6vw,4.2rem)] font-medium leading-[1.08] text-crema">
+              {hero.title.pre}
+              <br />
+              <TitleEm>{hero.title.em}</TitleEm>
+              {hero.title.post}
+            </h1>
+          </Entrada>
+          <Entrada delay={0.18}>
+            <p className="mb-7 max-w-[46ch] text-crema-dim">
+              {hero.sub.pre}
+              <strong className="font-medium text-crema">
+                {hero.sub.strong}
+              </strong>
+              {hero.sub.post}
+            </p>
+          </Entrada>
+          <Entrada delay={0.26}>
+            <div className="flex flex-wrap gap-3">
+              <Pill href={hero.ctas.primary.href}>
+                {hero.ctas.primary.label}
+              </Pill>
+              <Pill variant="fantasma" href={hero.ctas.ghost.href}>
+                {hero.ctas.ghost.label}
+              </Pill>
+            </div>
+          </Entrada>
+          <Entrada delay={0.34}>
+            <div className="mt-7 flex flex-col gap-2 min-[560px]:mt-[34px] min-[560px]:flex-row min-[560px]:flex-wrap min-[560px]:gap-x-7 min-[560px]:gap-y-3">
+              {hero.trust.map((item, i) => (
+                <Etiqueta key={i}>
+                  {item.before}
+                  {item.count != null ? (
+                    <b className="font-bold">
+                      <Counter to={item.count} />
+                    </b>
+                  ) : null}
+                  {item.after}
+                </Etiqueta>
+              ))}
+            </div>
+          </Entrada>
         </div>
 
         <Parallax className="order-first w-full max-w-[400px] justify-self-center min-[860px]:order-none min-[860px]:justify-self-end">

@@ -6,7 +6,7 @@ import type {
 import { cn } from "@/lib/cn";
 
 const control =
-  "w-full rounded border border-hairline bg-surface px-[14px] py-[13px] text-[15px] text-crema placeholder:text-crema-dim";
+  "w-full rounded border border-hairline bg-surface px-[14px] py-[13px] text-[15px] text-crema placeholder:text-crema-dim transition-[border-color,box-shadow] duration-200";
 const errorRing = "ring-1 ring-amarillo";
 
 /** Envoltorio label + control + error (el `.campo` del mockup). */
@@ -32,7 +32,7 @@ function Campo({
       </span>
       {children}
       {error ? (
-        <span id={errorId} className="text-[12.5px] text-amarillo">
+        <span id={errorId} className="err-in text-[12.5px] text-amarillo">
           {error}
         </span>
       ) : null}

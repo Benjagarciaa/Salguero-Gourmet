@@ -5,7 +5,7 @@ import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 const control =
-  "flex w-full items-center justify-between gap-2 rounded border border-hairline bg-surface px-[14px] py-[13px] text-left text-[15px] text-crema";
+  "flex w-full items-center justify-between gap-2 rounded border border-hairline bg-surface px-[14px] py-[13px] text-left text-[15px] text-crema transition-[border-color,box-shadow] duration-200";
 
 /**
  * Dropdown propio, accesible (patrón combobox + listbox de ARIA APG).
@@ -154,7 +154,7 @@ export function CustomSelect({
             role="listbox"
             aria-labelledby={labelId}
             ref={listRef}
-            className="absolute left-0 top-[calc(100%+6px)] z-20 max-h-[260px] w-full overflow-auto rounded border border-hairline bg-surface py-1 shadow-[0_14px_30px_rgba(0,0,0,0.45)]"
+            className="absolute left-0 top-[calc(100%+6px)] z-20 max-h-[260px] w-full origin-top animate-[dd-in_180ms_cubic-bezier(0.16,1,0.3,1)] overflow-auto rounded border border-hairline bg-surface py-1 shadow-[0_14px_30px_rgba(0,0,0,0.45)]"
           >
             {options.map((opt, i) => {
               const selected = opt === value;

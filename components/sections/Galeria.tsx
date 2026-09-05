@@ -4,6 +4,7 @@ import { SectionHead } from "@/components/ui/SectionHead";
 import { Etiqueta } from "@/components/ui/Etiqueta";
 import { GaleriaLightbox } from "@/components/ui/GaleriaLightbox";
 import { InstagramIcon } from "@/components/ui/InstagramIcon";
+import { Reveal } from "@/components/ui/Reveal";
 import { cn } from "@/lib/cn";
 import { contacto, galeria, type GaleriaFoto } from "@/content/data";
 
@@ -29,17 +30,17 @@ function Track({ fotos, reverse }: { fotos: GaleriaFoto[]; reverse?: boolean }) 
           return (
             <figure
               key={i}
-              className="mr-3 w-[220px] shrink-0 sm:mr-4 sm:w-[260px] min-[860px]:w-[280px]"
+              className="group mr-3 w-[220px] shrink-0 sm:mr-4 sm:w-[260px] min-[860px]:w-[280px]"
               aria-hidden={!real || undefined}
             >
-              <div className="relative h-[170px] overflow-hidden rounded-lg border border-hairline sm:h-[200px] min-[860px]:h-[230px]">
+              <div className="relative h-[170px] overflow-hidden rounded-lg border border-hairline transition-colors duration-300 hover:border-[rgba(233,188,79,0.4)] sm:h-[200px] min-[860px]:h-[230px]">
                 <Image
                   src={f.image}
                   alt={real ? f.alt : ""}
                   fill
                   quality={88}
                   sizes="(max-width: 640px) 220px, 280px"
-                  className="object-cover"
+                  className="object-cover transition-transform duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.045]"
                 />
               </div>
               <figcaption className="mt-2">
@@ -80,9 +81,15 @@ export function Galeria() {
           </div>
         </div>
       </Container>
-      <div className="flex flex-col gap-3 sm:gap-4">
-        <Track fotos={track1} />
-        <Track fotos={track2} reverse />
+      {/* Cada banda entra desde la dirección hacia la que scrollea; el clip
+          evita overflow horizontal transitorio por el corrimiento de 48px. */}
+      <div className="flex flex-col gap-3 overflow-x-clip sm:gap-4">
+        <Reveal y={0} x={48} duration={0.9}>
+          <Track fotos={track1} />
+        </Reveal>
+        <Reveal y={0} x={-48} duration={0.9}>
+          <Track fotos={track2} reverse />
+        </Reveal>
       </div>
     </section>
   );

@@ -117,9 +117,16 @@ export function Cotizador() {
     setTouched({ nombre: true, contacto: true, descripcion: true });
     const firstBad = REQUIRED.find((k) => next[k]);
     if (firstBad) {
-      document
-        .querySelector<HTMLElement>(`#cotizar [name="${firstBad}"]`)
-        ?.focus();
+      const el = document.querySelector<HTMLElement>(
+        `#cotizar [name="${firstBad}"]`,
+      );
+      if (el) {
+        el.focus();
+        // Sacudida de rechazo (mismo patrón que .flash: reflow para reiniciar).
+        el.classList.remove("shake");
+        void el.offsetWidth;
+        el.classList.add("shake");
+      }
       return;
     }
     enviarLeadAlPanel(values);
@@ -134,9 +141,10 @@ export function Cotizador() {
         description={cotizador.head.intro}
       />
       <div className="grid gap-9 min-[860px]:grid-cols-[1.15fr_0.85fr] min-[860px]:gap-[52px]">
-        <Reveal>
+        {/* Cascada corta campo por campo (cada fila con su propio Reveal
+            fail-open) que guía el ojo hacia el botón de WhatsApp. */}
         <form onSubmit={onSubmit} noValidate>
-          <div className="grid gap-x-[14px] sm:grid-cols-2">
+          <Reveal y={14} duration={0.6} className="grid gap-x-[14px] sm:grid-cols-2">
             <Field
               label={fields.nombre.label}
               required
@@ -158,16 +166,23 @@ export function Cotizador() {
               onBlur={() => handleBlur("contacto")}
               error={touched.contacto ? errors.contacto : undefined}
             />
-          </div>
-          <CustomSelect
-            label={fields.servicio.label}
-            required
-            name="servicio"
-            options={cotizador.form.servicioOptions}
-            value={values.servicio}
-            onChange={(v) => setField("servicio", v)}
-          />
-          <div className="grid gap-x-[14px] sm:grid-cols-2">
+          </Reveal>
+          <Reveal y={14} duration={0.6} delay={0.06}>
+            <CustomSelect
+              label={fields.servicio.label}
+              required
+              name="servicio"
+              options={cotizador.form.servicioOptions}
+              value={values.servicio}
+              onChange={(v) => setField("servicio", v)}
+            />
+          </Reveal>
+          <Reveal
+            y={14}
+            duration={0.6}
+            delay={0.12}
+            className="grid gap-x-[14px] sm:grid-cols-2"
+          >
             <CustomDate
               label={fields.fecha.label}
               name="fecha"
@@ -182,20 +197,23 @@ export function Cotizador() {
               value={values.personas}
               onChange={(v) => setField("personas", v)}
             />
-          </div>
-          <TextArea
-            label={fields.descripcion.label}
-            required
-            name="descripcion"
-            placeholder={fields.descripcion.placeholder}
-            value={values.descripcion}
-            onChange={(e) => setField("descripcion", e.target.value)}
-            onBlur={() => handleBlur("descripcion")}
-            error={touched.descripcion ? errors.descripcion : undefined}
-          />
-          <Pill type="submit">{cotizador.form.submitLabel}</Pill>
+          </Reveal>
+          <Reveal y={14} duration={0.6} delay={0.18}>
+            <TextArea
+              label={fields.descripcion.label}
+              required
+              name="descripcion"
+              placeholder={fields.descripcion.placeholder}
+              value={values.descripcion}
+              onChange={(e) => setField("descripcion", e.target.value)}
+              onBlur={() => handleBlur("descripcion")}
+              error={touched.descripcion ? errors.descripcion : undefined}
+            />
+          </Reveal>
+          <Reveal y={14} duration={0.6} delay={0.24}>
+            <Pill type="submit">{cotizador.form.submitLabel}</Pill>
+          </Reveal>
         </form>
-        </Reveal>
 
         <Reveal delay={0.1} className="self-start">
         <aside className="flex flex-col gap-5 self-start rounded-lg border border-hairline bg-surface p-7 sm:p-8">

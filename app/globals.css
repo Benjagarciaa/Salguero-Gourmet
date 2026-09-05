@@ -170,6 +170,65 @@ a {
 }
 
 /* ==========================================================================
+   Formulario · feedback físico. Corren solo tras interactuar (render
+   condicional / clase agregada por JS): nunca ocultan contenido de entrada.
+   Con reduced-motion las neutraliza el reset global.
+   ========================================================================== */
+/* Mensaje de error: entra con un fundido corto al montarse. */
+@keyframes err-in {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+}
+.err-in {
+  animation: err-in 0.22s ease-out 1 both;
+}
+/* Rechazo firme del submit inválido (sin overshoot juguete). */
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-5px);
+  }
+  45% {
+    transform: translateX(4px);
+  }
+  70% {
+    transform: translateX(-3px);
+  }
+}
+.shake {
+  animation: shake 0.32s ease-in-out 1;
+}
+/* Entrada del listbox del CustomSelect (el cierre queda instantáneo a
+   propósito: las salidas más rápidas que las entradas). */
+@keyframes dd-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scaleY(0.98);
+  }
+}
+
+/* ==========================================================================
+   Lightbox · fade de entrada de las capas fullscreen (el contenido asienta
+   medio paso después del velo). Sin salida animada: cerrar es inmediato.
+   ========================================================================== */
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes overlay-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* ==========================================================================
    Fondo ambiental · glows ámbar que derivan lento detrás del contenido.
    Da "vida" constante sin distraer. Fail-open: es pura decoración CSS.
    Con reduced-motion el reset de arriba congela la animación (queda estático).
@@ -300,11 +359,18 @@ input[type="number"].no-spin::-webkit-inner-spin-button {
   .faq-acc::details-content {
     height: 0;
     overflow: clip;
+    /* El fade solo corre al abrir/cerrar: cerrado, el contenido ya lo oculta
+       height 0 + clip (la opacidad no es quien esconde nada). */
+    opacity: 0;
     transition:
       height 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+      opacity 0.25s ease-out,
       content-visibility 0.28s allow-discrete;
   }
   .faq-acc[open]::details-content {
     height: auto;
+    opacity: 1;
+    /* El texto asienta medio paso después de que la altura arranca. */
+    transition-delay: 0s, 0.05s, 0s;
   }
 }

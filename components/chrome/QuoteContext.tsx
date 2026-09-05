@@ -56,7 +56,10 @@ export function CotizarLink({
       href="#cotizar"
       onClick={() => setServicio(servicio)}
       className={cn(
-        "text-[15px] font-medium text-amarillo hover:underline",
+        // `w-fit`: como item de un flex-col (Servicios) el <a> se estiraría al
+        // ancho de la tarjeta por align-items:stretch, y el subrayado (inset-x-0)
+        // cruzaría toda la placa. Acotado al contenido, la línea va solo bajo el texto.
+        "relative inline-block w-fit text-[15px] font-medium text-amarillo after:absolute after:inset-x-0 after:-bottom-0.5 after:h-px after:origin-left after:scale-x-0 after:bg-amarillo after:content-[''] after:transition-transform after:duration-200 after:ease-[cubic-bezier(0.16,1,0.3,1)] hover:after:scale-x-100 focus-visible:after:scale-x-100",
         className,
       )}
     >

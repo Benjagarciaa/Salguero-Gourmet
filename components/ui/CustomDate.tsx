@@ -65,7 +65,7 @@ const shiftMonth = (d: Date, delta: number) => {
 };
 
 const control =
-  "flex w-full items-center justify-between gap-2 rounded border border-hairline bg-surface px-[14px] py-[13px] text-left text-[15px]";
+  "flex w-full items-center justify-between gap-2 rounded border border-hairline bg-surface px-[14px] py-[13px] text-left text-[15px] transition-[border-color,box-shadow] duration-200";
 
 /**
  * Date picker propio (dark + ámbar), reemplaza al <input type=date> nativo cuyo

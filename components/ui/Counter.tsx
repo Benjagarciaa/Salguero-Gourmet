@@ -8,6 +8,11 @@ import { useInView, useReducedMotion } from "motion/react";
  * - SSR e inicial = valor FINAL (el HTML servido muestra el número real).
  * - Al entrar en vista, anima 0 -> final una sola vez, mutando textContent por
  *   frame (sin re-render de React cada frame).
+ * - Reserva el ancho del valor final (`ch` sobre JetBrains Mono = ancho exacto
+ *   de dígito) para que el conteo por valores de 1 dígito no empuje al texto
+ *   vecino. Arranca ni bien el elemento entra en vista: la tira del hero se
+ *   pinta estática (ver Entrada), así que un delay solo alargaría la ventana en
+ *   la que se ve el valor final del SSR antes de reiniciar el conteo.
  * - Con reduced-motion, se queda en el valor final.
  */
 export function Counter({ to }: { to: number }) {
@@ -35,5 +40,13 @@ export function Counter({ to }: { to: number }) {
     return () => cancelAnimationFrame(raf);
   }, [inView, reduceMotion, to]);
 
-  return <span ref={ref}>{to}</span>;
+  return (
+    <span
+      ref={ref}
+      className="inline-block text-left"
+      style={{ minWidth: `${String(to).length}ch` }}
+    >
+      {to}
+    </span>
+  );
 }

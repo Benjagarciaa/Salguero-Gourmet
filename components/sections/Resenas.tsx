@@ -2,6 +2,7 @@ import { Section } from "@/components/ui/Section";
 import { Kicker } from "@/components/ui/Kicker";
 import { Pill } from "@/components/ui/Pill";
 import { Reveal } from "@/components/ui/Reveal";
+import { Estrellas } from "@/components/ui/Estrellas";
 import { resenas, isPlaceholder } from "@/content/data";
 
 export function Resenas() {
@@ -20,7 +21,7 @@ export function Resenas() {
               className="text-[19px] tracking-[3px] text-amarillo"
               aria-hidden
             >
-              {"★".repeat(resenas.stars)}
+              <Estrellas count={resenas.stars} />
             </div>
           </div>
           {showProfile ? (
@@ -37,8 +38,8 @@ export function Resenas() {
       </Reveal>
       <div className="grid gap-4 min-[760px]:grid-cols-2">
         {resenas.items.map((r, i) => (
-          <Reveal key={i} delay={(i % 2) * 0.08}>
-            <figure className="flex h-full flex-col gap-[14px] rounded-lg border border-hairline bg-surface p-6 transition-[transform,border-color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:border-[rgba(233,188,79,0.4)]">
+          <Reveal key={i} delay={i * 0.07}>
+            <figure className="flex h-full flex-col gap-[14px] rounded-lg border border-hairline bg-surface p-6 transition-[transform,border-color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:border-[rgba(233,188,79,0.4)] hover:shadow-[0_16px_36px_rgba(0,0,0,0.35)]">
               <blockquote className="flex-1 text-[15.5px] leading-[1.6] text-crema">
                 {r.quote}
               </blockquote>

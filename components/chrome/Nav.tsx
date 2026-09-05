@@ -9,7 +9,7 @@ export function Nav() {
         <a
           href="#inicio"
           aria-label="Salguero Gourmet, inicio"
-          className="shrink-0"
+          className="group/logo shrink-0"
         >
           <Wordmark className="text-[13px] sm:text-[15px]" />
         </a>
@@ -18,7 +18,7 @@ export function Nav() {
             <a
               key={l.href}
               href={l.href}
-              className="transition-colors hover:text-crema"
+              className="relative transition-colors hover:text-crema after:absolute after:inset-x-0 after:-bottom-1 after:h-px after:origin-left after:scale-x-0 after:bg-amarillo after:content-[''] after:transition-transform after:duration-200 after:ease-[cubic-bezier(0.16,1,0.3,1)] hover:after:scale-x-100 focus-visible:after:scale-x-100"
             >
               {l.label}
             </a>

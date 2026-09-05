@@ -182,7 +182,7 @@ export function GaleriaLightbox({
             tabIndex={-1}
             inert={active !== null}
             data-lenis-prevent
-            className="fixed inset-0 z-[80] overflow-y-auto overscroll-contain bg-[rgba(18,13,9,0.94)] outline-none backdrop-blur-sm"
+            className="fixed inset-0 z-[80] animate-[overlay-in_220ms_ease-out] overflow-y-auto overscroll-contain bg-[rgba(18,13,9,0.94)] outline-none backdrop-blur-sm"
           >
             <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-hairline bg-[rgba(18,13,9,0.7)] px-4 py-3 backdrop-blur sm:px-6">
               <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-crema-dim">
@@ -210,7 +210,7 @@ export function GaleriaLightbox({
               </div>
             </div>
 
-            <div className="mx-auto grid max-w-[1160px] grid-cols-2 gap-2 p-3 sm:grid-cols-3 sm:gap-3 sm:p-5 min-[900px]:grid-cols-4">
+            <div className="mx-auto grid max-w-[1160px] animate-[overlay-up_260ms_cubic-bezier(0.16,1,0.3,1)] grid-cols-2 gap-2 p-3 sm:grid-cols-3 sm:gap-3 sm:p-5 min-[900px]:grid-cols-4">
               {fotos.map((f, i) => (
                 <button
                   key={i}
@@ -275,7 +275,7 @@ export function GaleriaLightbox({
               tabIndex={-1}
               data-lenis-prevent
               onClick={() => setActive(null)}
-              className="fixed inset-0 z-[90] flex items-center justify-center bg-[#0e0a07] p-4 outline-none"
+              className="fixed inset-0 z-[90] flex animate-[overlay-in_220ms_ease-out] items-center justify-center bg-[#0e0a07] p-4 outline-none"
             >
               <button
                 type="button"

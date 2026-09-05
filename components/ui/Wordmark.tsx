@@ -17,7 +17,7 @@ export function Wordmark({ className }: { className?: string }) {
       <svg
         viewBox="0 0 34 180"
         aria-hidden="true"
-        className="h-[1.45em] w-auto"
+        className="h-[1.45em] w-auto origin-[50%_20%] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/logo:-rotate-12 group-hover/logo:-translate-y-[2px]"
       >
         <g fill="#E9BC4F">
           <ellipse cx="17" cy="27" rx="17" ry="27" />

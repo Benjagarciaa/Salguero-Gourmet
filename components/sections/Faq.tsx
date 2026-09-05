@@ -9,13 +9,13 @@ export function Faq() {
       <SectionHead kicker={faq.head.kicker} title={faq.head.title} />
       <div className="max-w-[760px]">
         {faq.items.map((item, i) => (
-          <Reveal key={i} delay={i * 0.05}>
+          <Reveal key={i} delay={i * 0.05} y={14} duration={0.6}>
             <details className="faq-acc group border-b border-hairline">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-[16.5px] font-medium text-crema [&::-webkit-details-marker]:hidden">
+              <summary className="group/sum flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-[16.5px] font-medium text-crema [&::-webkit-details-marker]:hidden">
                 {item.q}
                 <span
                   aria-hidden
-                  className="font-display text-[24px] leading-none text-amarillo transition-transform duration-200 group-open:rotate-45"
+                  className="font-display text-[24px] leading-none text-amarillo transition-transform duration-200 group-open:rotate-45 group-hover/sum:scale-110"
                 >
                   +
                 </span>
