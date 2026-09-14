@@ -12,7 +12,6 @@ export interface EmphasisTitle {
 /**
  * Encabezado de sección: kicker (opcional) + h2 con una palabra en itálica
  * amarilla + bajada (opcional). Replica `.sec-head` del mockup.
- * `as` permite bajar el nivel semántico (ej. h3) sin cambiar el estilo.
  */
 export function SectionHead({
   kicker,

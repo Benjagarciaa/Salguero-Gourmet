@@ -4,7 +4,10 @@ import { nav } from "@/content/data";
 
 export function Nav() {
   return (
-    <nav className="sticky top-0 z-50 border-b border-hairline bg-[rgba(36,28,21,0.86)] backdrop-blur-[10px]">
+    <nav
+      aria-label="Principal"
+      className="sticky top-0 z-50 border-b border-hairline bg-[rgba(36,28,21,0.86)] backdrop-blur-[10px]"
+    >
       <div className="mx-auto flex max-w-[1160px] items-center justify-between gap-4 px-6 py-[13px]">
         <a
           href="#inicio"

@@ -3,19 +3,15 @@
 import { useEffect } from "react";
 import Lenis from "lenis";
 import "lenis/dist/lenis.css";
+import type { IdleWindow } from "@/lib/idle";
 
 /**
  * Smooth scroll global con Lenis.
  * - Se desactiva con prefers-reduced-motion (scroll nativo).
- * - `anchors: true` hace que los links #ancla scrolleen suave (el offset del
- *   nav sticky se ajusta en FASE 4, cuando exista el nav).
+ * - `anchors: true` hace que los links #ancla scrolleen suave (el offset -76
+ *   compensa la altura del nav sticky para que el ancla no quede tapada).
  * - Solo envuelve children; no agrega DOM.
  */
-type IdleWindow = Window & {
-  requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
-  cancelIdleCallback?: (id: number) => void;
-};
-
 export function SmoothScroll({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const prefersReduced = window.matchMedia(

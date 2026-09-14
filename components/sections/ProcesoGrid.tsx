@@ -1,62 +1,44 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { m, useReducedMotion } from "motion/react";
 import { Reveal } from "@/components/ui/Reveal";
-
-const EASE = [0.16, 1, 0.3, 1] as const;
-
-type Paso = { n: string; title: string; desc: string };
+import type { Paso } from "@/content/data";
 
 /**
- * Grilla de los 4 pasos del proceso, animada para que la sección no pase
- * desapercibida al scrollear:
- * - Cada paso entra con un reveal fail-open escalonado (fade + subida).
- * - Un barrido ámbar dibuja el borde superior al aparecer y se desvanece (no deja
- *   ámbar permanente: respeta la dosis de color).
- * - El número hace un pequeño lift al hover.
- * Con reduced-motion el barrido no se monta y el reveal queda estático.
+ * Grilla de los 4 pasos del proceso. La línea superior de cada paso hace un
+ * "relevo": una barra ámbar dibuja el borde y se apaga, escalonada por paso
+ * (1.1s), en loop infinito -> se encienden 1->2->3->4 y vuelve a empezar. La
+ * animación vive en `.proceso-line` (globals.css): es pura decoración CSS
+ * (fail-open, solo transform/opacity) y con reduced-motion el reset global la
+ * congela dejando las líneas base. El número hace un pequeño lift al hover y
+ * cada paso entra con un Reveal fail-open escalonado.
  */
 export function ProcesoGrid({ pasos }: { pasos: Paso[] }) {
-  const reduce = useReducedMotion();
-  // Arranca sin el barrido (SSR y primer render del cliente coinciden en no
-  // mostrarlo): `useReducedMotion` recién conoce el valor real del dispositivo
-  // en ese primer render, y puede diferir de lo que asumió el servidor, lo que
-  // rompía la hidratación cuando el barrido se decidía directo en el render.
-  const [showSweep, setShowSweep] = useState(false);
-
-  useEffect(() => {
-    if (!reduce) setShowSweep(true);
-  }, [reduce]);
-
   return (
     <div className="grid grid-cols-1 gap-[18px] min-[520px]:grid-cols-2 min-[860px]:grid-cols-4">
-      {pasos.map((p, i) => (
-        <Reveal key={p.n} delay={i * 0.12}>
-          <div className="group relative border-t border-hairline pt-[18px]">
-            {showSweep ? (
-              <m.span
+      {pasos.map((p, i) => {
+        // El relevo de la línea y el pop del número comparten ciclo (4.4s) y
+        // delay (1.1s por paso), así el número se enciende junto a su línea.
+        const delay = `${i * 1.1}s`;
+        return (
+          <Reveal key={p.n} delay={i * 0.12}>
+            <div className="group relative border-t border-hairline pt-[18px]">
+              <span
                 aria-hidden
-                className="absolute inset-x-0 top-[-1.5px] h-[2px] origin-left bg-amarillo"
-                initial={{ scaleX: 0, opacity: 1 }}
-                whileInView={{ scaleX: [0, 1, 1], opacity: [1, 1, 0] }}
-                viewport={{ once: true, margin: "0px 0px -8% 0px" }}
-                transition={{
-                  duration: 1.1,
-                  ease: "easeInOut",
-                  times: [0, 0.55, 1],
-                  delay: i * 0.12 + 0.1,
-                }}
+                className="proceso-line"
+                style={{ animationDelay: delay }}
               />
-            ) : null}
-            <b className="mb-2 block font-display text-[2.1rem] font-medium italic text-amarillo transition-transform duration-300 ease-out group-hover:-translate-y-1">
-              {p.n}
-            </b>
-            <h3 className="mb-1.5 text-[16px] font-bold text-crema">{p.title}</h3>
-            <p className="text-[14.5px] text-crema-dim">{p.desc}</p>
-          </div>
-        </Reveal>
-      ))}
+              <b
+                className="proceso-num mb-2 block w-fit font-display text-[2.1rem] font-medium italic text-amarillo transition-transform duration-300 ease-out group-hover:-translate-y-1"
+                style={{ animationDelay: delay }}
+              >
+                {p.n}
+              </b>
+              <h3 className="mb-1.5 text-[16px] font-bold text-crema">
+                {p.title}
+              </h3>
+              <p className="text-[14.5px] text-crema-dim">{p.desc}</p>
+            </div>
+          </Reveal>
+        );
+      })}
     </div>
   );
 }

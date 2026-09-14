@@ -1,7 +1,6 @@
 import Image from "next/image";
 import { Container } from "@/components/ui/Section";
 import { SectionHead } from "@/components/ui/SectionHead";
-import { Etiqueta } from "@/components/ui/Etiqueta";
 import { GaleriaLightbox } from "@/components/ui/GaleriaLightbox";
 import { InstagramIcon } from "@/components/ui/InstagramIcon";
 import { Reveal } from "@/components/ui/Reveal";
@@ -14,6 +13,7 @@ import { contacto, galeria, type GaleriaFoto } from "@/content/data";
  * supera el ancho del viewport (no aparece hueco al reiniciar el loop).
  */
 function buildItems(base: GaleriaFoto[]): GaleriaFoto[] {
+  if (base.length === 0) return [];
   const MIN_PER_UNIT = 12;
   const repeats = Math.max(2, Math.ceil(MIN_PER_UNIT / base.length));
   const unit = Array.from({ length: repeats }, () => base).flat();
@@ -30,21 +30,24 @@ function Track({ fotos, reverse }: { fotos: GaleriaFoto[]; reverse?: boolean }) 
           return (
             <figure
               key={i}
-              className="group mr-3 w-[220px] shrink-0 sm:mr-4 sm:w-[260px] min-[860px]:w-[280px]"
+              className="group relative mr-3 h-[170px] w-[220px] shrink-0 overflow-hidden rounded-lg border border-hairline transition-colors duration-300 hover:border-[rgba(233,188,79,0.55)] sm:mr-4 sm:h-[200px] sm:w-[260px] min-[860px]:h-[230px] min-[860px]:w-[280px]"
               aria-hidden={!real || undefined}
             >
-              <div className="relative h-[170px] overflow-hidden rounded-lg border border-hairline transition-colors duration-300 hover:border-[rgba(233,188,79,0.4)] sm:h-[200px] min-[860px]:h-[230px]">
-                <Image
-                  src={f.image}
-                  alt={real ? f.alt : ""}
-                  fill
-                  quality={88}
-                  sizes="(max-width: 640px) 220px, 280px"
-                  className="object-cover transition-transform duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.045]"
-                />
-              </div>
-              <figcaption className="mt-2">
-                <Etiqueta>{f.caption}</Etiqueta>
+              <Image
+                src={f.image}
+                alt={real ? f.alt : ""}
+                fill
+                quality={88}
+                sizes="(max-width: 640px) 220px, 280px"
+                className="object-cover transition-transform duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.06]"
+              />
+              {/* Etiqueta sobre la imagen con degradé; al hover sube apenas. Siempre
+                  visible (sirve también en mobile). */}
+              <figcaption className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end bg-gradient-to-t from-[rgba(12,8,4,0.88)] via-[rgba(12,8,4,0.3)] to-transparent px-3 pb-3 pt-9">
+                <span className="inline-flex items-center gap-2 font-mono text-[11px] font-medium uppercase tracking-[0.13em] text-crema transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:-translate-y-0.5">
+                  <span aria-hidden className="h-[7px] w-[7px] shrink-0 bg-amarillo" />
+                  {f.caption}
+                </span>
               </figcaption>
             </figure>
           );

@@ -43,6 +43,11 @@ body {
 html {
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* Edge / IE legacy */
+  /* Red de seguridad: nada de rebote/scroll horizontal aunque algún elemento se
+     pase un pixel (los overflows reales se corrigen en su origen). `clip` no crea
+     scroll container -> no rompe el sticky del nav ni el smooth scroll de Lenis. */
+  overscroll-behavior-x: none;
+  overflow-x: clip;
 }
 html::-webkit-scrollbar {
   width: 0;
@@ -69,7 +74,7 @@ a {
 
 ::selection {
   background: var(--color-amarillo);
-  color: #241c15;
+  color: var(--color-bg);
 }
 
 /* No usamos scroll-behavior:smooth de CSS: lo maneja Lenis por JS.
@@ -335,6 +340,68 @@ a {
   }
   to {
     background-position: 138.5% 0;
+  }
+}
+
+/* ==========================================================================
+   Proceso · relevo ámbar sobre el borde superior de cada paso. La línea base
+   (border-t hairline) siempre está visible; encima, una barra ámbar "dibuja" el
+   borde de izquierda a derecha y se apaga. Cada paso arranca escalonado (1.1s)
+   en loop infinito -> se encienden 1->2->3->4 y vuelve a empezar. Pura
+   decoración CSS (fail-open, solo transform/opacity, como los glows ambientales);
+   con reduced-motion el reset global la congela y quedan solo las líneas base.
+   ========================================================================== */
+.proceso-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -1.5px;
+  height: 2px;
+  transform-origin: left;
+  transform: scaleX(0);
+  background: var(--color-amarillo);
+  animation: proceso-relay 4.4s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+@keyframes proceso-relay {
+  0% {
+    transform: scaleX(0);
+    opacity: 1;
+  }
+  13% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+  22% {
+    transform: scaleX(1);
+    opacity: 0;
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 0;
+  }
+}
+/* El número "se enciende" cuando le toca el relevo: un pop sutil (scale + lift)
+   sincronizado con el dibujo de SU línea (mismo ciclo 4.4s y mismo delay por
+   paso) -> el ojo sigue 01->02->03->04 activándose en secuencia. Usa `transform`
+   (independiente del `translate` del hover en Tailwind v4, así no chocan). Con
+   reduced-motion el reset global lo congela en reposo (scale 1). */
+.proceso-num {
+  transform-origin: left center;
+  animation: proceso-num 4.4s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+@keyframes proceso-num {
+  0%,
+  4% {
+    transform: translateY(0) scale(1);
+  }
+  12% {
+    transform: translateY(-2px) scale(1.12);
+  }
+  24% {
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    transform: translateY(0) scale(1);
   }
 }
 

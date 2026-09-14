@@ -38,15 +38,19 @@ export function useQuote(): QuoteState {
 }
 
 /**
- * Link que preselecciona un servicio y lleva al cotizador (#cotizar).
- * El scroll suave hasta el ancla lo maneja Lenis.
+ * Tarjeta-link: toda la placa de un servicio es clickeable y hace lo mismo que el
+ * link "Cotizar X" (preselecciona el servicio y baja al #cotizar). Es `group` para
+ * que el subrayado ámbar del <CotizarCue> se dibuje al hover/foco/tap de la tarjeta,
+ * y al hover la placa "prende" con un glow ámbar. Lenis maneja el scroll suave.
  */
-export function CotizarLink({
+export function CotizarCard({
   servicio,
+  ariaLabel,
   children,
   className,
 }: {
   servicio: string;
+  ariaLabel: string;
   children: React.ReactNode;
   className?: string;
 }) {
@@ -55,15 +59,30 @@ export function CotizarLink({
     <a
       href="#cotizar"
       onClick={() => setServicio(servicio)}
+      aria-label={ariaLabel}
       className={cn(
-        // `w-fit`: como item de un flex-col (Servicios) el <a> se estiraría al
-        // ancho de la tarjeta por align-items:stretch, y el subrayado (inset-x-0)
-        // cruzaría toda la placa. Acotado al contenido, la línea va solo bajo el texto.
-        "relative inline-block w-fit text-[15px] font-medium text-amarillo after:absolute after:inset-x-0 after:-bottom-0.5 after:h-px after:origin-left after:scale-x-0 after:bg-amarillo after:content-[''] after:transition-transform after:duration-200 after:ease-[cubic-bezier(0.16,1,0.3,1)] hover:after:scale-x-100 focus-visible:after:scale-x-100",
+        "group flex h-full flex-col overflow-hidden rounded-lg border border-hairline bg-surface transition-[transform,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:border-[rgba(233,188,79,0.6)] hover:shadow-[0_20px_44px_rgba(0,0,0,0.45),0_0_30px_rgba(233,188,79,0.35)]",
         className,
       )}
     >
       {children}
     </a>
+  );
+}
+
+/**
+ * Señal visual "Cotizar X" dentro de una <CotizarCard>: subrayado ámbar animado por
+ * el estado del grupo (la tarjeta), no por sí mismo. Al tocar/hoverear cualquier
+ * parte de la placa, la línea se dibuja como si se hubiera tocado el botón. No es un
+ * <a> (evita anidar links dentro del link-tarjeta).
+ */
+export function CotizarCue({ children }: { children: React.ReactNode }) {
+  return (
+    <span
+      aria-hidden
+      className="relative inline-block w-fit text-[15px] font-semibold text-crema after:absolute after:inset-x-0 after:-bottom-0.5 after:h-[1.5px] after:origin-left after:scale-x-0 after:bg-amarillo after:content-[''] after:transition-transform after:duration-200 after:ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:after:scale-x-100 group-focus-visible:after:scale-x-100 group-active:after:scale-x-100"
+    >
+      {children}
+    </span>
   );
 }

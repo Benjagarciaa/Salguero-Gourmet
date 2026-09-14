@@ -2,9 +2,8 @@ import type { CSSProperties } from "react";
 import Image from "next/image";
 import { Section } from "@/components/ui/Section";
 import { SectionHead } from "@/components/ui/SectionHead";
-import { Placa } from "@/components/ui/Placa";
 import { Etiqueta } from "@/components/ui/Etiqueta";
-import { CotizarLink } from "@/components/chrome/QuoteContext";
+import { CotizarCard, CotizarCue } from "@/components/chrome/QuoteContext";
 import { Reveal } from "@/components/ui/Reveal";
 import { cn } from "@/lib/cn";
 import { servicios } from "@/content/data";
@@ -25,16 +24,16 @@ export function Servicios() {
             duration={0.7}
             className={cn("h-full", s.wide && "min-[760px]:col-span-2")}
           >
-            <Placa
-              interactive
+            <CotizarCard
+              servicio={s.servicioValue}
+              ariaLabel={`Cotizar ${s.title}`}
               className={cn(
-                "group flex h-full flex-col overflow-hidden",
                 s.wide && "min-[760px]:grid min-[760px]:grid-cols-[1.15fr_1fr]",
               )}
             >
               <div
                 className={cn(
-                  "relative h-[200px] overflow-hidden",
+                  "relative h-[200px] overflow-hidden max-[759px]:h-[172px]",
                   s.wide &&
                     "min-[760px]:h-auto min-[760px]:min-h-[200px] min-[760px]:max-h-[270px]",
                 )}
@@ -54,17 +53,15 @@ export function Servicios() {
                   className="serv-obj object-cover transition-transform duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.05]"
                 />
               </div>
-              <div className="flex flex-1 flex-col gap-[10px] px-6 pb-6 pt-[22px]">
+              <div className="flex flex-1 flex-col gap-[10px] px-5 pb-5 pt-[18px] min-[760px]:px-6 min-[760px]:pb-6 min-[760px]:pt-[22px]">
                 <h3 className="font-display text-[1.45rem] font-medium text-crema">
                   {s.title}
                 </h3>
                 <p className="flex-1 text-[15px] text-crema-dim">{s.desc}</p>
                 <Etiqueta>{s.etiqueta}</Etiqueta>
-                <CotizarLink servicio={s.servicioValue}>
-                  {s.ctaLabel}
-                </CotizarLink>
+                <CotizarCue>{s.ctaLabel}</CotizarCue>
               </div>
-            </Placa>
+            </CotizarCard>
           </Reveal>
         ))}
       </div>

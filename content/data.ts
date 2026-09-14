@@ -126,10 +126,14 @@ export const site = {
   name: "Salguero Gourmet",
   aniosTrayectoria: 15,
   rating: 5.0,
-  reviewCount: 33,
+  reviewCount: 34,
   // Dominio de produccion definitivo (comprado en Vercel). Es el apex, sin www:
   // Vercel redirige www -> apex. Alimenta canonical, metadataBase, sitemap, robots y JSON-LD.
   url: "https://salguerogourmet.com",
+  // Fecha real de última actualización del contenido (copy/reseñas). Alimenta el
+  // <lastmod> del sitemap; actualizar SOLO cuando cambia el contenido, no en cada
+  // deploy, para que sea una señal honesta a los buscadores.
+  lastUpdated: "2026-09-14",
   // Descripcion base para meta/OG/JSON-LD (alineada al posicionamiento de autor).
   description:
     "Gastronomía de autor para empresas, instituciones y eventos en Córdoba: desayunos, coffee breaks y mesas gourmet, cuidadas hasta el último detalle. Pedí tu presupuesto por WhatsApp.",
@@ -365,6 +369,39 @@ export const resenas = {
       servicio: "Evento a medida",
       servicioConfirmado: true,
     },
+    {
+      quote:
+        "Excelente experiencia, lo recomiendo muchísimo para todo tipo de eventos!!",
+      author: "Franco Rotti",
+      servicio: "Eventos",
+      servicioConfirmado: false,
+    },
+    {
+      quote:
+        "Excelente servicio. La comida espectacular y la atención también, ¡muchas gracias! Recomendado.",
+      author: "Camila",
+      servicio: "Evento",
+      servicioConfirmado: false,
+    },
+    {
+      quote: "Excelente atención y servicio! Súper recomendable.",
+      author: "Carla Almada",
+      servicio: "Evento",
+      servicioConfirmado: false,
+    },
+    {
+      quote: "Muy rica la torta. Es recomendable.",
+      author: "Nora d'Almeida",
+      servicio: "Mesa dulce",
+      servicioConfirmado: false,
+    },
+    {
+      quote:
+        "Todo excelente, muy buena la disposición de Flor. ¡Felicidades y que sigan los éxitos!",
+      author: "Verónica Benegas",
+      servicio: "Evento",
+      servicioConfirmado: false,
+    },
   ] as Resena[],
 };
 
@@ -502,7 +539,7 @@ export const cotizador = {
       { label: "WhatsApp", value: contacto.whatsappDisplay, href: contacto.whatsappHref },
       { label: "Email", value: contacto.email, href: `mailto:${contacto.email}` },
       { label: "Instagram", value: contacto.instagramHandle, href: contacto.instagramUrl },
-      // Horario pendiente: la UI muestra "A confirmar" mientras sea placeholder.
+      // Horario confirmado (9 a 17 hs); la UI cae a "A confirmar" solo si es placeholder.
       { label: "Horario de atención", value: politicas.horarioAtencion, href: null },
     ] as { label: string; value: string; href: string | null }[],
     etiqueta: "Respondemos a la brevedad",

@@ -24,7 +24,7 @@ export function buildWhatsappMessage(f: QuoteForm): string {
     "",
     `Nombre: ${f.nombre.trim()}`,
     `Contacto: ${f.contacto.trim()}`,
-    `Servicio: ${f.servicio}`,
+    `Servicio: ${f.servicio.trim()}`,
   ];
   const fecha = formatFecha(f.fecha);
   if (fecha) lines.push(`Fecha del evento: ${fecha}`);

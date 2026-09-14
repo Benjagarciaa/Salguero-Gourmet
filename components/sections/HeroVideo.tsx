@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useReducedMotion } from "motion/react";
 import { cn } from "@/lib/cn";
+import type { IdleWindow } from "@/lib/idle";
 
 /**
  * Video del hero superpuesto al poster.
@@ -18,7 +19,6 @@ export function HeroVideo({ src }: { src: string }) {
   const [allowed, setAllowed] = useState<boolean | null>(null);
   const [deferredSrc, setDeferredSrc] = useState<string | undefined>(undefined);
   const [visible, setVisible] = useState(false);
-  const ref = useRef<HTMLVideoElement>(null);
 
   // Decide si vale la pena cargar el video: alcanza con una conexión decente.
   useEffect(() => {
@@ -37,9 +37,7 @@ export function HeroVideo({ src }: { src: string }) {
   // con el poster (que es el LCP): primero pinta el poster, después baja el video.
   useEffect(() => {
     if (!allowed) return;
-    const w = window as Window & {
-      requestIdleCallback?: (cb: () => void) => number;
-    };
+    const w = window as IdleWindow;
     let idleId = 0;
     let timeoutId = 0;
     const schedule = () => {
@@ -66,7 +64,6 @@ export function HeroVideo({ src }: { src: string }) {
 
   return (
     <video
-      ref={ref}
       src={deferredSrc}
       muted
       loop

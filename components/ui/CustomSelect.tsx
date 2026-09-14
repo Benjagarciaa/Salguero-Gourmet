@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { ChevronDown, Check } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 const control =
@@ -134,6 +134,7 @@ export function CustomSelect({
           aria-controls={listId}
           aria-labelledby={labelId}
           aria-activedescendant={open ? optId(activeIndex) : undefined}
+          aria-required={required || undefined}
           data-servicio-trigger
           onClick={() => setOpen((o) => !o)}
           onKeyDown={onKeyDown}
@@ -154,7 +155,9 @@ export function CustomSelect({
             role="listbox"
             aria-labelledby={labelId}
             ref={listRef}
-            className="absolute left-0 top-[calc(100%+6px)] z-20 max-h-[260px] w-full origin-top animate-[dd-in_180ms_cubic-bezier(0.16,1,0.3,1)] overflow-auto rounded border border-hairline bg-surface py-1 shadow-[0_14px_30px_rgba(0,0,0,0.45)]"
+            // Menú elevado: superficie un punto más clara que el trigger.
+            style={{ "--color-surface": "#3a2e22" } as CSSProperties}
+            className="absolute left-0 top-[calc(100%+6px)] z-20 max-h-[288px] w-full origin-top animate-[dd-in_180ms_cubic-bezier(0.16,1,0.3,1)] overflow-auto rounded-xl border border-hairline bg-surface p-1.5 shadow-[0_20px_44px_rgba(0,0,0,0.5)]"
           >
             {options.map((opt, i) => {
               const selected = opt === value;
@@ -168,15 +171,15 @@ export function CustomSelect({
                   onMouseEnter={() => setActiveIndex(i)}
                   onClick={() => choose(i)}
                   className={cn(
-                    "cursor-pointer px-[14px] py-2.5 text-[15px]",
-                    active
-                      ? "bg-amarillo text-[#241C15]"
-                      : selected
-                        ? "text-amarillo"
-                        : "text-crema",
+                    "flex cursor-pointer items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-[15px] transition-colors duration-150",
+                    active && "bg-[rgba(233,188,79,0.16)]",
+                    active || selected ? "text-amarillo" : "text-crema",
                   )}
                 >
-                  {opt}
+                  <span>{opt}</span>
+                  {selected ? (
+                    <Check className="size-[17px] shrink-0" aria-hidden />
+                  ) : null}
                 </li>
               );
             })}

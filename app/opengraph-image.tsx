@@ -12,11 +12,17 @@ async function loadPlayfair(weight: number, italic = false) {
     const css = await (
       await fetch(
         `https://fonts.googleapis.com/css2?family=Playfair+Display:${axis}`,
-        { headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" } },
+        {
+          headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" },
+          signal: AbortSignal.timeout(5000),
+        },
       )
     ).text();
     const url = css.match(/src:\s*url\((https:[^)]+)\)/)?.[1];
-    if (url) return await (await fetch(url)).arrayBuffer();
+    if (url)
+      return await (
+        await fetch(url, { signal: AbortSignal.timeout(5000) })
+      ).arrayBuffer();
   } catch {
     // sin red -> ImageResponse usa la fuente por defecto
   }
@@ -38,7 +44,12 @@ export default async function OgImage() {
     loadPlayfair(500),
     loadPlayfair(700, true),
   ]);
-  const fonts = [];
+  const fonts: {
+    name: string;
+    data: ArrayBuffer;
+    weight: 500 | 700;
+    style: "normal" | "italic";
+  }[] = [];
   if (p500)
     fonts.push({ name: "Playfair Display", data: p500, weight: 500 as const, style: "normal" as const });
   if (p700)

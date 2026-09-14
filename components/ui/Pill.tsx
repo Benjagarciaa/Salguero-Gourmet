@@ -15,7 +15,7 @@ const sizes: Record<PillSize, string> = {
 
 const variants: Record<PillVariant, string> = {
   primaria:
-    "bg-amarillo text-[#241C15] hover:-translate-y-0.5 hover:brightness-[1.06] active:translate-y-0",
+    "relative isolate overflow-hidden bg-amarillo text-[#241C15] before:pointer-events-none before:absolute before:inset-0 before:-translate-x-[130%] before:bg-gradient-to-r before:from-transparent before:via-white/45 before:to-transparent before:transition-transform before:duration-[700ms] before:ease-[cubic-bezier(0.16,1,0.3,1)] before:content-[''] hover:-translate-y-0.5 hover:brightness-[1.06] hover:before:translate-x-[130%] active:translate-y-0",
   fantasma:
     "border border-hairline bg-transparent text-crema hover:-translate-y-0.5 hover:border-crema-dim active:translate-y-0",
 };
@@ -50,13 +50,17 @@ export function Pill({
   "aria-label": ariaLabel,
 }: PillProps) {
   const classes = cn(base, sizes[size], variants[variant], className);
+  // Blinda pestañas nuevas: si un caller abre _blank sin pasar rel, igual sale
+  // noopener noreferrer (evita reverse-tabnabbing y fuga de referrer).
+  const relFinal =
+    rel ?? (target === "_blank" ? "noopener noreferrer" : undefined);
 
   if (href) {
     return (
       <a
         href={href}
         target={target}
-        rel={rel}
+        rel={relFinal}
         onClick={onClick}
         aria-label={ariaLabel}
         className={classes}

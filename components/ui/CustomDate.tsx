@@ -101,6 +101,10 @@ export function CustomDate({
   const rootRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  // Intención de mover el foco al día activo: true al abrir y al navegar con
+  // teclado (el foco sigue al día); false cuando el mes cambia por clic en las
+  // flechas (así el foco no salta del botón de flecha a una celda del grid).
+  const moveFocus = useRef(true);
 
   const labelId = `${name}-label`;
 
@@ -108,6 +112,7 @@ export function CustomDate({
   useEffect(() => {
     if (!open) return;
     const base = fromISO(value) ?? startOfDay(new Date());
+    moveFocus.current = true; // al abrir, el foco entra al día activo
     setView({ year: base.getFullYear(), month: base.getMonth() });
     setActive(base);
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -124,9 +129,11 @@ export function CustomDate({
     return () => document.removeEventListener("mousedown", onDown);
   }, [open]);
 
-  // Enfocar el día activo cuando cambia (con el calendario abierto).
+  // Enfocar el día activo cuando cambia (con el calendario abierto). Solo si la
+  // intención es mover el foco (apertura o teclado): al cambiar de mes con clic en
+  // las flechas, moveFocus queda en false y el foco se conserva en el botón.
   useEffect(() => {
-    if (!open) return;
+    if (!open || !moveFocus.current) return;
     gridRef.current
       ?.querySelector<HTMLElement>(`[data-iso="${toISO(active)}"]`)
       ?.focus();
@@ -143,6 +150,7 @@ export function CustomDate({
     triggerRef.current?.focus();
   };
   const moveMonth = (delta: number) => {
+    moveFocus.current = false; // clic en la flecha: no robar el foco al grid
     setView((v) => {
       const d = new Date(v.year, v.month + delta, 1);
       return { year: d.getFullYear(), month: d.getMonth() };
@@ -194,6 +202,7 @@ export function CustomDate({
     }
     if (next) {
       e.preventDefault();
+      moveFocus.current = true; // navegación por teclado: el foco sigue al día
       setActive(next);
       setView({ year: next.getFullYear(), month: next.getMonth() });
     }

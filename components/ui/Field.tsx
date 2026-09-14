@@ -1,6 +1,5 @@
 import type {
   InputHTMLAttributes,
-  SelectHTMLAttributes,
   TextareaHTMLAttributes,
 } from "react";
 import { cn } from "@/lib/cn";
@@ -112,51 +111,6 @@ export function TextArea({
         className={cn(control, "min-h-[110px] resize-y", error && errorRing, className)}
         {...props}
       />
-    </Campo>
-  );
-}
-
-type SelectProps = {
-  label: string;
-  required?: boolean;
-  error?: string;
-  options: readonly string[];
-  fieldClassName?: string;
-} & Omit<SelectHTMLAttributes<HTMLSelectElement>, "required">;
-
-export function Select({
-  label,
-  required,
-  error,
-  options,
-  fieldClassName,
-  className,
-  name,
-  ...props
-}: SelectProps) {
-  const id = errId(name);
-  return (
-    <Campo
-      label={label}
-      required={required}
-      error={error}
-      errorId={id}
-      className={fieldClassName}
-    >
-      <select
-        name={name}
-        required={required}
-        aria-invalid={error ? true : undefined}
-        aria-describedby={error ? id : undefined}
-        className={cn(control, error && errorRing, className)}
-        {...props}
-      >
-        {options.map((opt) => (
-          <option key={opt} value={opt}>
-            {opt}
-          </option>
-        ))}
-      </select>
     </Campo>
   );
 }

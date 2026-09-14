@@ -9,7 +9,7 @@ export function Faq() {
       <SectionHead kicker={faq.head.kicker} title={faq.head.title} />
       <div className="max-w-[760px]">
         {faq.items.map((item, i) => (
-          <Reveal key={i} delay={i * 0.05} y={14} duration={0.6}>
+          <Reveal key={item.q} delay={i * 0.05} y={14} duration={0.6}>
             <details className="faq-acc group border-b border-hairline">
               <summary className="group/sum flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-[16.5px] font-medium text-crema [&::-webkit-details-marker]:hidden">
                 {item.q}
