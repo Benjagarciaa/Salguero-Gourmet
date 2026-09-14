@@ -5,7 +5,7 @@ import type {
 import { cn } from "@/lib/cn";
 
 const control =
-  "w-full rounded border border-hairline bg-surface px-[14px] py-[13px] text-[15px] text-crema placeholder:text-crema-dim transition-[border-color,box-shadow] duration-200";
+  "w-full rounded border border-hairline bg-surface px-[14px] py-[13px] text-[16px] min-[1024px]:text-[15px] text-crema placeholder:text-crema-dim transition-[border-color,box-shadow] duration-200";
 const errorRing = "ring-1 ring-amarillo";
 
 /** Envoltorio label + control + error (el `.campo` del mockup). */

@@ -5,7 +5,7 @@ import { ChevronDown, Check } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 const control =
-  "flex w-full items-center justify-between gap-2 rounded border border-hairline bg-surface px-[14px] py-[13px] text-left text-[15px] text-crema transition-[border-color,box-shadow] duration-200";
+  "flex w-full items-center justify-between gap-2 rounded border border-hairline bg-surface px-[14px] py-[13px] text-left text-[16px] min-[1024px]:text-[15px] text-crema transition-[border-color,box-shadow] duration-200";
 
 /**
  * Dropdown propio, accesible (patrón combobox + listbox de ARIA APG).

@@ -47,7 +47,7 @@ export function NumberStepper({
           onChange={(e) =>
             onChange(e.target.value.replace(/\D/g, "").replace(/^0+/, ""))
           }
-          className="no-spin w-full bg-transparent px-[14px] py-[13px] text-[15px] text-crema outline-none placeholder:text-crema-dim"
+          className="no-spin w-full bg-transparent px-[14px] py-[13px] text-[16px] min-[1024px]:text-[15px] text-crema outline-none placeholder:text-crema-dim"
         />
         <div className="flex w-10 shrink-0 flex-col border-l border-hairline">
           <button
