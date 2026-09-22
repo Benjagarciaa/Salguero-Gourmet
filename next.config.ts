@@ -43,6 +43,8 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // No revelar el stack en el header X-Powered-By.
+  poweredByHeader: false,
   images: {
     // AVIF primero (mejor compresion), WebP de fallback.
     formats: ["image/avif", "image/webp"],
