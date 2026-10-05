@@ -84,10 +84,11 @@ const MAPA_COPY = proceso.mapa;
  * opacity y el trazo de las líneas. Sin estado de React por cuadro.
  * ========================================================================== */
 
-/** Opacidades de un paso todavía apagado. Título (0.52) y bajada (0.78)
- *  siguen pasando AA sobre el fondo: una auditoría al cargar los ve así. */
+/** Opacidades de un paso todavía apagado. Número (0.48, texto grande: 3:1),
+ *  título (0.52) y bajada (0.78) siguen pasando AA sobre el fondo: una
+ *  auditoría al cargar los ve así (Lighthouse marcaba el número a 0.24). */
 const APAGADO = {
-  num: 0.24,
+  num: 0.48,
   titulo: 0.52,
   desc: 0.78,
   estacion: 0.4,
