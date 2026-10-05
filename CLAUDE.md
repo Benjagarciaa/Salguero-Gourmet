@@ -24,8 +24,8 @@ Solo delivery dentro del anillo de Circunvalación. No hay retiro.
    está nombrado por su destino y reemplaza al frame de video equivalente. Ver
    `_assets/fotos/SELECCION.md` para saber qué foto va en cada lugar y por qué.
 3. **Este proyecto (CLAUDE.md + PROMPT MAESTRO)** manda en **stack, calidad y en lo que el
-   mockup no puede mostrar**: video real en el hero, smooth scroll, `lib/wa.ts`, SEO,
-   performance, accesibilidad.
+   mockup no puede mostrar**: la secuencia de la caja en el hero (ver §7.1), smooth
+   scroll, `lib/wa.ts`, SEO, performance, accesibilidad.
 
 **Ante cualquier conflicto entre estas fuentes, preguntar antes de decidir.**
 
@@ -55,7 +55,9 @@ Ver `DESIGN.md` para el detalle. Resumen:
 | `--hairline` | `rgba(245,238,224,.14)` | Bordes 1px |
 
 **Regla de dosis:** si todo es amarillo, nada es amarillo. Amarillo pleno solo en CTA, una
-palabra por titular y el logo.
+palabra por titular y el logo. **Única excepción:** Empresas: palabras gigantes en amarillo
+con movimiento sobre el fondo del sitio (pedido de Benjamin 30/9/2026); es la única
+excepción a la regla de dosis del amarillo.
 
 Fuentes por `next/font/google`: **Playfair Display** (display; itálica solo para la palabra
 destacada), **DM Sans** (texto y UI), **JetBrains Mono** (solo etiquetas: 11px, uppercase,
@@ -74,7 +76,9 @@ tracking `+0.14em`). CTA: pill (radio 999px) amarilla con texto `#241C15`.
    (–)**.
 5. **Animación fail-open (regla aprendida en este proyecto, innegociable):** ningún
    elemento arranca oculto en CSS estático. El contenido es visible por defecto; `motion`
-   anima por encima con `whileInView` una sola vez, ease `[0.16, 1, 0.3, 1]`. Solo
+   anima por encima con `whileInView` una sola vez, ease `[0.16, 1, 0.3, 1]` (en la beta
+   "dopamina" esa curva se reemplazó por la física de resortes de `lib/fisica.ts`, con vía
+   libre de Benjamin para el localhost; confirmar con él antes de pasarla a producción). Solo
    `transform` y `opacity`. `useReducedMotion()` en todo componente animado. Sin listeners
    de scroll manuales.
 6. **Verificación visual:** revisar cada sección a 390px y 1440px antes del checkpoint y
@@ -85,14 +89,36 @@ tracking `+0.14em`). CTA: pill (radio 999px) amarilla con texto `#241C15`.
 ## 6. Stack
 
 Next.js 16 (app router, sin `src/`) + TypeScript + Tailwind v4 (`@theme` en CSS) +
-`motion` + `lenis` + `lucide-react`. Sin GSAP, sin backend. Deploy: Vercel. Imágenes con
-`next/image` y `sizes` explícito.
+`motion` + `lenis` + `lucide-react` + **GSAP** (`gsap` + `@gsap/react`). Sin backend.
+Deploy: Vercel. Imágenes con `next/image` y `sizes` explícito.
+
+**GSAP está permitido desde la beta "dopamina"** (autorizado por Benjamin, sept 2026) para
+las escenas de scroll (pin, scrub, ScrollTrigger y sus plugins: DrawSVG, MotionPath, etc.).
+Reglas de uso:
+- `gsap`, `ScrollTrigger` y `useGSAP` se importan SIEMPRE de `@/lib/gsap` (registro único);
+  los plugins extra se registran en el componente que los usa con `gsap.registerPlugin`.
+- `useGSAP` con `scope`, `gsap.matchMedia()` para desktop/mobile/reducir movimiento, nada
+  de GSAP en el render ni en el servidor, sin estado de React por cuadro.
+- Una sola instancia de Lenis (`components/chrome/SmoothScroll.tsx`), manejada por
+  `gsap.ticker` y avisando a `ScrollTrigger.update`: no crear otra ni otro loop de scroll.
+- Los pins se calculan de arriba hacia abajo: todo pin nuevo lleva `refreshPriority: 0`
+  (con eso ScrollTrigger ordena los refresh por posición en la página); lo que tiene que
+  refrescarse después de todos (el pie) va con `-1`. `anticipatePin` solo con
+  `anticiparPin()` de `@/lib/gsap` (1 en táctiles, 0 con rueda/trackpad: con Lenis,
+  anticipar fija el pin antes de tiempo y salta).
+- Fail-open igual que §5.5: el HTML del servidor trae el estado final visible; sin JS o
+  con `prefers-reduced-motion`, nada fijado ni scrubbeado (versión quieta completa).
 
 ## 7. Lo que el sitio real suma sobre el mockup
 
-1. **Hero con video:** `salguero_navidad.mp4` en loop (`muted loop playsinline autoPlay`),
-   `poster` = frame del video, mismo marco 4:5 del mockup. Con `prefers-reduced-motion`:
-   solo el poster. El video carga lazy; **el poster es el LCP con `priority`.**
+1. **Hero con la secuencia de la caja** (reemplazó al video desde la beta "dopamina"):
+   `HeroSecuencia` fija el hero y el scroll recorre una secuencia de cuadros dibujada en
+   un `<canvas>` (`HeroSecuenciaMotor.ts`, cuadros WebP con alfa en
+   `public/media/secuencia/caja-v4/`) con la tapa en vivo en otro canvas
+   (`HeroSecuenciaTapa.ts`): la caja se abre y los productos suben. Datos y tiempos en
+   `heroSecuencia` (`content/data.ts`). El servidor pinta el primer cuadro con la caja
+   cerrada (LCP); los cuadros se bajan después de `load`. Con `prefers-reduced-motion` o
+   sin JS: versión quieta completa (último cuadro y todos los textos).
 2. **Lenis smooth scroll** global (excepto reduced-motion).
 3. **Preselección + `lib/wa.ts`:** los links "Cotizar X" preseleccionan el `select` Y el
    servicio viaja en el mensaje de WhatsApp. `wa.ts` arma saludo, nombre, contacto,
@@ -100,17 +126,23 @@ Next.js 16 (app router, sin `src/`) + TypeScript + Tailwind v4 (`@theme` en CSS)
    `https://wa.me/5493512300715?text=` + `encodeURIComponent`, abierto con
    `window.open(url, "_blank", "noopener")`. Validación inline en español al blur y al
    submit; labels siempre visibles.
-4. **Contadores** de la tira de confianza (33 reseñas, 15 años), pero inicializados en el
-   valor final para SSR (el HTML servido muestra los números reales).
+4. **Contadores** de la tira de confianza (+15 años y +200 eventos), pero inicializados en
+   el valor final para SSR (el HTML servido muestra los números reales). **La cantidad de
+   reseñas NO se muestra en la página** (pedido de Benjamin, 5/10/2026): la tira dice
+   "5.0 en Google", las cifras del hero "5.0 en Google" y Reseñas, solo el 5.0 y las
+   estrellas; tampoco va en el texto para lectores de pantalla. `site.reviewCount` (hoy 34) va
+   SOLO en el JSON-LD (`components/chrome/JsonLd.tsx`, invisible, para Google), nunca
+   escrita a mano.
 5. **Micro-mejoras permitidas** (sin cambiar layout): transiciones más finas, hover states,
    marquee de galería con `translate3d` pausable, acordeón FAQ con animación de altura.
 
 ## 8. Secciones (9 + footer, en este orden)
 
-1. Hero (video + tira de confianza) · 2. Servicios (4 placas, cada una con su foto
+1. Hero (secuencia de la caja + tira de confianza) · 2. Servicios (4 placas, cada una con su foto
 `servicios-*.jpg`) · 3. Galería (marquee doble con `galeria-01..08`, cada foto con su
 etiqueta) · 4. La cocina de Flor (`flor-trabajando.jpg` recortada cerrada; confirmar
-identidad) · 5. Reseñas (5.0 · 33 · las 4 del mockup por servicio) · 6. Cómo trabajamos
+identidad) · 5. Reseñas (5.0 que cuenta de 0.0 a 5.0 con las estrellas, atado al scroll · sin la
+cantidad de reseñas, que va solo en el JSON-LD · las 4 del mockup por servicio) · 6. Cómo trabajamos
 (4 pasos; paso 4 = delivery, sin retiro) · 7. Banda empresas (eventual, no recurrente) ·
 8. FAQ (6 preguntas; envíos = anillo de Circunvalación) · 9. Cotizador (form + WhatsApp,
 email e Instagram directos) · Footer.

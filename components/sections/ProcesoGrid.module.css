@@ -1,0 +1,298 @@
+/* ==========================================================================
+   Cómo trabajamos · escenario (ProcesoGrid.tsx)
+
+   Una sola maqueta para todos los casos (con o sin JS, con o sin reducir
+   movimiento): la sección ya no se fija, así que el alto es el natural y no
+   hay modos. Una columna con encabezado, mapa y pasos (mobile y tablet).
+   Desde 860px, dos columnas: encabezado y pasos a la izquierda, el mapa a la
+   derecha ocupando el alto de las dos filas (el "cuerpo" se disuelve en la
+   grilla con display: contents).
+   ========================================================================== */
+
+.grilla {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "head"
+    "cuerpo";
+  row-gap: 22px;
+}
+.head {
+  grid-area: head;
+}
+.cuerpo {
+  grid-area: cuerpo;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.mapa {
+  margin: 0;
+}
+/* En una columna (mobile, tablet) la lista no pasa de un ancho de lectura
+   cómodo y va centrada bajo el mapa. En desktop su columna ya es más angosta. */
+.columna {
+  position: relative;
+  width: 100%;
+  max-width: 34rem;
+  margin-inline: auto;
+}
+
+/* Lienzo del mapa, con la proporción del viewBox (400x320). En mobile se
+   limita por alto para que el mapa y los pasos entren juntos en la pantalla
+   (así se ve la cajita viajar y los pasos encenderse a la vez). */
+.lienzo {
+  position: relative;
+  width: 100%;
+  max-width: min(100%, calc(40svh * 1.25));
+  aspect-ratio: 400 / 320;
+  margin-inline: auto;
+}
+/* Teléfonos bajos (375x667 y parecidos): el mapa baja a 30svh y la columna se
+   aprieta, así el mapa y los 4 pasos entran juntos en unos 600px y el paso 04
+   se ve encenderse cuando llega la cajita. */
+@media (max-width: 859.98px) and (max-height: 700px) {
+  .lienzo {
+    max-width: min(100%, calc(30svh * 1.25));
+  }
+  .cuerpo {
+    gap: 14px;
+  }
+}
+/* Tablet en vertical: sobra alto, el mapa puede crecer. */
+@media (min-width: 600px) and (max-width: 859.98px) and (min-height: 900px) {
+  .lienzo {
+    max-width: min(100%, calc(44svh * 1.25));
+  }
+}
+@media (min-width: 860px) {
+  .lienzo {
+    max-width: min(100%, calc((100vh - var(--nav-h) - 96px) * 1.25));
+  }
+}
+
+@media (min-width: 860px) {
+  .grilla {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      "head mapa"
+      "pasos mapa";
+    column-gap: clamp(40px, 6vw, 96px);
+    row-gap: 0;
+  }
+  .cuerpo {
+    display: contents;
+  }
+  .mapa {
+    grid-area: mapa;
+    align-self: center;
+  }
+  .columna {
+    grid-area: pasos;
+  }
+}
+
+/* ---------- Mapa ---------- */
+
+.svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+/* El mapa que se anima (DrawSVG, la cajita, el vapor) es capa propia solo con
+   la escena cerca (capaActiva pone data-capa en la escena): redibujarlo no
+   vuelve a rasterizar la trama de puntos, que va en otro SVG quieto debajo. */
+.escena[data-capa] .svgVivo {
+  will-change: transform;
+}
+
+/* Etiquetas del mapa: texto HTML sobre el SVG (mantienen su tamaño a
+   cualquier ancho del mapa). Posiciones en % del viewBox. */
+.etq {
+  position: absolute;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--color-crema-dim);
+  white-space: nowrap;
+  pointer-events: none;
+}
+/* Debajo y a la derecha de la cocina (100,238): el tramo inicial de la ruta
+   va por arriba de la etiqueta. */
+.etqCocina {
+  left: calc((96 / 400) * 100%);
+  top: calc((257 / 320) * 100%);
+}
+/* Arriba de la oficina (292,138), centrada, por encima del halo. En crema:
+   arranca tenue y se enciende al llegar la cajita. */
+.etqOficina {
+  left: calc((292 / 400) * 100%);
+  top: calc((109 / 320) * 100%);
+  translate: -50% -100%;
+  color: var(--color-crema);
+}
+/* Número de cada estación (02 y 03), afuera de la esquina de la ruta. */
+.etqEstacion {
+  font-size: 10px;
+  color: var(--color-crema);
+  letter-spacing: 0.1em;
+}
+.etqEstacion1 {
+  left: calc((183 / 400) * 100%);
+  top: calc((227 / 320) * 100%);
+  translate: -100% -100%;
+}
+.etqEstacion2 {
+  left: calc((189 / 400) * 100%);
+  top: calc((143.3 / 320) * 100%);
+  translate: -100% -50%;
+}
+/* Sobre el anillo, abajo: una plaquita con el fondo tapa el trazo, como el
+   nombre de una ruta en un mapa. */
+.etqAnillo {
+  left: calc((176 / 400) * 100%);
+  top: calc((299 / 320) * 100%);
+  translate: -50% -50%;
+  padding: 4px 9px 4px 10px;
+  border: 1px solid var(--color-hairline);
+  border-radius: 999px;
+  background: var(--color-bg);
+  font-size: 10px;
+}
+
+/* ---------- Pasos: un riel con un nodo por paso ---------- */
+
+.pasos {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Grilla del paso: número | nodo | texto. El nodo se alinea con la primera
+   línea del título (--nodo-y es su centro). */
+.paso {
+  --col-num: 34px;
+  --col-nodo: 11px;
+  --gap: 12px;
+  --linea: 22px;
+  --nodo-y: calc(var(--linea) / 2);
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--col-num) var(--col-nodo) minmax(0, 1fr);
+  column-gap: var(--gap);
+  padding-bottom: 18px;
+}
+.paso:last-child {
+  padding-bottom: 0;
+}
+/* Teléfonos bajos: pasos más juntos (ver .lienzo) y, con el mapa más chico,
+   "Cocina de Salguero" un poco más compacta para no cruzar el anillo. */
+@media (max-width: 859.98px) and (max-height: 700px) {
+  .etqCocina {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+  }
+  .paso {
+    padding-bottom: 12px;
+  }
+  .paso:last-child {
+    padding-bottom: 0;
+  }
+}
+@media (min-width: 860px) {
+  .paso {
+    --col-num: 46px;
+    --col-nodo: 11px;
+    --gap: 16px;
+    --linea: 24px;
+    padding-bottom: 26px;
+  }
+}
+
+.num {
+  display: block;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 1.5rem;
+  line-height: var(--linea);
+  color: var(--color-amarillo);
+  font-variant-numeric: lining-nums;
+}
+@media (min-width: 860px) {
+  .num {
+    font-size: 1.8rem;
+  }
+}
+
+.nodo {
+  position: relative;
+  width: var(--col-nodo);
+  height: var(--col-nodo);
+  margin-top: calc(var(--nodo-y) - var(--col-nodo) / 2);
+  border-radius: 50%;
+  background: var(--color-bg);
+  box-shadow: inset 0 0 0 1px rgba(245, 238, 224, 0.38);
+}
+.punto {
+  position: absolute;
+  inset: 2.5px;
+  border-radius: 50%;
+  background: var(--color-crema);
+}
+/* El último nodo (la entrega) se enciende en ámbar, como la oficina. */
+.puntoFinal {
+  background: var(--color-amarillo);
+}
+
+/* Tramo del riel: del nodo de este paso al del siguiente (4px de aire en cada
+   punta). El paso no tiene margen: el 100% de su alto llega justo al paso de
+   abajo. El relleno crema se llena con la cajita. */
+.tramo {
+  position: absolute;
+  left: calc(var(--col-num) + var(--gap) + var(--col-nodo) / 2 - 0.5px);
+  top: calc(var(--nodo-y) + var(--col-nodo) / 2 + 4px);
+  width: 1px;
+  height: calc(100% - var(--col-nodo) - 8px);
+  background: var(--color-hairline);
+  pointer-events: none;
+}
+.tramoLleno {
+  position: absolute;
+  inset: 0;
+  background: var(--color-crema);
+  opacity: 0.55;
+  transform-origin: 50% 0;
+}
+
+.texto {
+  min-width: 0;
+}
+.titulo {
+  margin: 0 0 3px;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: var(--linea);
+  color: var(--color-crema);
+  text-wrap: balance;
+}
+.desc {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--color-crema-dim);
+  text-wrap: pretty;
+}
+@media (min-width: 860px) {
+  .titulo {
+    font-size: 17px;
+  }
+  .desc {
+    font-size: 14.5px;
+  }
+}

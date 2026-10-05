@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Lo archivado (código sin uso, reversible): ni lint ni tsc lo miran.
+    "_assets/**",
   ]),
 ]);
 

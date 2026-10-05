@@ -1,0 +1,31 @@
+/* Estrella de 5 puntas recortada con clip-path: el "riel" (hairline) queda
+   debajo y el relleno amarillo arriba. El relleno está lleno por defecto
+   (fail-open); quien anima lo escala en X desde la izquierda. */
+.estrella {
+  position: relative;
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: var(--color-hairline);
+  clip-path: polygon(
+    50% 4.8%,
+    62% 38.2%,
+    97.6% 39.3%,
+    69.5% 61.1%,
+    79.4% 95.2%,
+    50% 75.3%,
+    20.6% 95.2%,
+    30.5% 61.1%,
+    2.4% 39.3%,
+    38% 38.2%
+  );
+}
+
+.relleno {
+  position: absolute;
+  inset: 0;
+  background: var(--color-amarillo);
+  transform-origin: 0 50%;
+}

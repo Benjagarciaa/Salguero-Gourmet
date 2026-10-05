@@ -44,3 +44,19 @@ next-env.d.ts
 # The compressed, web-ready versions live in public/media (added in FASE 2).
 _assets/*.mp4
 _assets/*.mp4.mp4
+
+# Salguero (beta dopamina): fuentes pesadas locales (videos y fotos originales
+# de donde salen las secuencias y los videos de las escenas). No van al repo.
+_assets/contenido/
+# Media que la beta dejó de usar (secuencias viejas del hero), fuera de public/
+# hasta que Benjamin apruebe borrarla. Ver PENDIENTES.md.
+_assets/beta-sin-uso/
+# Lo archivado (código y media sin uso, movido fuera de public/ y de components/
+# para poder volver atrás): ni git ni Tailwind lo miran. Lo que ya estaba
+# trackeado se movió con `git mv` y sigue trackeado. Incluye
+# media/secuencia/caja-v4, la fuente de la secuencia del hero (caja-v6).
+_assets/archivo/
+_assets/caja-provisoria/
+
+# Recortes en alta de los productos (material para redes, no los usa la web)
+_assets/productos-recortes/

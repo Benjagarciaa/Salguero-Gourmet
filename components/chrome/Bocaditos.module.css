@@ -1,0 +1,45 @@
+/* Bocaditos que caen (Bocaditos.tsx): capa fija decorativa.
+   z-index -5: por encima del fondo ambiental (.ambient, -10) y por debajo de todo
+   el contenido en flujo (secciones, placas y textos pintan encima). `overflow:
+   hidden` recorta las piezas que asoman del borde: nunca generan scroll
+   horizontal. Solo se mueven con transform y opacity (lo maneja el ticker de
+   GSAP, sin re-renders de React). El desenfoque de las piezas de fondo viene
+   hecho en la imagen: acá no hay ningún filter: blur. */
+.capa {
+  position: fixed;
+  inset: 0;
+  z-index: -5;
+  overflow: hidden;
+  pointer-events: none;
+  contain: layout paint;
+  opacity: 0;
+}
+
+.pieza {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  user-select: none;
+}
+
+/* Capa de GPU solo para las piezas vivas (opacidad mayor que 0): el loop pone
+   y saca `data-viva` al cruzar 0. Las apagadas no son capa ni se pintan. */
+.pieza[data-viva] {
+  will-change: transform, opacity;
+}
+
+.img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  -webkit-user-drag: none;
+}
+
+/* Piezas cercanas: una sombra de contacto sin desplazamiento (no depende de la
+   rotación) que las despega del fondo. Estática: el filtro se rasteriza una vez
+   y la pieza se mueve como capa. */
+.cerca {
+  filter: drop-shadow(0 0 14px rgba(0, 0, 0, 0.55));
+}

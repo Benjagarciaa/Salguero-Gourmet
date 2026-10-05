@@ -1,0 +1,63 @@
+/* Wordmark grande del pie (FooterMarca.tsx). Ocupa exactamente el ancho del
+   Container: el tamaño de letra sale del ancho de la caja (unidades cqw), así
+   que no depende de la barra de scroll ni de breakpoints. */
+.caja {
+  container-type: inline-size;
+}
+
+.marca {
+  margin: 0;
+}
+
+.fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.3em;
+  /* Respaldo sin container queries; con soporte, el renglón llena la caja. */
+  font-size: clamp(26px, 7.4vw, 88px);
+  font-size: calc(100cqw / 13.5);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  color: var(--color-crema);
+  white-space: nowrap;
+  user-select: none;
+}
+
+/* Capas de GPU solo cuando algo se mueve: el renglón mientras el pie está cerca
+   (capaActiva pone [data-capa] en .caja) y las letras y la cuchara mientras
+   dura la entrada ([data-animando]). Antes eran permanentes: una capa por letra
+   durante toda la página. */
+.caja[data-capa] .fila,
+.caja[data-animando] .letra,
+.caja[data-animando] .cuchara {
+  will-change: transform;
+}
+
+/* Máscara de cada palabra: las letras suben desde abajo de esta línea. El
+   padding vertical evita recortar el trazo en reposo. */
+.palabra {
+  display: inline-flex;
+  overflow: clip;
+  padding-block: 0.1em;
+  margin-block: -0.1em;
+}
+/* El tracking deja aire después de la última letra: se compensa para que el
+   renglón quede alineado con el borde derecho del contenido. */
+.palabra:last-child {
+  margin-right: -0.14em;
+}
+
+.letra {
+  display: inline-block;
+}
+
+.cuchara {
+  display: block;
+  flex: none;
+  height: 1.45em;
+  width: auto;
+  transform-origin: 50% 20%;
+}

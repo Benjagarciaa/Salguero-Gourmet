@@ -1,0 +1,85 @@
+/* ==========================================================================
+ * FAQ · acordeón. La apertura y el cierre los anima GSAP (Faq.tsx: alto del
+ * cuerpo + fundido del texto); acá quedan el ícono, la línea y los hovers.
+ * Sin JS o con reducir movimiento, <details> abre y cierra nativo.
+ * ========================================================================== */
+
+/* El ancla #faq llega justo debajo del nav, sin los 6px de aire del resto de
+   las secciones (globals.css). Nació cuando arriba iba Empresas (las palabras
+   gigantes asomaban como una franja entre el nav y la sección); hoy arriba va
+   Cómo trabajamos y se mantiene para que "Preguntas" aterrice igual que
+   siempre. */
+.seccion {
+  scroll-margin-top: var(--nav-h);
+}
+
+.item {
+  position: relative;
+}
+
+/* Divisoria fina: se "dibuja" de izquierda a derecha al entrar (Faq.tsx). */
+.linea {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--color-hairline);
+  transform-origin: left center;
+  pointer-events: none;
+}
+
+/* Hover y entrada con la física del sitio (tokens de globals.css). */
+.pregunta {
+  transition: transform var(--duracion-resorte) var(--ease-resorte);
+}
+
+/* "+" que se vuelve "−": la barra vertical se acuesta y el círculo da media
+   vuelta. Solo transform. */
+.icono {
+  position: relative;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--color-hairline);
+  border-radius: 999px;
+  transition:
+    transform var(--duracion-resorte-lento) var(--ease-resorte-lento),
+    border-color 0.25s ease;
+}
+.icono::before,
+.icono::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 12px;
+  height: 1.5px;
+  margin: -0.75px 0 0 -6px;
+  border-radius: 1px;
+  background: var(--color-amarillo);
+  transition: transform var(--duracion-resorte-lento) var(--ease-resorte-lento);
+}
+.icono::after {
+  transform: rotate(90deg);
+}
+.det[open]:not([data-estado="cerrando"]) .icono {
+  transform: rotate(180deg);
+  border-color: rgb(233 188 79 / 0.45);
+}
+.det[open]:not([data-estado="cerrando"]) .icono::after {
+  transform: rotate(0deg);
+}
+
+@media (hover: hover) {
+  .resumen:hover .pregunta {
+    transform: translate3d(4px, 0, 0);
+  }
+  .resumen:hover .icono {
+    border-color: rgb(233 188 79 / 0.6);
+  }
+}
+
+/* El alto lo anima GSAP; el texto nunca asoma fuera de él. */
+.cuerpo {
+  overflow: hidden;
+}

@@ -1,87 +1,69 @@
-import Image from "next/image";
-import { Container } from "@/components/ui/Section";
 import { Kicker } from "@/components/ui/Kicker";
 import { Etiqueta } from "@/components/ui/Etiqueta";
 import { Pill } from "@/components/ui/Pill";
 import { Counter } from "@/components/ui/Counter";
-import { Entrada } from "@/components/ui/Entrada";
-import { Parallax } from "@/components/ui/Parallax";
 import { TitleEm } from "@/components/ui/TitleEm";
-import { HeroVideo } from "./HeroVideo";
-import { hero } from "@/content/data";
+import { HeroSecuencia } from "./HeroSecuencia";
+import { hero, heroSecuencia } from "@/content/data";
 
+/**
+ * Hero "escenario": la caja como protagonista, centrada y a todo el alto, con
+ * los textos por momentos alrededor (HeroSecuencia arma el <header>, el pin, el
+ * marco y el resto de los momentos). Acá va el momento 1, que se renderiza en
+ * el servidor y es visible sin JS: kicker, h1, bajada (larga en desktop y en la
+ * versión quieta, corta arriba del marco en mobile), los dos botones y la
+ * confianza con sus contadores.
+ */
 export function Hero() {
+  const corta = heroSecuencia.inicio.bajadaCorta;
+
   return (
-    <header
-      id="inicio"
-      className="pb-[32px] pt-[44px] min-[860px]:pb-[72px] min-[860px]:pt-[60px]"
-    >
-      <Container className="grid items-center gap-9 min-[860px]:grid-cols-[1.15fr_0.75fr] min-[860px]:gap-14">
-        <div>
-          {/* Entrada coreografiada por bloques enteros (el título no se parte:
-              no interferir con el shimmer de TitleEm). */}
-          <Entrada>
-            <Kicker>{hero.kicker}</Kicker>
-          </Entrada>
-          <Entrada delay={0.08}>
-            <h1 className="mb-4 mt-[18px] font-display text-[clamp(2.6rem,5.6vw,4.2rem)] font-medium leading-[1.08] text-crema">
-              {hero.title.pre}
-              <br />
-              <TitleEm>{hero.title.em}</TitleEm>
-              {hero.title.post}
-            </h1>
-          </Entrada>
-          <Entrada delay={0.18}>
-            <p className="mb-7 max-w-[46ch] text-crema-dim">
+    <HeroSecuencia
+      inicio={
+        <>
+          <Kicker className="hs-kicker">{hero.kicker}</Kicker>
+          {/* El título no se parte: no interferir con el shimmer de TitleEm. */}
+          <h1 className="hs-titulo font-display font-medium text-crema">
+            {hero.title.pre}
+            <br />
+            <TitleEm>{hero.title.em}</TitleEm>
+            {hero.title.post}
+          </h1>
+          <p className="hs-bajada text-crema-dim">
+            <span className="hs-bajada-larga">
               {hero.sub.pre}
               <strong className="font-medium text-crema">
                 {hero.sub.strong}
               </strong>
               {hero.sub.post}
-            </p>
-          </Entrada>
-          <Entrada delay={0.26}>
-            <div className="flex flex-wrap gap-3">
-              <Pill href={hero.ctas.primary.href}>
-                {hero.ctas.primary.label}
-              </Pill>
-              <Pill variant="fantasma" href={hero.ctas.ghost.href}>
-                {hero.ctas.ghost.label}
-              </Pill>
-            </div>
-          </Entrada>
-          <Entrada delay={0.34}>
-            <div className="mt-7 flex flex-col gap-2 min-[560px]:mt-[34px] min-[560px]:flex-row min-[560px]:flex-wrap min-[560px]:gap-x-7 min-[560px]:gap-y-3">
-              {hero.trust.map((item, i) => (
-                <Etiqueta key={i}>
-                  {item.before}
-                  {item.count != null ? (
-                    <b className="font-bold">
-                      <Counter to={item.count} />
-                    </b>
-                  ) : null}
-                  {item.after}
-                </Etiqueta>
-              ))}
-            </div>
-          </Entrada>
-        </div>
-
-        <Parallax className="order-first w-full max-w-[400px] justify-self-center min-[860px]:order-none min-[860px]:justify-self-end">
-          <div className="relative aspect-[4/5] overflow-hidden rounded-[10px] border border-hairline">
-            <Image
-              src={hero.media.poster}
-              alt={hero.media.alt}
-              fill
-              priority
-              fetchPriority="high"
-              sizes="(max-width: 860px) 90vw, 400px"
-              className="object-cover"
-            />
-            <HeroVideo src={hero.media.video} />
+            </span>
+            <span className="hs-bajada-corta">
+              {corta.pre}
+              <strong className="font-medium text-crema">{corta.strong}</strong>
+              {corta.post}
+            </span>
+          </p>
+          <div className="hs-botones flex flex-wrap gap-3">
+            <Pill href={hero.ctas.primary.href}>
+              {hero.ctas.primary.label}
+            </Pill>
+            <Pill variant="fantasma" href={hero.ctas.ghost.href}>
+              {hero.ctas.ghost.label}
+            </Pill>
           </div>
-        </Parallax>
-      </Container>
-    </header>
+        </>
+      }
+      confianza={hero.trust.map((item, i) => (
+        <Etiqueta key={i}>
+          {item.before}
+          {item.count != null ? (
+            <b className="font-bold">
+              <Counter to={item.count} />
+            </b>
+          ) : null}
+          {item.after}
+        </Etiqueta>
+      ))}
+    />
   );
 }

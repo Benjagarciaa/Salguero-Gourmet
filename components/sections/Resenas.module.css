@@ -1,0 +1,105 @@
+/* Reseñas. Sin atributo data-rs (SSR, sin JS) y en "quieto" (reducir
+   movimiento) todo queda en flujo normal y visible: encabezado con el 5.0 y
+   las cuatro cartas en grilla. Los modos con escena solo agregan geometría;
+   nada arranca oculto desde este CSS. */
+
+.escenario,
+.cabeza {
+  position: relative;
+}
+
+/* Escena completa (desktop donde entra todo): el escenario ocupa el alto útil
+   debajo del nav y centra encabezado y mazo. Recorta lo que cae fuera (el mazo
+   espera debajo del borde hasta que sube). */
+.seccion[data-rs="escena"] .escenario {
+  height: calc(100svh - var(--rs-nav, var(--nav-h)));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-block: 20px;
+  overflow: clip;
+}
+
+/* Botón del final ("Pedir presupuesto", L6), fuera del escenario. El mismo
+   aire debajo de las cartas en todos los modos.
+   En la escena, el escenario centra el contenido en el alto útil y deja
+   debajo de la grilla la mitad de lo que sobra (crece con el alto de la
+   pantalla): el botón sube eso (--rs-contenido lo mide Resenas.tsx) y la
+   sección se acorta lo mismo. Con top + margin-bottom y no con un margin-top
+   negativo: ese se fundiría con el margen negativo que la costura le pone al
+   pin (dos márgenes negativos no se suman, gana el mayor). Sin la medida
+   (fallback 100svh) el aire queda algo más grande, nunca más chico. */
+.cta {
+  --rs-cta-aire: 40px;
+  margin-top: var(--rs-cta-aire);
+}
+@media (min-width: 760px) {
+  .cta {
+    --rs-cta-aire: 48px;
+  }
+}
+.seccion[data-rs="escena"] .cta {
+  --rs-cta-sube: calc(
+    (100svh - var(--rs-nav, var(--nav-h)) - var(--rs-contenido, 100svh)) / -2
+  );
+  position: relative;
+  top: var(--rs-cta-sube);
+  margin-bottom: var(--rs-cta-sube);
+}
+
+/* Sombra de la carta mientras está "en la mano" (en el mazo o volando). En
+   reposo no se ve: es decoración, la carta en sí nunca se oculta. */
+.sombra {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  pointer-events: none;
+  opacity: 0;
+  box-shadow:
+    0 28px 56px -18px rgb(0 0 0 / 0.62),
+    0 10px 22px -10px rgb(0 0 0 / 0.5);
+}
+
+/* Capas de GPU solo mientras la escena está cerca (capaActiva pone
+   data-capa): las cartas se mueven con transform 2D (quickSetter de GSAP) y
+   sin capa propia el navegador volvía a rasterizar la carta entera (texto y
+   borde) en cada cuadro; sombra y dorso solo cambian de opacidad. La pila
+   gigante queda fuera a propósito: va con force3D false para que el 5.0
+   escalado se vea nítido. */
+.seccion[data-rs="mazo"][data-capa] [data-rs-carta],
+.seccion[data-rs="escena"][data-capa] [data-rs-carta] {
+  will-change: transform;
+}
+.seccion[data-rs][data-capa] .sombra,
+.seccion[data-rs][data-capa] .velo {
+  will-change: opacity;
+}
+
+/* Dorso de la carta: tapa la cara mientras la carta está debajo de otra en el
+   mazo (asoman bordes lisos, no pedazos de texto). Solo lo enciende el modo
+   mazo con opacity; en reposo, sin JS y en los demás modos no se ve. */
+.velo {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  border: 1px solid var(--color-hairline);
+  background: var(--color-surface);
+  pointer-events: none;
+  opacity: 0;
+}
+
+/* "Ver perfil de Google" con teclado: la escena lo muestra recién al final
+   (opacidad); si recibe foco antes, se ve entero y toma clicks. !important le
+   gana al estilo en línea de GSAP. El foco además lleva el scroll al punto
+   armado (enfocarPerfil, Resenas.tsx); por si el 5.0 gigante todavía lo pisa
+   (el cuadro previo al salto), el link va por encima y con fondo propio. */
+.seccion [data-rs-perfil]:focus-within {
+  position: relative;
+  z-index: 2;
+  opacity: 1 !important;
+  transform: none !important;
+  pointer-events: auto !important;
+}
+.seccion [data-rs-perfil]:focus-within > a {
+  background-color: var(--color-bg);
+}

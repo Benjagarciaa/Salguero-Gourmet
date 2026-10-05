@@ -1,4 +1,4 @@
-import { contacto } from "@/content/data";
+import { contacto, cotizador } from "@/content/data";
 
 export interface QuoteForm {
   nombre: string;
@@ -17,19 +17,23 @@ function formatFecha(iso?: string): string | null {
   return `${m[3]}/${m[2]}/${m[1]}`;
 }
 
-/** Arma el mensaje de WhatsApp con el pedido de presupuesto. */
+/**
+ * Arma el mensaje de WhatsApp con el pedido de presupuesto. El texto (saludo,
+ * nombres de los datos y cierre) vive en content/data.ts (cotizador.whatsapp).
+ */
 export function buildWhatsappMessage(f: QuoteForm): string {
+  const t = cotizador.whatsapp;
   const lines: string[] = [
-    "¡Hola Salguero Gourmet! Quiero pedir un presupuesto.",
+    t.saludo,
     "",
-    `Nombre: ${f.nombre.trim()}`,
-    `Contacto: ${f.contacto.trim()}`,
-    `Servicio: ${f.servicio.trim()}`,
+    `${t.nombre}: ${f.nombre.trim()}`,
+    `${t.contacto}: ${f.contacto.trim()}`,
+    `${t.servicio}: ${f.servicio.trim()}`,
   ];
   const fecha = formatFecha(f.fecha);
-  if (fecha) lines.push(`Fecha del evento: ${fecha}`);
-  if (f.personas?.trim()) lines.push(`Cantidad de personas: ${f.personas.trim()}`);
-  lines.push("", f.descripcion.trim(), "", "¡Gracias!");
+  if (fecha) lines.push(`${t.fecha}: ${fecha}`);
+  if (f.personas?.trim()) lines.push(`${t.personas}: ${f.personas.trim()}`);
+  lines.push("", f.descripcion.trim(), "", t.cierre);
   return lines.join("\n");
 }
 

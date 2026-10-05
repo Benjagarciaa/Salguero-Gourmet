@@ -15,6 +15,7 @@ import { buildWhatsappUrl, type QuoteForm } from "@/lib/wa";
 import { cotizador, isPlaceholder } from "@/content/data";
 
 const fields = cotizador.form.fields;
+const ayudaEnvio = cotizador.form.ayudaEnvio;
 type ReqKey = "nombre" | "contacto" | "descripcion";
 const REQUIRED: ReqKey[] = ["nombre", "contacto", "descripcion"];
 
@@ -38,10 +39,19 @@ const CONTACTO_INVALIDO =
 // anti-bots que los humanos nunca ven (siempre viaja vacío).
 function enviarLeadAlPanel(f: QuoteForm) {
   try {
-    const url =
-      window.location.hostname === "localhost"
+    // Solo el sitio publicado avisa al panel de producción. En desarrollo va al
+    // panel local (aunque se abra desde el celular en 192.168.x.x) y en una
+    // vista previa de Vercel o en un `next start` local no se avisa a nadie:
+    // una prueba del formulario nunca puede crear un lead real.
+    const host = window.location.hostname;
+    const publicado =
+      host === "salguerogourmet.com" || host === "www.salguerogourmet.com";
+    const url = publicado
+      ? "https://admin.salguerogourmet.com/api/leads"
+      : process.env.NODE_ENV !== "production"
         ? "http://localhost:3001/api/leads"
-        : "https://admin.salguerogourmet.com/api/leads";
+        : null;
+    if (!url) return;
     void fetch(url, {
       method: "POST",
       keepalive: true,
@@ -66,7 +76,9 @@ export function Cotizador() {
   const [values, setValues] = useState<QuoteForm>({
     nombre: "",
     contacto: "",
-    servicio: cotizador.form.servicioOptions[0],
+    // Si al montar ya hay un servicio preseleccionado, arranca con ese (lo que
+    // antes hacía el efecto en su primera corrida).
+    servicio: servicio ?? cotizador.form.servicioOptions[0],
     fecha: "",
     personas: "",
     descripcion: "",
@@ -74,10 +86,19 @@ export function Cotizador() {
   const [errors, setErrors] = useState<Partial<Record<ReqKey, string>>>({});
   const [touched, setTouched] = useState<Partial<Record<ReqKey, boolean>>>({});
 
-  // Preselección desde los links "Cotizar X": setea el servicio y hace flash del select.
+  // Preselección desde los links "Cotizar X": cada vez que cambia el pedido
+  // (servicio o nonce) se setea el servicio del formulario. Se ajusta durante
+  // el render (patrón de React para "estado que depende de otro estado") en vez
+  // de un setState dentro de un efecto, que dispara un render en cascada.
+  const [preseleccion, setPreseleccion] = useState({ servicio, nonce });
+  if (preseleccion.servicio !== servicio || preseleccion.nonce !== nonce) {
+    setPreseleccion({ servicio, nonce });
+    if (servicio) setValues((v) => ({ ...v, servicio }));
+  }
+
+  // ...y el flash del select (DOM, fuera de React) queda en el efecto.
   useEffect(() => {
     if (!servicio) return;
-    setValues((v) => ({ ...v, servicio }));
     const el = document.querySelector<HTMLElement>(
       "#cotizar [data-servicio-trigger]",
     );
@@ -121,7 +142,23 @@ export function Cotizador() {
         `#cotizar [name="${firstBad}"]`,
       );
       if (el) {
-        el.focus();
+        // Foco sin el salto del navegador (lo dejaba justo debajo del borde
+        // de arriba, tapado por el nav, o fuera de pantalla) y el campo al
+        // centro. Dos cuadros después: al abrir los errores, motion mide su
+        // alto y restaura el scroll con un scrollTo instantáneo, que cortaba
+        // el scroll suave si ya había arrancado.
+        el.focus({ preventScroll: true });
+        const quieto = window.matchMedia(
+          "(prefers-reduced-motion: reduce)",
+        ).matches;
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() =>
+            el.scrollIntoView({
+              block: "center",
+              behavior: quieto ? "auto" : "smooth",
+            }),
+          ),
+        );
         // Sacudida de rechazo (mismo patrón que .flash: reflow para reiniciar).
         el.classList.remove("shake");
         void el.offsetWidth;
@@ -134,120 +171,147 @@ export function Cotizador() {
   };
 
   return (
-    <Section id="cotizar" flush>
-      <SectionHead
-        kicker={cotizador.head.kicker}
-        title={cotizador.head.title}
-        description={cotizador.head.intro}
-      />
-      <div className="grid gap-9 min-[860px]:grid-cols-[1.15fr_0.85fr] min-[860px]:gap-[52px]">
-        {/* Cascada corta campo por campo (cada fila con su propio Reveal
+    <>
+      <Section id="cotizar" flush>
+        <SectionHead
+          kicker={cotizador.head.kicker}
+          title={cotizador.head.title}
+          description={cotizador.head.intro}
+        />
+        <div className="grid gap-9 min-[860px]:grid-cols-[1.15fr_0.85fr] min-[860px]:gap-[52px]">
+          {/* Cascada corta campo por campo (cada fila con su propio Reveal
             fail-open) que guía el ojo hacia el botón de WhatsApp. */}
-        <form onSubmit={onSubmit} noValidate>
-          <Reveal y={14} duration={0.6} className="grid gap-x-[14px] sm:grid-cols-2">
-            <Field
-              label={fields.nombre.label}
-              required
-              name="nombre"
-              autoComplete="name"
-              placeholder={fields.nombre.placeholder}
-              value={values.nombre}
-              onChange={(e) => setField("nombre", e.target.value)}
-              onBlur={() => handleBlur("nombre")}
-              error={touched.nombre ? errors.nombre : undefined}
-            />
-            <Field
-              label={fields.contacto.label}
-              required
-              name="contacto"
-              placeholder={fields.contacto.placeholder}
-              value={values.contacto}
-              onChange={(e) => setField("contacto", e.target.value)}
-              onBlur={() => handleBlur("contacto")}
-              error={touched.contacto ? errors.contacto : undefined}
-            />
-          </Reveal>
-          <Reveal y={14} duration={0.6} delay={0.06}>
-            <CustomSelect
-              label={fields.servicio.label}
-              required
-              name="servicio"
-              options={cotizador.form.servicioOptions}
-              value={values.servicio}
-              onChange={(v) => setField("servicio", v)}
-            />
-          </Reveal>
-          <Reveal
-            y={14}
-            duration={0.6}
-            delay={0.12}
-            className="grid gap-x-[14px] sm:grid-cols-2"
-          >
-            <CustomDate
-              label={fields.fecha.label}
-              name="fecha"
-              value={values.fecha}
-              onChange={(v) => setField("fecha", v)}
-            />
-            <NumberStepper
-              label={fields.personas.label}
-              name="personas"
-              min={1}
-              placeholder={fields.personas.placeholder}
-              value={values.personas}
-              onChange={(v) => setField("personas", v)}
-            />
-          </Reveal>
-          <Reveal y={14} duration={0.6} delay={0.18}>
-            <TextArea
-              label={fields.descripcion.label}
-              required
-              name="descripcion"
-              placeholder={fields.descripcion.placeholder}
-              value={values.descripcion}
-              onChange={(e) => setField("descripcion", e.target.value)}
-              onBlur={() => handleBlur("descripcion")}
-              error={touched.descripcion ? errors.descripcion : undefined}
-            />
-          </Reveal>
-          <Reveal y={14} duration={0.6} delay={0.24}>
-            <Pill type="submit">{cotizador.form.submitLabel}</Pill>
-          </Reveal>
-        </form>
+          <form onSubmit={onSubmit} noValidate>
+            <Reveal
+              y={14}
+              duration={0.6}
+              className="grid gap-x-[14px] sm:grid-cols-2"
+            >
+              <Field
+                label={fields.nombre.label}
+                required
+                name="nombre"
+                autoComplete="name"
+                placeholder={fields.nombre.placeholder}
+                value={values.nombre}
+                onChange={(e) => setField("nombre", e.target.value)}
+                onBlur={() => handleBlur("nombre")}
+                error={touched.nombre ? errors.nombre : undefined}
+              />
+              <Field
+                label={fields.contacto.label}
+                required
+                name="contacto"
+                placeholder={fields.contacto.placeholder}
+                value={values.contacto}
+                onChange={(e) => setField("contacto", e.target.value)}
+                onBlur={() => handleBlur("contacto")}
+                error={touched.contacto ? errors.contacto : undefined}
+              />
+            </Reveal>
+            {/* z: la lista abierta (y el calendario, en la fila de abajo)
+              pinta sobre las filas siguientes aun durante la entrada, cuando
+              cada Reveal tiene su transform (contexto de apilamiento). */}
+            <Reveal
+              y={14}
+              duration={0.6}
+              delay={0.06}
+              className="relative z-30"
+            >
+              <CustomSelect
+                label={fields.servicio.label}
+                required
+                name="servicio"
+                options={cotizador.form.servicioOptions}
+                value={values.servicio}
+                onChange={(v) => setField("servicio", v)}
+              />
+            </Reveal>
+            <Reveal
+              y={14}
+              duration={0.6}
+              delay={0.12}
+              className="relative z-20 grid gap-x-[14px] sm:grid-cols-2"
+            >
+              <CustomDate
+                label={fields.fecha.label}
+                ayuda={fields.fecha.ayuda}
+                name="fecha"
+                value={values.fecha}
+                onChange={(v) => setField("fecha", v)}
+              />
+              <NumberStepper
+                label={fields.personas.label}
+                name="personas"
+                min={1}
+                placeholder={fields.personas.placeholder}
+                value={values.personas}
+                onChange={(v) => setField("personas", v)}
+              />
+            </Reveal>
+            <Reveal y={14} duration={0.6} delay={0.18}>
+              <TextArea
+                label={fields.descripcion.label}
+                required
+                name="descripcion"
+                placeholder={fields.descripcion.placeholder}
+                value={values.descripcion}
+                onChange={(e) => setField("descripcion", e.target.value)}
+                onBlur={() => handleBlur("descripcion")}
+                error={touched.descripcion ? errors.descripcion : undefined}
+              />
+            </Reveal>
+            <Reveal y={14} duration={0.6} delay={0.24}>
+              <Pill type="submit">{cotizador.form.submitLabel}</Pill>
+              {/* Ayuda por si el navegador no abre WhatsApp (L4). */}
+              <p className="mt-3 text-[12.5px] leading-[1.45] text-crema-dim">
+                {ayudaEnvio.pre}
+                <a
+                  href={ayudaEnvio.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="whitespace-nowrap font-medium text-crema underline decoration-crema-dim/50 underline-offset-[3px] transition-colors hover:text-amarillo hover:decoration-amarillo"
+                >
+                  {ayudaEnvio.numero}
+                </a>
+              </p>
+            </Reveal>
+          </form>
 
-        <Reveal delay={0.1} className="self-start">
-        <aside className="flex flex-col gap-5 self-start rounded-lg border border-hairline bg-surface p-7 sm:p-8">
-          <h3 className="font-display text-[1.3rem] font-medium text-crema">
-            {cotizador.aside.title}
-          </h3>
-          {cotizador.aside.datos.map((d) => {
-            const external = d.href?.startsWith("http");
-            return (
-              <div key={d.label} className="flex flex-col gap-[3px]">
-                <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-crema-dim">
-                  {d.label}
-                </span>
-                {d.href ? (
-                  <a
-                    href={d.href}
-                    target={external ? "_blank" : undefined}
-                    rel={external ? "noopener noreferrer" : undefined}
-                    className="text-[16.5px] font-medium text-crema hover:text-amarillo"
-                  >
-                    {d.value}
-                  </a>
-                ) : (
-                  <span className="text-[16.5px] font-medium text-crema-dim">
-                    {isPlaceholder(d.value) ? "A confirmar" : d.value}
-                  </span>
-                )}
-              </div>
-            );
-          })}
-          <Etiqueta>{cotizador.aside.etiqueta}</Etiqueta>
-        </aside>
-        </Reveal>
-      </div>
-    </Section>
+          <Reveal delay={0.1} className="self-start">
+            <aside className="flex flex-col gap-5 self-start rounded-lg border border-hairline bg-surface p-7 sm:p-8">
+              <h3 className="font-display text-[1.3rem] font-medium text-crema">
+                {cotizador.aside.title}
+              </h3>
+              {cotizador.aside.datos.map((d) => {
+                const external = d.href?.startsWith("http");
+                return (
+                  <div key={d.label} className="flex flex-col gap-[3px]">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-crema-dim">
+                      {d.label}
+                    </span>
+                    {d.href ? (
+                      <a
+                        href={d.href}
+                        target={external ? "_blank" : undefined}
+                        rel={external ? "noopener noreferrer" : undefined}
+                        className="text-[16.5px] font-medium text-crema hover:text-amarillo"
+                      >
+                        {d.value}
+                      </a>
+                    ) : (
+                      <span className="text-[16.5px] font-medium text-crema-dim">
+                        {isPlaceholder(d.value) ? "A confirmar" : d.value}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+              <Etiqueta>{cotizador.aside.etiqueta}</Etiqueta>
+            </aside>
+          </Reveal>
+        </div>
+      </Section>
+    </>
   );
 }

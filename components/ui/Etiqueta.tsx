@@ -3,6 +3,8 @@ import { cn } from "@/lib/cn";
 /**
  * Etiqueta: mono en mayúsculas con tick cuadrado amarillo, inline.
  * Como el kicker pero con tracking .14em y en línea (para chips, captions, metadatos).
+ * Texto crema-dim: no pisar el color por `className` (cn no fusiona clases).
+ * (El tono oscuro, para fondo amarillo, quedó en _assets/archivo.)
  */
 export function Etiqueta({
   children,
