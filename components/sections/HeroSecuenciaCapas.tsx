@@ -139,15 +139,15 @@ export function HeroCifras() {
 
 /**
  * Momento 5: el remate del hero, centrado debajo de la caja abierta con los
- * productos quietos. El título en display grande, con "a tu oficina" en la
+ * productos quietos. El título en display grande, con "lucir así" en la
  * itálica amarilla (como el <em> de los títulos; sin partirse, así en mobile
- * queda "Así llega / a tu oficina."), la bajada y "Armar mi pedido" en la
- * pill amarilla primaria: el único botón amarillo del escenario en ese
- * momento. Entra palabra por palabra y después la bajada y el botón. El botón
+ * queda "Tu pedido puede / lucir así.") y "Quiero el mío" en la pill
+ * amarilla primaria: el único botón amarillo del escenario en ese momento.
+ * Entra palabra por palabra y después el botón. El botón
  * va dentro de un envoltorio (lo mueve GSAP; el Pill conserva sus hovers).
  */
 export function HeroCierre() {
-  const { titulo, bajada, boton } = heroSecuencia.cierre;
+  const { titulo, boton } = heroSecuencia.cierre;
   return (
     <div className="hs-m4">
       <div className="hs-m4-in hs-diferida">
@@ -162,7 +162,6 @@ export function HeroCierre() {
             <Palabras texto={titulo.post ?? ""} />
           </span>
         </p>
-        <p className="hs-cierre-bajada text-crema-dim">{bajada}</p>
         <div className="hs-cierre-boton">
           <Pill href={boton.href}>{boton.label}</Pill>
         </div>

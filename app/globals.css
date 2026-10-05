@@ -769,8 +769,8 @@ input[type="number"].no-spin::-webkit-inner-spin-button {
   white-space: nowrap;
 }
 /* Cierre (momento 5), el remate del hero: el título más grande del
-   escenario después del h1, con "a tu oficina" en la itálica amarilla y sin
-   partirse (en mobile, "Así llega / a tu oficina."). El tope por alto cuida
+   escenario después del h1, con "lucir así" en la itálica amarilla y sin
+   partirse (en mobile, "Tu pedido puede / lucir así."). El tope por alto cuida
    los teléfonos bajos: el encuadre se achica para dejarle lugar. */
 .hs-cierre-titulo {
   font-size: clamp(1.9rem, min(9.6vw, 5.4svh), 2.9rem);
@@ -781,15 +781,8 @@ input[type="number"].no-spin::-webkit-inner-spin-button {
 .hs-cierre-fin {
   white-space: nowrap;
 }
-.hs-cierre-bajada {
-  max-width: 34ch;
-  margin-top: 10px;
-  font-size: 15px;
-  line-height: 1.5;
-  text-wrap: pretty;
-}
 .hs-cierre-boton {
-  margin-top: 18px;
+  margin-top: 24px;
   white-space: nowrap;
 }
 /* Palabras que entran "desde abajo" (horneado y título del cierre): cada una
@@ -901,9 +894,6 @@ input[type="number"].no-spin::-webkit-inner-spin-button {
 }
 .hs[data-hs="escena"] .hs-m4-in {
   pointer-events: auto;
-}
-.hs[data-hs="escena"] .hs-cierre-bajada {
-  margin-inline: auto;
 }
 
 /* Cifras (momento 3): solo con la escena (repiten la confianza del inicio).
@@ -1052,16 +1042,13 @@ input[type="number"].no-spin::-webkit-inner-spin-button {
   }
   /* El cierre, centrado debajo de la caja vacía y a todo el ancho (ya no en
      la columna de la izquierda, donde quedaba chico y se perdía): título en
-     un renglón y bajada en uno. La confianza apoya su base en la de la caja
+     un renglón. La confianza apoya su base en la de la caja
      cerrada, a la derecha. */
   .hs[data-hs="escena"] .hs-m4 {
     padding: 0 var(--hs-pad) clamp(20px, 4.2svh, 44px);
   }
   .hs[data-hs="escena"] .hs-cierre-titulo {
     white-space: nowrap;
-  }
-  .hs[data-hs="escena"] .hs-cierre-bajada {
-    max-width: none;
   }
   .hs-confianza {
     inset-inline: auto;
@@ -1087,9 +1074,6 @@ input[type="number"].no-spin::-webkit-inner-spin-button {
     max-width: 44rem;
     margin-inline: auto;
     text-align: center;
-  }
-  .hs-m4 .hs-cierre-bajada {
-    margin-inline: auto;
   }
   .hs[data-hs="escena"] .hs-m2 {
     max-width: none;
@@ -1131,12 +1115,8 @@ input[type="number"].no-spin::-webkit-inner-spin-button {
     font-size: clamp(2.4rem, min(4.4vw, 7.2svh), 4.5rem);
     line-height: 1.04;
   }
-  .hs-cierre-bajada {
-    margin-top: clamp(12px, 2svh, 18px);
-    font-size: clamp(15px, 1.2vw, 17.5px);
-  }
   .hs-cierre-boton {
-    margin-top: clamp(18px, 3svh, 28px);
+    margin-top: clamp(24px, 4svh, 36px);
   }
 
   .hs[data-hs="escena"] .hs-aviso {
@@ -1294,7 +1274,7 @@ input[type="number"].no-spin::-webkit-inner-spin-button {
       font-size: clamp(2.4rem, 10vw, 3.4rem);
     }
     /* Dos frases seguidas después de la caja abierta, del mismo tamaño: el
-       horneado y el cierre (con su bajada y el botón), con aire. */
+       horneado y el cierre (con su botón), con aire. */
     & .hs-horneado,
     & .hs-cierre-titulo {
       font-size: clamp(1.75rem, 7.6vw, 2.4rem);
@@ -1331,9 +1311,6 @@ input[type="number"].no-spin::-webkit-inner-spin-button {
     & .hs-m2,
     & .hs-m4 {
       max-width: 44rem;
-    }
-    & .hs-cierre-bajada {
-      margin-inline: auto;
     }
     & .hs-kicker,
     & .hs-botones {

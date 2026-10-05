@@ -167,10 +167,10 @@ Orden de la página desde el 30/9/2026: Hero · Servicios · Empresas · Galerí
 cocina de Flor · Reseñas · Cómo trabajamos · Preguntas · Cotizador · Pie.
 
 ### F.1 · Decisiones que tiene que confirmar Benjamin
-- **Cierre del hero (rehecho el 30/9/2026).** Centrado debajo de la caja abierta: "Así
-  llega *a tu oficina*." grande (con "a tu oficina" en la itálica amarilla), "Armada a tu
-  medida, con mozos o delivery, dentro de Circunvalación." y "Armar mi pedido" (el texto de
-  F8) en la pill amarilla primaria a `#cotizar`. Confirmar: (1) mientras se ve el cierre
+- **Cierre del hero (rehecho el 30/9/2026; texto nuevo y sin bajada desde el 5/10/2026).**
+  Centrado debajo de la caja abierta: "Tu pedido puede *lucir así*." grande (con "lucir así"
+  en la itálica amarilla) y "Quiero el mío" (antes "Armar mi pedido", de F8) en la pill amarilla primaria
+  a `#cotizar`. Confirmar: (1) mientras se ve el cierre
   también está en pantalla la pill "Pedir presupuesto" del nav, o sea dos botones amarillos
   a la vez (F8 lo evitaba con un botón fantasma); (2) para que entre el cierre, los
   productos se achican en pantallas bajas (0.86 en 1280x720, 0.79 en 375x667, hasta 0.66);

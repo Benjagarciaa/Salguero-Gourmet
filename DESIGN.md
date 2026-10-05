@@ -146,7 +146,7 @@ En el orden de la página de la beta "dopamina" (Empresas va después de Servici
 | Galería | 2 tracks marquee; `figure` 280px ancho, `img` 230px alto radio 8px. | Intro con el video de la mesa fijado (pin corto en compu, más largo en celular) y después el marquee doble en compu o el carril deslizable en celular. La versión quieta mantiene el marquee del mockup. |
 | Flor | `auto 1fr`, gap 44px, `padding:44px`, placa surface radio 10px; foto redonda 180px. | La foto se abre desde un círculo en la cara de Flor (pin solo en compu con alto). |
 | Reseñas | score Playfair 4rem + estrellas amarillas; grid `repeat(2,1fr)` gap 16px; meta con nombre 14/700 y servicio en mono 10px. | El 5.0 gigante se arma fijado y las 4 cartas se reparten desde un mazo. |
-| Proceso | `repeat(4,1fr)` gap 18px; cada paso con número Playfair itálico amarillo 1.9rem y borde superior hairline. | Mapa del recorrido (anillo de Circunvalación) + los 4 pasos en un riel; sin pin, coreografía por tiempo una sola vez. |
+| Proceso | `repeat(4,1fr)` gap 18px; cada paso con número Playfair itálico amarillo 1.9rem y borde superior hairline. | Recorrido del mensaje a la mesa (globito, paradas 02 y 03, mesa) + los 4 pasos en un riel; sin pin, vuelta de 5,4 s en loop mientras se ve, pausa fuera de pantalla. |
 | FAQ | `max-width:760px`; `<details>` con `summary` y marcador `+`→`×` (rota 45°) en amarillo. | Igual, con el alto animado por resorte. |
 | Cotizador | `1.15fr .85fr` gap 52px; form + aside de contactos surface. | Igual. |
 | Footer | borde superior; wordmark + tagline + copyright, `crema-dim` 13.5px. | Suma el wordmark grande (`FooterMarca`): entra una vez al verse y sube con un parallax leve. |

@@ -56,7 +56,7 @@ import {
  * momentos, todos en el MISMO timeline (ver heroSecuencia en content/data.ts):
  *   1. inicio (visible al cargar) · 2. horneado (centrado debajo de la caja,
  *   palabra por palabra) · 3. cifras · 4. fichas de productos (solo desktop)
- *   · 5. cierre, el remate (título grande, bajada y botón, centrado debajo
+ *   · 5. cierre, el remate (título grande y botón, centrado debajo
  *   de la caja abierta) · 6. salida.
  *   - Desktop (>=860px de ancho y >=600px de alto): inicio y cifras a la
  *     izquierda del marco, confianza a la derecha, fichas a los dos lados;
@@ -155,9 +155,9 @@ const PALABRA_DESDE = 135;
  * Entrada por tiempo (s): separación entre palabras (`palabra`), cuándo
  * arrancan las piezas si hay palabras (`piezas`) y separación entre piezas
  * (`pieza`). El cierre va más junto: su tramo propio de scroll es corto (~450
- * px en 1440x900) y con rueda continua (~1000 px/s) la bajada y el botón, que
- * esperaban a que terminara el título, no llegaban a verse enteros antes de la
- * salida. Ahora arrancan casi con las palabras: todo el cierre queda a la
+ * px en 1440x900) y con rueda continua (~1000 px/s) el botón, que esperaba a
+ * que terminara el título, no llegaban a verse enteros antes de la
+ * salida. Ahora arranca casi con las palabras: todo el cierre queda a la
  * vista (opacidad 0.95) en ~0.45 s (antes ~0.95 s).
  */
 type Ritmo = { palabra: number; piezas: number; pieza: number };
@@ -180,8 +180,9 @@ const MARGEN = 10;
  * Servicios).
  */
 const APAGADO_SALIDA = { desde: 0.2, curva: "sine.in" };
-/** Cierre: aire (px) entre la caja y el cierre, y arriba de los productos. */
-const AIRE_CIERRE = { desktop: 22, mobile: 14 };
+/** Cierre: aire (px) entre la caja y el cierre, y arriba de los productos.
+ *  Mobile con 22 (antes 14): sin la bajada, el título quedaba pegado a la caja. */
+const AIRE_CIERRE = { desktop: 22, mobile: 22 };
 const AIRE_ARRIBA = { desktop: 22, mobile: 14 };
 
 /** Mismos cortes que globals.css (bloque del hero) y HeroSecuenciaPoster. */
@@ -383,7 +384,6 @@ export function HeroSecuencia({
         const m3 = q(".hs-m3-in");
         const m4 = q(".hs-m4-in");
         const m4Caja = q(".hs-m4");
-        const cierreBajada = q(".hs-cierre-bajada");
         const cierreBoton = q(".hs-cierre-boton");
         const conf = q(".hs-confianza-in");
         const capaFichas = q(".hs-fichas");
@@ -409,7 +409,6 @@ export function HeroSecuencia({
           m3,
           m4,
           m4Caja,
-          cierreBajada,
           cierreBoton,
           conf,
           capaFichas,
@@ -509,6 +508,20 @@ export function HeroSecuencia({
           // Rendimiento: GSAP lee los transforms de todo lo que mueve en una
           // sola tanda, y las opacidades quedan en línea (prepararTransformes,
           // lib/gsap.ts). La capa de las fichas solo cambia de opacidad.
+          // Al cruzar un corte de matchMedia, lo que animaba el modo anterior
+          // puede quedar con su transform en línea: los tweens de valores en
+          // función (conFunciones) se invalidan en cada refresh y, al
+          // rearmarse, GSAP anota como "estilo original" el que él mismo había
+          // escrito, y al revertir lo deja puesto (al pasar de desktop a
+          // mobile, la imagen seguía con el acercamiento de 1.3 y la caja
+          // tapaba el cierre). El servidor no les pone transform ni opacidad
+          // en línea: el modo nuevo arranca de cero. Fuera del registro del
+          // contexto (ignore): al revertir este modo no hay nada que restaurar.
+          ctx.ignore(() =>
+            gsap.set(animados, {
+              clearProps: "transform,translate,rotate,scale,opacity",
+            }),
+          );
           quitarPreparacion = prepararTransformes(
             animados.filter((el) => el !== capaFichas),
             animados,
@@ -700,8 +713,8 @@ export function HeroSecuencia({
           // Entrada por TIEMPO (horneado y cierre): cuando el scroll cruza
           // `t` hacia abajo, cada palabra sube desde abajo de su ventana con
           // el resorte `entrada` (la opacidad aparte, corta) y un escalón
-          // chico entre una y otra; casi a la par, las `piezas` (bajada y
-          // botón), con el `ritmo` de cada momento (RITMO).
+          // chico entre una y otra; casi a la par, las `piezas` (el botón
+          // del cierre), con el `ritmo` de cada momento (RITMO).
           // Al volver por arriba de `t` se deshace, más rápido. El scroll solo
           // decide el momento: si se detiene en el tramo, el texto termina de
           // entrar igual (nunca queda a medio escribir). Un marcador en el
@@ -918,7 +931,7 @@ export function HeroSecuencia({
           // 5 · Cierre, el remate. Antes, el encuadre (productos, caja y
           // fichas) sube y, si hace falta, se achica lo justo (ajusteCierre)
           // para que el cierre entre entero debajo de la caja. Después: el
-          // título palabra por palabra, la bajada y el botón. Queda hasta el
+          // título palabra por palabra y el botón. Queda hasta el
           // final del recorrido (se va con la salida).
           const { cierre } = heroSecuencia;
           if (encuadre) {
@@ -944,7 +957,7 @@ export function HeroSecuencia({
           // decide la entrada: ver sincronizar, más abajo).
           let cierreDentro = () => false;
           if (m4) {
-            const piezas = [cierreBajada, cierreBoton].filter(
+            const piezas = [cierreBoton].filter(
               (el): el is HTMLElement => el !== null,
             );
             const entrada = entradaPorTiempo(

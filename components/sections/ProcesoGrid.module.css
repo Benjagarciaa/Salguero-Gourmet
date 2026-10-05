@@ -38,36 +38,29 @@
   margin-inline: auto;
 }
 
-/* Lienzo del mapa, con la proporción del viewBox (400x320). En mobile se
-   limita por alto para que el mapa y los pasos entren juntos en la pantalla
-   (así se ve la cajita viajar y los pasos encenderse a la vez). */
+/* Lienzo del mapa, con la proporción del viewBox (400x200). En mobile se
+   limita por alto (28svh de alto como mucho) para que el mapa y los pasos
+   entren juntos en la pantalla: así se ve el viajero llegar y los pasos
+   encenderse a la vez. */
 .lienzo {
   position: relative;
   width: 100%;
-  max-width: min(100%, calc(40svh * 1.25));
-  aspect-ratio: 400 / 320;
+  aspect-ratio: 400 / 200;
   margin-inline: auto;
+  max-width: min(100%, 34rem, calc(28svh * 2));
+  /* Los rótulos miden siempre lo mismo y el mapa no: ver el mapa angosto. */
+  container-type: inline-size;
 }
-/* Teléfonos bajos (375x667 y parecidos): el mapa baja a 30svh y la columna se
-   aprieta, así el mapa y los 4 pasos entran juntos en unos 600px y el paso 04
-   se ve encenderse cuando llega la cajita. */
+/* Teléfonos bajos (375x667 y parecidos): la columna se aprieta, así el mapa y
+   los 4 pasos entran juntos en la pantalla. */
 @media (max-width: 859.98px) and (max-height: 700px) {
-  .lienzo {
-    max-width: min(100%, calc(30svh * 1.25));
-  }
   .cuerpo {
     gap: 14px;
   }
 }
-/* Tablet en vertical: sobra alto, el mapa puede crecer. */
-@media (min-width: 600px) and (max-width: 859.98px) and (min-height: 900px) {
-  .lienzo {
-    max-width: min(100%, calc(44svh * 1.25));
-  }
-}
 @media (min-width: 860px) {
   .lienzo {
-    max-width: min(100%, calc((100vh - var(--nav-h) - 96px) * 1.25));
+    max-width: min(100%, calc((100vh - var(--nav-h) - 96px) * 2));
   }
 }
 
@@ -102,9 +95,9 @@
   height: 100%;
   overflow: visible;
 }
-/* El mapa que se anima (DrawSVG, la cajita, el vapor) es capa propia solo con
-   la escena cerca (capaActiva pone data-capa en la escena): redibujarlo no
-   vuelve a rasterizar la trama de puntos, que va en otro SVG quieto debajo. */
+/* El mapa que se anima (DrawSVG, el viajero, el vapor) es capa propia solo
+   con la escena cerca (capaActiva pone data-capa en la escena): redibujarlo
+   no vuelve a rasterizar el resto de la página. */
 .escena[data-capa] .svgVivo {
   will-change: transform;
 }
@@ -122,47 +115,48 @@
   white-space: nowrap;
   pointer-events: none;
 }
-/* Debajo y a la derecha de la cocina (100,238): el tramo inicial de la ruta
-   va por arriba de la etiqueta. */
-.etqCocina {
-  left: calc((96 / 400) * 100%);
-  top: calc((257 / 320) * 100%);
+/* El número del origen en crema; la palabra, en crema-dim. */
+.etqNum {
+  color: var(--color-crema);
 }
-/* Arriba de la oficina (292,138), centrada, por encima del halo. En crema:
-   arranca tenue y se enciende al llegar la cajita. */
-.etqOficina {
-  left: calc((292 / 400) * 100%);
-  top: calc((109 / 320) * 100%);
+/* "01 TU MENSAJE": a la derecha del globito, centrado con él. */
+.etqOrigen {
+  left: calc((84 / 400) * 100%);
+  top: calc((35 / 200) * 100%);
+  translate: 0 -50%;
+}
+/* "02": debajo del valle, con aire para el globito chico. */
+.etqParada2 {
+  left: calc((148 / 400) * 100%);
+  top: calc((163 / 200) * 100%);
+  translate: -50% 0;
+  color: var(--color-crema);
+}
+/* "03": arriba de la cresta. */
+.etqParada3 {
+  left: calc((244 / 400) * 100%);
+  top: calc((46 / 200) * 100%);
   translate: -50% -100%;
   color: var(--color-crema);
 }
-/* Número de cada estación (02 y 03), afuera de la esquina de la ruta. */
-.etqEstacion {
-  font-size: 10px;
+/* "04 TU MESA": debajo de la mesa y sus sillas. */
+.etqDestino {
+  left: calc((342 / 400) * 100%);
+  top: calc((152 / 200) * 100%);
+  translate: -50% 0;
   color: var(--color-crema);
-  letter-spacing: 0.1em;
 }
-.etqEstacion1 {
-  left: calc((183 / 400) * 100%);
-  top: calc((227 / 320) * 100%);
-  translate: -100% -100%;
-}
-.etqEstacion2 {
-  left: calc((189 / 400) * 100%);
-  top: calc((143.3 / 320) * 100%);
-  translate: -100% -50%;
-}
-/* Sobre el anillo, abajo: una plaquita con el fondo tapa el trazo, como el
-   nombre de una ruta en un mapa. */
-.etqAnillo {
-  left: calc((176 / 400) * 100%);
-  top: calc((299 / 320) * 100%);
-  translate: -50% -50%;
-  padding: 4px 9px 4px 10px;
-  border: 1px solid var(--color-hairline);
-  border-radius: 999px;
-  background: var(--color-bg);
-  font-size: 10px;
+/* Mapa angosto (menos de 310px: teléfonos de 320 y teléfonos apaisados, donde
+   el mapa se achica por alto). "01 TU MENSAJE" (~106px) ya no entra entre el
+   globito y el "03" y se pisaban; pasa arriba del globito, alineado con su
+   borde izquierdo, donde no hay nada dibujado. A 360px o más de ancho de
+   pantalla (y en desktop) el mapa mide 310px o más y no cambia nada. */
+@container (max-width: 309.98px) {
+  .etqOrigen {
+    left: calc((30 / 400) * 100%);
+    top: calc((22 / 200) * 100%);
+    translate: 0 calc(-100% - 5px);
+  }
 }
 
 /* ---------- Pasos: un riel con un nodo por paso ---------- */
@@ -190,13 +184,8 @@
 .paso:last-child {
   padding-bottom: 0;
 }
-/* Teléfonos bajos: pasos más juntos (ver .lienzo) y, con el mapa más chico,
-   "Cocina de Salguero" un poco más compacta para no cruzar el anillo. */
+/* Teléfonos bajos: pasos más juntos (ver .lienzo). */
 @media (max-width: 859.98px) and (max-height: 700px) {
-  .etqCocina {
-    font-size: 10px;
-    letter-spacing: 0.1em;
-  }
   .paso {
     padding-bottom: 12px;
   }
@@ -245,14 +234,14 @@
   border-radius: 50%;
   background: var(--color-crema);
 }
-/* El último nodo (la entrega) se enciende en ámbar, como la oficina. */
+/* El último nodo (la entrega) se enciende en ámbar, como la mesa. */
 .puntoFinal {
   background: var(--color-amarillo);
 }
 
 /* Tramo del riel: del nodo de este paso al del siguiente (4px de aire en cada
    punta). El paso no tiene margen: el 100% de su alto llega justo al paso de
-   abajo. El relleno crema se llena con la cajita. */
+   abajo. El relleno crema se llena a la par del viajero. */
 .tramo {
   position: absolute;
   left: calc(var(--col-num) + var(--gap) + var(--col-nodo) / 2 - 0.5px);

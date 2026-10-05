@@ -38,138 +38,166 @@ function cargarPlugins(): Promise<void> {
   return plugins;
 }
 
-/** Rótulos del mapa (decorativo). */
+/** Rótulos de las dos puntas del recorrido (decorativo). */
 const MAPA_COPY = proceso.mapa;
 
 /* ==========================================================================
- * Cómo trabajamos · el recorrido del pedido.
+ * Cómo trabajamos · del mensaje a la mesa.
  *
- * Un mapa mínimo (SVG propio, trazo crema fino): el anillo de Circunvalación
- * (irregular, dibujado a mano, sin calles ni datos geográficos), la cocina con
- * su vapor y tu oficina, unidas por una ruta con dos estaciones (02 y 03). Al
- * lado (desktop) o debajo (mobile), los 4 pasos sobre un riel: un nodo por paso
- * y un tramo entre nodos, el espejo de la ruta del mapa.
+ * El mapa dibuja el título (SVG propio, trazo crema fino): arriba a la
+ * izquierda el globito de chat (TU MENSAJE, con tres puntitos que escriben),
+ * abajo a la derecha una mesa vista desde arriba (TU MESA, un círculo con 4
+ * sillas: sirve para cualquier lugar y cualquier persona), unidos por una
+ * sola onda suave con dos paradas (02 en el valle, 03 en la cresta). Al lado
+ * (desktop) o debajo (mobile), los 4 pasos sobre un riel: un nodo por paso y
+ * un tramo entre nodos, el espejo de la onda.
  *
- * Sin pin ni scrub: la sección corre con la página y la coreografía va por
- * TIEMPO, una sola vez, cuando entra a la pantalla.
- *   1. Mapa (cuando el mapa está casi entero a la vista): el anillo se dibuja
- *      desde abajo hacia los dos lados y cierra arriba; aparecen la cocina y
- *      la oficina con un pop, y la ruta punteada se traza de la cocina a la
- *      oficina (las estaciones asoman cuando el trazo pasa por ellas).
- *   2. Viaje (con el mapa armado y los pasos a la vista): la cocina echa
- *      vapor, la cajita sale de ella y se enciende el paso 01. La cajita
- *      viaja por la ruta en tres tramos, cada uno con el resorte `entrada`
- *      (arranca de 0, llega sin rebote), deja una estela y el tramo del riel
- *      se llena a la par; al llegar a cada estación, la estación y su paso se
- *      encienden juntos (02 y 03). En la oficina la cajita se entrega (se
- *      achica y se va), la oficina se enciende en ámbar con un pulso y se
- *      enciende el paso 04.
- *   3. Vivo: al terminar, el vapor de la cocina se mece apenas, solo con el
- *      mapa a la vista y la página quieta.
- * Si la persona vuelve a pasar no se repite: queda el estado final. Si pasa
- * de largo antes de que arranque (un ancla, un scroll muy rápido), corre la
- * primera vez que la sección está de verdad a la vista.
+ * Sin pin ni scrub: una vuelta de 5,40 s (VUELTA) en loop mientras la
+ * sección se ve.
+ *   01 Contanos tu evento: el globito escribe, da un toque de envío y de su
+ *      colita sale un globito chico.
+ *   02 Recibís propuesta y precio: el globito chico llega al valle, la parada
+ *      se enciende y el globito se da vuelta (la respuesta).
+ *   03 Coordinamos: llega a la cresta, se enciende y el globito se convierte
+ *      en la cajita con la cuchara (el pedido quedó cerrado: viaja comida).
+ *   04 Servimos o entregamos: la cajita llega a la mesa y se apoya; la mesa
+ *      se enciende en ámbar con un pulso y sube vapor.
+ * La lista y el riel acompañan: cada paso se enciende cuando el viajero llega
+ * a su lugar y los demás quedan tenues (siguen pasando AA). Al volver a
+ * empezar no se rebobina: la estela se consume hacia la mesa, las paradas se
+ * apagan cuando la cola pasa por ellas, la caja y el vapor se van y el
+ * globito ya está escribiendo el mensaje siguiente.
  *
- * Fail-open: el HTML del servidor trae el estado final (anillo y ruta
- * dibujados, estaciones y pasos encendidos, oficina en ámbar). El JS arma el
- * estado inicial recién cuando llegan los plugins (después de `load`, en
- * idle) y solo si en ese momento la sección todavía no está a la vista
- * (nunca pasa de visible a apagado). Sin JS o con reducir movimiento no se
- * toca nada. Si algo falla al armar, se revierte y queda la versión quieta.
+ * Fail-open: el HTML del servidor trae el estado final de la vuelta (onda
+ * entera con 02 y 03 encendidas, la caja apoyada en la mesa ámbar con su
+ * vapor, los 4 rótulos y los 4 pasos encendidos, el riel lleno), que es
+ * también el último cuadro de cada vuelta: el loop empalma sin saltos y la
+ * primera vuelta arranca desde ahí (la línea se consume y 02 a 04 bajan a
+ * tenue). Solo vienen invisibles lo pasajero (el globito chico, los aros que
+ * se abren). El JS arma la vuelta recién cuando llegan los plugins (después
+ * de `load`, en idle); antes de eso al armar solo toca lo invisible o lo deja
+ * en el mismo valor. Sin JS o con reducir movimiento no se toca nada. Si algo
+ * falla al armar, se revierte y queda la versión quieta.
  *
- * Física (lib/fisica.ts): todo por resortes de resorteGsap (lento para el
- * anillo y los aros que se abren, entrada para la ruta, el viaje y los
- * textos, pop para lo que aparece, tacto para la entrega), la opacidad aparte
- * con OPACIDAD_GSAP y la salida de la cajita con SALIDA_GSAP. Solo transform,
- * opacity y el trazo de las líneas. Sin estado de React por cuadro.
+ * Corre mientras el mapa está a la vista o la lista sigue en pantalla (ZONA):
+ * afuera se pausa y al volver retoma donde quedó (con la pestaña oculta, el
+ * ticker de GSAP ya se frena solo). Sin listeners de scroll.
+ *
+ * Física (lib/fisica.ts): resortes de resorteGsap (panel para los tramos del
+ * viaje, entrada para la estela que se consume y el vapor, pop para lo que
+ * aparece, tacto para lo que se achica, lento para los aros), la opacidad
+ * aparte con OPACIDAD_GSAP y SALIDA_GSAP, y TRAMO en los keyframes. Solo
+ * transform, opacity y el trazo de las líneas. Sin estado de React por cuadro.
  * ========================================================================== */
 
-/** Opacidades de un paso todavía apagado. Número (0.48, texto grande: 3:1),
- *  título (0.52) y bajada (0.78) siguen pasando AA sobre el fondo: una
- *  auditoría al cargar los ve así (Lighthouse marcaba el número a 0.24). */
-const APAGADO = {
-  num: 0.48,
-  titulo: 0.52,
-  desc: 0.78,
-  estacion: 0.4,
-  oficina: 0.6,
-};
+/** Opacidades de lo apagado, medidas sobre el fondo real y no sobre el
+ *  #241C15 liso: el brillo ámbar del fondo ambiental (fijo, deriva lento)
+ *  aclara el marrón detrás de la lista y del mapa hasta ~#42341E. Ahí siguen
+ *  pasando AA: número 0.56 (amarillo, texto grande: 3.24:1), título 0.60
+ *  (crema: 4.87:1), bajada 0.92 (crema-dim: 4.55:1) y los rótulos 02, 03 y
+ *  04 del mapa 0.60 (crema: 4.87:1). Con 0.48 / 0.52 / 0.78 bajaban a 2.8,
+ *  4.1 y 3.7:1 debajo del brillo. */
+const APAGADO = { num: 0.56, titulo: 0.6, desc: 0.92, rotulo: 0.6 };
 
 /**
- * Disparadores (ScrollTrigger sin scrub, solo para saber cuándo algo está a
- * la vista). Cada zona va de "entra por abajo" a "se va por arriba": se activa
- * al entrar bajando (start) o volviendo desde abajo (end).
- * - mapa: su centro al 92 % de la pantalla (se ve el 70 a 80 % del mapa).
- * - pasos: en desktop (mapa al costado), el borde de arriba de la lista al
- *   78 %, casi a la par del mapa. En una columna (mapa arriba, pasos abajo),
- *   el borde de abajo de la lista al 96 %: el viaje espera a que el paso 04
- *   esté a la vista (en teléfonos bajos, con el borde de arriba al 78 % el 04
- *   quedaba debajo del borde justo cuando se encendía) y el mapa, más chico
- *   en esas pantallas (ProcesoGrid.module.css), sigue arriba.
+ * Zona en la que corre la vuelta (ScrollTrigger sin scrub, solo para saber
+ * si se ve): desde que el centro del mapa pasa el 85 % de la pantalla hasta
+ * que el borde de abajo de la lista se va por arriba. Afuera, en pausa.
  */
-const ZONA = {
-  mapa: { start: "center 92%", end: "center 25%" },
-  pasos: { start: "top 78%", end: "bottom 22%" },
-  pasosColumna: { start: "bottom 96%" },
-};
-/** Mismo corte que ProcesoGrid.module.css: desde acá, mapa al costado. */
-const MQ_COLUMNA = "(max-width: 859.98px)";
-
-/** Momentos de la coreografía, en segundos. */
-const T = {
-  /* Mapa */
-  anillo: 0,
-  etqAnillo: 0.06,
-  cocina: 0.28,
-  oficina: 0.4,
-  etiqueta: 0.08, // las etiquetas, un poco después de su punto
-  ruta: 0.52,
-  /** Desde acá puede arrancar el viaje (el anillo termina de cerrar mientras). */
-  listo: 1.0,
-  /* Viaje */
-  vapor: 0,
-  sale: 0.16,
-  paso01: 0.22,
-  parte: 0.68,
-  /** Quieta en cada estación, después de asentarse. */
-  espera: 0.12,
-  /** De la llegada a la oficina a que se enciende. */
-  entrega: 0.1,
-};
+const ZONA = { vuelta: { start: "center 85%", end: "bottom top" } };
 
 const MQ_MOVER = "(prefers-reduced-motion: no-preference)";
 
-/* ---------- Geometría del mapa (viewBox 400 x 320) ---------- */
+/** Duración exacta de una vuelta, en segundos. */
+const VUELTA = 5.4;
 
-/** Anillo irregular (Catmull-Rom cerrado por 11 puntos). Arranca arriba al
- *  medio: el 50% de su largo queda abajo, desde donde se dibuja. */
-const ANILLO =
-  "M200 22C233 19.3 264.7 22.3 290 32C315.3 41.7 337 59 352 80C367 101 379.7 132 380 158C380.3 184 371.3 214 354 236C336.7 258 306.3 279.3 276 290C245.7 300.7 203.7 302.7 172 300C140.3 297.3 109.7 289.7 86 274C62.3 258.3 39 232 30 206C21 180 21.7 144.3 32 118C42.3 91.7 64 64 92 48C120 32 167 24.7 200 22Z";
-const COCINA = { x: 100, y: 238 };
-const OFICINA = { x: 292, y: 138 };
-/** Ruta en Z con esquinas redondeadas (r 18): 78 + arco + 64 + arco + 78. */
-const RUTA = "M100 238H178A18 18 0 0 0 196 220V156A18 18 0 0 1 214 138H292";
-/** Estaciones en el medio de cada esquina, con su fracción del largo de la
- *  ruta (largo total 276.55; cada arco mide 28.27). Parten la ruta en 3 tramos
- *  iguales (92.14 cada uno). */
+/** Momentos de la vuelta, en segundos (los de llegada salen de los resortes). */
+const T = {
+  /** Nada en t = 0 salvo tweens: los sets y las llamadas, desde acá. */
+  minimo: 0.001,
+  /** Paso 01 encendido (sale de 04). */
+  activo01: 0.02,
+  /** Las tres teclas del globito, una detrás de otra. */
+  tecleo: 0.05,
+  tecla: 0.12,
+  teclaDur: 0.42,
+  /** La caja de la vuelta anterior se va. */
+  cajaSale: 0.06,
+  /** Rearmado invisible: caja al origen, escalas y vapor sin dibujar. */
+  rearmar: 0.3,
+  /** La mesa se apaga, junto con la caja que se va: el mapa y la lista
+   *  cambian de paso a la par (con 0.4, medio segundo seguían en 04 y 01). */
+  mesaApaga: 0.06,
+  /** El riel vuelve a llenarse desde arriba (todos sus tramos ya vacíos). */
+  rearmarRiel: 0.6,
+  /** Toque de envío del globito y sale el globito chico. */
+  envio: 0.7,
+  envioDur: 0.36,
+  /** El brillo de la mesa, ya invisible, vuelve a su escala de arranque. */
+  rearmarBrillo: 0.84,
+  /** Salida de cada tramo (cada uno dura panel, 0.60 s). */
+  salidas: [0.85, 2.05, 3.25],
+  /** De la llegada a 02 a que el globito chico se da vuelta. */
+  giro: 0.1,
+  /** De la llegada a 03 a que el globito se convierte en la cajita. */
+  cambio: 0.1,
+  /** El globito vuelve a su lado (ya invisible desde 2.58). */
+  giroVuelve: 2.7,
+  /** De la llegada a la mesa a que se apoya y se enciende. */
+  entrega: 0.1,
+  /** De la entrega a que sube el vapor. */
+  vapor: 0.1,
+};
+
+/* ---------- Geometría del mapa (viewBox 400 x 200) ---------- */
+
+/** La onda: 3 cúbicas con tangente horizontal en el valle (148,150) y en la
+ *  cresta (244,62), sin quiebres. Largos 129.39 + 135.65 + 122.50 = 387.54
+ *  (GSAP mide 387.10). Si se toca, volver a medir HITOS (las fracciones). */
+const RUTA =
+  "M66 63C74 106 104 150 148 150C188 150 204 62 244 62C288 62 300 128 342 128";
+/** Punta de salida: la colita del globito. */
+const ORIGEN = { x: 66, y: 63 };
+/** Paradas 02 y 03, con su fracción del largo de la onda (largo acumulado
+ *  sobre el total; en getPositionOnPath caen a menos de 0.1 u del punto). */
 const HITOS = [
-  { x: 190.7, y: 232.7, f: 0.3332 },
-  { x: 201.3, y: 143.3, f: 0.6668 },
+  { x: 148, y: 150, f: 0.3339 },
+  { x: 244, y: 62, f: 0.6839 },
 ];
-/** Paradas de la cajita (fracción de la ruta), una por paso. */
+/** Centro de la mesa (la punta de llegada). */
+const MESA = { x: 342, y: 128 };
+/** Paradas del viajero (fracción de la onda), una por paso. */
 const PARADAS = [0, HITOS[0].f, HITOS[1].f, 1];
-/** Vapor de la cocina: tres volutas finas arriba del punto (de abajo hacia
+/** El globito de chat, con la colita abajo a la derecha (llega a 65,58). */
+const GLOBO =
+  "M41 22H63A11 11 0 0 1 74 33V37A11 11 0 0 1 63 48L65 58L55 48H41A11 11 0 0 1 30 37V33A11 11 0 0 1 41 22Z";
+/** Los tres puntitos que escriben. */
+const TECLAS = [
+  { x: 42, y: 35 },
+  { x: 52, y: 35 },
+  { x: 62, y: 35 },
+];
+/** Sillas a 45° y radio 23: queda libre la entrada de la onda por la izquierda. */
+const SILLAS = [
+  { x: 358.3, y: 111.7 },
+  { x: 358.3, y: 144.3 },
+  { x: 325.7, y: 144.3 },
+  { x: 325.7, y: 111.7 },
+];
+/** Vapor de la mesa: tres volutas finas arriba de la caja (de abajo hacia
  *  arriba: el trazo se dibuja subiendo). */
 const VAPOR = [
-  "M94.5 222c-2.2-2.4 2.2-4.4 0-7s2.2-4.6 0-7",
-  "M100 220.5c-2.4-2.6 2.4-4.8 0-7.6s2.4-5 0-7.6",
-  "M105.5 222c-2.2-2.4 2.2-4.4 0-7s2.2-4.6 0-7",
+  "M336.5 116c-2.2-2.4 2.2-4.4 0-7s2.2-4.6 0-7",
+  "M342 117.5c-2.4-2.6 2.4-4.8 0-7.6s2.4-5 0-7.6",
+  "M347.5 116c-2.2-2.4 2.2-4.4 0-7s2.2-4.6 0-7",
 ];
+/** Puntitos del globito chico (simétricos: se dan vuelta con él). */
+const PUNTITOS = [-3.6, 0, 3.6];
 
 /**
  * Fracción de la duración (0 a 1) en la que un ease llega a `f` por primera
- * vez. Sirve para sincronizar con un resorte: "cuando la cajita ya está al
- * 90 % del tramo", "cuando el trazo pasa por la estación".
+ * vez. Sirve para sincronizar con un resorte: "cuando el viajero ya está al
+ * 90 % del tramo", "cuando la cola de la estela pasa por la parada".
  */
 function momento(ease: (p: number) => number, f: number): number {
   let lo = 0;
@@ -182,279 +210,267 @@ function momento(ease: (p: number) => number, f: number): number {
   return hi;
 }
 
-/** ¿Alguna parte del elemento está dentro de la pantalla? */
-function aLaVista(el: Element): boolean {
-  const r = el.getBoundingClientRect();
-  return r.bottom > 0 && r.top < window.innerHeight;
+type ResorteGsap = { ease: (p: number) => number; duration: number };
+
+/** Corre `fn` sin que lo que crea quede registrado en el contexto `ctx`. */
+function fuera<R>(ctx: gsap.Context, fn: () => R): R {
+  let r: R | undefined;
+  ctx.ignore(() => {
+    r = fn();
+  });
+  return r as R;
 }
 
 /**
- * Arma la coreografía (estado inicial, timelines pausados y disparadores) o,
- * si la sección ya está a la vista, deja el estado final y solo el detalle
- * vivo. Tira si falta algo del DOM (queda estático). Devuelve la limpieza de
- * lo que no revierte el contexto de GSAP (listeners y la capa) y la que va
- * después de revertirlo (lo que dejó prepararTransformes).
+ * Arma la vuelta (timeline en loop, pausado) y la zona en la que corre. Tira
+ * si falta algo del DOM o las cantidades no coinciden (queda estático).
+ *
+ * La vuelta va FUERA del contexto `escena` y se revierte sola, con su propio
+ * revert (limpiar), antes que el contexto (que a su vez va fuera del de
+ * matchMedia, para que ese orden valga también al pasar a reducir
+ * movimiento: ver ProcesoGrid): un timeline revertido entero
+ * recorre sus tweens hacia atrás en orden y deja todo como estaba. Revertidos
+ * uno por uno desde el contexto, GSAP deja los `set` para el final y los
+ * revierte después de los tweens que los siguen (el giro quedaba en -1, el
+ * vapor en 0), y el arranque del fromTo de la estela se revertía dos veces
+ * (la estela quedaba sin trazo al pasar a reducir movimiento).
+ *
+ * Devuelve la limpieza que va antes de revertir el contexto (el trigger, la
+ * vuelta y la capa) y la que va después (lo que dejó prepararTransformes).
  */
-function armar(root: HTMLElement): {
+function armar(
+  root: HTMLElement,
+  escena: gsap.Context,
+): {
   limpiar: () => void;
   despues: () => void;
 } {
   const q = gsap.utils.selector(root);
-  const uno = <T extends Element = Element>(sel: string): T => {
-    const el = root.querySelector<T>(sel);
+  const uno = <E extends Element = Element>(sel: string): E => {
+    const el = root.querySelector<E>(sel);
     if (!el) throw new Error(`ProcesoGrid: falta ${sel}`);
     return el;
   };
 
   const lienzo = uno<HTMLElement>("[data-lienzo]");
   const lista = uno<HTMLElement>("[data-lista]");
-  const volutas = q('[data-m="voluta"]');
-  if (!volutas.length) throw new Error("ProcesoGrid: falta el vapor");
-
-  /* 3 · Vivo: el vaivén del vapor. Cada cuadro repinta el SVG del mapa: corre
-     solo con el mapa a la vista, la coreografía terminada y la página quieta
-     (en pleno scroll se pausa y sigue al detenerse). */
-  const vaiven = gsap.timeline({ repeat: -1, paused: true });
-  volutas.forEach((voluta, i) => {
-    vaiven.to(
-      voluta,
-      {
-        keyframes: { y: [0, -2, 0], opacity: [1, 0.45, 1], easeEach: TRAMO },
-        duration: 3.4,
-        ease: "none",
-      },
-      i * 0.6,
-    );
-  });
-  let vivo = false;
-  let visible = false;
-  let scrolleando = false;
-  const sincronizarVapor = () => {
-    if (vivo && visible && !scrolleando) vaiven.play();
-    else vaiven.pause();
-  };
-  ScrollTrigger.create({
-    trigger: lienzo,
-    start: "top bottom",
-    end: "bottom top",
-    refreshPriority: 0,
-    onToggle: (self) => {
-      visible = self.isActive;
-      sincronizarVapor();
-    },
-  });
-  const alEmpezarScroll = () => {
-    scrolleando = true;
-    sincronizarVapor();
-  };
-  const alTerminarScroll = () => {
-    scrolleando = false;
-    sincronizarVapor();
-  };
-  ScrollTrigger.addEventListener("scrollStart", alEmpezarScroll);
-  ScrollTrigger.addEventListener("scrollEnd", alTerminarScroll);
 
   // El SVG del mapa (se redibuja mientras anima) es capa propia solo con la
   // escena cerca (ProcesoGrid.module.css, [data-capa]).
   const quitarCapa = capaActiva(root);
+  let vueltaCreada: gsap.core.Timeline | null = null;
+  let zona: ScrollTrigger | null = null;
   const limpiar = () => {
-    ScrollTrigger.removeEventListener("scrollStart", alEmpezarScroll);
-    ScrollTrigger.removeEventListener("scrollEnd", alTerminarScroll);
+    // Primero el trigger: que nada vuelva a dar play a la vuelta revertida.
+    zona?.kill();
+    vueltaCreada?.revert();
     quitarCapa();
   };
-
-  // Ya a la vista al montar (recarga a mitad de página): queda el estado
-  // final del servidor, sin apagarse para volver a encenderse.
-  if (aLaVista(root)) {
-    vivo = true;
-    sincronizarVapor();
-    return { limpiar, despues: () => {} };
-  }
   let despues = () => {};
 
   try {
-    const anillo = uno<SVGPathElement>('[data-m="anillo"]');
-    const trazo = uno<SVGPathElement>('[data-m="ruta-trazo"]');
     const estela = uno<SVGPathElement>('[data-m="estela"]');
-    const cocina = uno('[data-m="cocina"]');
-    const oficina = uno('[data-m="oficina"]');
+    const globo = uno('[data-m="globo"]');
     const caja = uno('[data-m="caja"]');
+    const msj = uno('[data-m="msj"]');
+    const giro = uno('[data-m="giro"]');
     const cajaPop = uno('[data-m="caja-pop"]');
     const cajaCuerpo = uno('[data-m="caja-cuerpo"]');
-    const luz = uno('[data-m="oficina-luz"]');
     const brillo = uno('[data-m="brillo"]');
-    const halo = uno('[data-m="halo"]');
+    const mesaLuz = uno('[data-m="mesa-luz"]');
     const pulso = uno('[data-m="pulso"]');
-    const oficinaAro = uno('[data-m="oficina-aro"]');
-    const etqAnillo = uno('[data-etq="anillo"]');
-    const etqCocina = uno('[data-etq="cocina"]');
-    const etqOficina = uno('[data-etq="oficina"]');
-    const oficinaLuz = uno('[data-etq="oficina"] [data-luz]');
+    const vapor = uno('[data-m="vapor"]');
+    const volutas = q('[data-m="vapor"] path');
+    const teclas = q('[data-m="tecla"]');
+    const hitos = q('[data-m="hito"]');
+    const pings = q('[data-m="ping"]');
+    const luces = q("[data-luz]");
     const pasos = q("[data-paso]");
     const nums = q("[data-num]");
-    const textos = q("[data-texto]");
     const titulos = q("[data-titulo]");
     const descs = q("[data-desc]");
     const puntos = q("[data-punto]");
     const tramos = q("[data-tramo]");
-    const hitos = q('[data-m="hito"]');
-    const hitoAros = q('[data-m="hito-aro"]');
-    const etqEstaciones = q('[data-etq="estacion"]');
-    const estaciones = q('[data-etq="estacion"] [data-luz]');
-    const pings = q('[data-m="ping"]');
-    const vapor = q('[data-m="vapor"] path');
     const TRAMOS = PARADAS.length - 1;
     if (
       pasos.length !== PARADAS.length ||
+      nums.length !== PARADAS.length ||
+      titulos.length !== PARADAS.length ||
+      descs.length !== PARADAS.length ||
+      puntos.length !== PARADAS.length ||
       tramos.length !== TRAMOS ||
       hitos.length !== HITOS.length ||
-      hitoAros.length !== HITOS.length ||
-      estaciones.length !== HITOS.length ||
-      pings.length !== HITOS.length + 1
+      pings.length !== HITOS.length ||
+      luces.length !== HITOS.length + 1 ||
+      teclas.length !== TECLAS.length ||
+      volutas.length !== VAPOR.length
     ) {
       throw new Error(
         "ProcesoGrid: la cantidad de pasos no coincide con el mapa",
       );
     }
 
-    const lento = resorteGsap("lento");
     const entrada = resorteGsap("entrada");
+    const panel = resorteGsap("panel");
     const pop = resorteGsap("pop");
     const tacto = resorteGsap("tacto");
-    const centro = { transformOrigin: "50% 50%" };
+    const lento = resorteGsap("lento");
 
     // Rendimiento: lo HTML que se mueve o cambia de opacidad se lee en una
     // sola tanda antes de los set de abajo (prepararTransformes, lib/gsap.ts).
-    // Las etiquetas del anillo y de la oficina solo cambian de opacidad (se
-    // centran con `translate`).
+    // Los rótulos del mapa solo cambian de opacidad (se centran con
+    // `translate`, en el span de afuera, que GSAP no toca).
     despues = prepararTransformes(
-      [etqCocina, oficinaLuz, ...textos, ...puntos, ...tramos],
-      [
-        etqAnillo,
-        etqCocina,
-        etqOficina,
-        oficinaLuz,
-        ...etqEstaciones,
-        ...estaciones,
-        ...nums,
-        ...titulos,
-        ...descs,
-      ],
+      [...puntos, ...tramos],
+      [...nums, ...titulos, ...descs, ...luces],
     );
 
-    /* Estado inicial (el SSR trae el final). La trama de la ciudad y la
-       calzada tenue del anillo quedan: el mapa nunca se ve vacío. */
-    gsap.set(anillo, { drawSVG: "50% 50%" });
-    // Las etiquetas que se centran con la propiedad CSS `translate` (anillo,
-    // oficina) solo cambian de opacidad: si GSAP les escribe un transform,
-    // absorbe ese translate y pierde el -100% vertical (la etiqueta de la
-    // oficina caía sobre el halo). La que sube es la de la cocina y, en la
-    // oficina, el texto de adentro.
-    gsap.set([etqAnillo, etqCocina, etqOficina], { opacity: 0 });
-    gsap.set([etqCocina, oficinaLuz], { y: 4 });
-    gsap.set([cocina, oficina], { opacity: 0, scale: 0.3, ...centro });
-    gsap.set(trazo, { drawSVG: "0% 0%" });
-    gsap.set(hitoAros, { opacity: 0, scale: 0.4, ...centro });
-    gsap.set(hitos, { opacity: 0, scale: 0.2, ...centro });
-    gsap.set(etqEstaciones, { opacity: 0 });
-    gsap.set(estaciones, { opacity: APAGADO.estacion });
-    gsap.set(vapor, { drawSVG: "0% 0%" });
-    gsap.set(caja, { x: COCINA.x, y: COCINA.y });
-    gsap.set(cajaPop, { opacity: 0, scale: 0.4, y: 5, ...centro });
-    gsap.set(cajaCuerpo, centro);
-    gsap.set(estela, { drawSVG: "0% 0%" });
-    gsap.set([...pings, pulso], { opacity: 0, scale: 0.8, ...centro });
-    gsap.set([halo, brillo], { opacity: 0, scale: 0.6, ...centro });
-    gsap.set(luz, { scale: 0, ...centro });
-    // El aro crema de la oficina: en el SSR ya se abrió y se fue.
-    gsap.set(oficinaAro, { opacity: 1, scale: 1, ...centro });
-    gsap.set(oficinaLuz, { opacity: APAGADO.oficina });
-    gsap.set(nums, { opacity: APAGADO.num });
-    gsap.set(titulos, { opacity: APAGADO.titulo });
-    gsap.set(descs, { opacity: APAGADO.desc });
-    gsap.set(textos, { y: 6 });
-    gsap.set(puntos, { scale: 0 });
-    gsap.set(tramos, { scaleY: 0, transformOrigin: "50% 0%" });
+    /* Al armar solo cambia lo invisible (o queda en el mismo valor): el
+       estado del SSR es el último cuadro de la vuelta. */
+    gsap.set(
+      [
+        globo,
+        msj,
+        giro,
+        cajaPop,
+        cajaCuerpo,
+        brillo,
+        pulso,
+        ...hitos,
+        ...pings,
+      ],
+      { transformOrigin: "50% 50%" },
+    );
+    gsap.set(msj, { scale: 0.5 });
+    gsap.set([...pings, pulso], { opacity: 0, scale: 0.8 });
 
-    /** Aparecer: opacidad aparte y el resto con el resorte dado. */
-    const aparecer = (
-      tl: gsap.core.Timeline,
-      el: gsap.TweenTarget,
-      resto: gsap.TweenVars,
-      resorte: { ease: (p: number) => number; duration: number },
-      t: number,
-    ) =>
-      tl
-        .to(el, { opacity: 1, ...OPACIDAD_GSAP }, t)
-        .to(el, { ...resto, ...resorte }, t);
-
-    /** Un aro que se abre y se desvanece (arranca y termina invisible). */
-    const ping = (
-      tl: gsap.core.Timeline,
-      el: Element,
-      t: number,
-      escala = 3.2,
-    ) =>
-      tl
-        .set(el, { opacity: 0.7, scale: 0.8 }, t)
-        .to(el, { scale: escala, ...lento }, t)
-        .to(
-          el,
-          {
-            opacity: 0,
-            duration: lento.duration * 0.7,
-            ease: OPACIDAD_GSAP.ease,
-          },
-          t,
-        );
-
-    /* 1 · Mapa. */
-    const intro = gsap.timeline({ paused: true });
-    intro
-      .to(anillo, { drawSVG: "0% 100%", ...lento }, T.anillo)
-      .to(etqAnillo, { opacity: 1, ...OPACIDAD_GSAP }, T.etqAnillo);
-    aparecer(intro, cocina, { scale: 1 }, pop, T.cocina);
-    aparecer(intro, etqCocina, { y: 0 }, entrada, T.cocina + T.etiqueta);
-    aparecer(intro, oficina, { scale: 1 }, pop, T.oficina);
-    intro
-      .to(etqOficina, { opacity: 1, ...OPACIDAD_GSAP }, T.oficina + T.etiqueta)
-      .to(oficinaLuz, { y: 0, ...entrada }, T.oficina + T.etiqueta);
-    intro.to(trazo, { drawSVG: "0% 100%", ...entrada }, T.ruta);
-    hitoAros.forEach((aro, i) => {
-      // Cada estación asoma cuando el trazo pasa por ella.
-      const t = T.ruta + momento(entrada.ease, HITOS[i].f) * entrada.duration;
-      aparecer(intro, aro, { scale: 1 }, pop, t);
-      intro.to(etqEstaciones[i], { opacity: 1, ...OPACIDAD_GSAP }, t + 0.05);
-    });
-
-    /* 2 · Viaje. */
-    const viaje = gsap.timeline({ paused: true });
-    const encender = (k: number, t: number) => {
-      viaje
-        .to([nums[k], titulos[k], descs[k]], { opacity: 1, ...OPACIDAD_GSAP }, t)
-        .to(textos[k], { y: 0, ...entrada }, t)
-        .to(puntos[k], { scale: 1, ...pop }, t);
+    /* La lista, con quickTo: arranca siempre del valor actual, así el primer
+       apagado sale del 1 del SSR sin dejar ese 1 grabado para las vueltas
+       siguientes (un tween del timeline volvería a él en cada vuelta). */
+    const luz = (els: Element[]) =>
+      els.map((el) => gsap.quickTo(el, "opacity", { ...OPACIDAD_GSAP }));
+    const qNum = luz(nums);
+    const qTit = luz(titulos);
+    const qDesc = luz(descs);
+    /** Enciende el paso k y deja los demás tenues. */
+    const activar = (k: number) => {
+      for (let i = 0; i < qNum.length; i++) {
+        qNum[i](i === k ? 1 : APAGADO.num);
+        qTit[i](i === k ? 1 : APAGADO.titulo);
+        qDesc[i](i === k ? 1 : APAGADO.desc);
+      }
     };
 
-    // La cocina echa vapor y la cajita sale de ella (sube y se asienta).
-    viaje.to(
-      vapor,
-      { drawSVG: "0% 100%", ...entrada, stagger: 0.08 },
-      T.vapor,
+    // La vuelta y sus tweens van fuera del contexto (ver armar).
+    const vuelta = fuera(escena, () =>
+      gsap.timeline({ repeat: -1, paused: true }),
     );
-    aparecer(viaje, cajaPop, { scale: 1, y: 0 }, pop, T.sale);
-    ping(viaje, pings[0], T.paso01);
-    encender(0, T.paso01);
+    vueltaCreada = vuelta;
+    fuera(escena, () => {
+      /** Aparecer: opacidad aparte y el resto con el resorte dado. */
+      const aparecer = (
+        el: gsap.TweenTarget,
+        resto: gsap.TweenVars,
+        resorte: ResorteGsap,
+        t: number,
+      ) =>
+        vuelta
+          .to(el, { opacity: 1, ...OPACIDAD_GSAP }, t)
+          .to(el, { ...resto, ...resorte }, t);
 
-    // Tres tramos. Cada uno con el resorte `entrada` entero (sale de 0 y se
-    // asienta sin rebote) y la partida siguiente recién cuando terminó: la
-    // cajita nunca salta. La estación y su paso se encienden cuando la
-    // cajita ya hizo el 90 % del tramo (se lee como "llegó").
-    const llegada = momento(entrada.ease, 0.9) * entrada.duration;
-    let t = T.parte;
-    for (let k = 0; k < TRAMOS; k++) {
-      viaje
+      /** Un aro que se abre y se desvanece (arranca y termina invisible). */
+      // Escalas chicas: con 3.2 y 1.9 los aros pasaban por encima de los
+      // rótulos 02, 03 y "04 Tu mesa" mientras se apagaban.
+      const ping = (el: Element, t: number, escala = 2.4) =>
+        vuelta
+          .set(el, { opacity: 0.7, scale: 0.8 }, t)
+          .to(el, { scale: escala, ...lento }, t)
+          .to(
+            el,
+            {
+              opacity: 0,
+              duration: lento.duration * 0.7,
+              ease: OPACIDAD_GSAP.ease,
+            },
+            t,
+          );
+
+      /** Cuándo la cola de la estela que se consume pasa por la fracción f. */
+      const cola = (f: number) =>
+        Math.max(momento(entrada.ease, f) * entrada.duration, T.minimo);
+      /** Del arranque de un tramo a que el viajero "llegó" (90 %): 0.253 s. */
+      const llegada = momento(panel.ease, 0.9) * panel.duration;
+
+      /* 0 · Cierre de la vuelta anterior: la estela se consume hacia la mesa,
+         el vapor y la caja se van, y cada parada (con su paso del riel) se
+         apaga cuando la cola pasa por ella. */
+      vuelta
+        .to(estela, { drawSVG: "100% 100%", ...entrada }, 0)
+        .to(vapor, { opacity: 0, ...SALIDA_GSAP }, 0)
+        .to(cajaPop, { opacity: 0, ...SALIDA_GSAP }, T.cajaSale);
+      tramos.forEach((tramo, k) => {
+        // El tramo del riel se vacía hacia abajo, detrás de la cola.
+        const t = cola(PARADAS[k]);
+        vuelta
+          .set(tramo, { transformOrigin: "50% 100%" }, t)
+          .to(tramo, { scaleY: 0, ...tacto }, t);
+      });
+      hitos.forEach((hito, k) => {
+        const t = cola(PARADAS[k + 1]);
+        vuelta
+          .to(hito, { opacity: 0, ...SALIDA_GSAP }, t)
+          .to(hito, { scale: 0.2, ...tacto }, t)
+          .to(luces[k], { opacity: APAGADO.rotulo, ...OPACIDAD_GSAP }, t)
+          .to(puntos[k + 1], { scale: 0, ...tacto }, t);
+      });
+      // Rearmado, todo invisible (caja y vapor ya se fueron).
+      vuelta
+        .set(caja, { x: ORIGEN.x, y: ORIGEN.y }, T.rearmar)
+        .set(cajaPop, { scale: 0.5 }, T.rearmar)
+        .set(cajaCuerpo, { scale: 1 }, T.rearmar)
+        .set(volutas, { drawSVG: "0% 0%" }, T.rearmar)
+        .to([mesaLuz, brillo], { opacity: 0, ...OPACIDAD_GSAP }, T.mesaApaga)
         .to(
+          luces[HITOS.length],
+          { opacity: APAGADO.rotulo, ...OPACIDAD_GSAP },
+          T.mesaApaga,
+        )
+        .to(puntos[TRAMOS], { scale: 0, ...tacto }, T.mesaApaga)
+        .set(tramos, { transformOrigin: "50% 0%" }, T.rearmarRiel)
+        .set(brillo, { scale: 0.6 }, T.rearmarBrillo);
+
+      /* 1 · Tu mensaje: el globito escribe, da un toque de envío (un solo
+         tween con keyframes: nada se pisa en la escala) y de su colita sale el
+         globito chico. */
+      vuelta.call(activar, [0], T.activo01);
+      teclas.forEach((tecla, i) => {
+        vuelta.to(
+          tecla,
+          {
+            keyframes: { y: [0, -2.4, 0], easeEach: TRAMO },
+            duration: T.teclaDur,
+            ease: "none",
+          },
+          T.tecleo + i * T.tecla,
+        );
+      });
+      vuelta.to(
+        globo,
+        {
+          keyframes: { scale: [1, 0.94, 1], easeEach: TRAMO },
+          duration: T.envioDur,
+          ease: "none",
+        },
+        T.envio,
+      );
+      aparecer(msj, { scale: 1 }, pop, T.envio);
+
+      /* 2 · El viaje, en tres tramos con `panel` (sale de 0 y se asienta sin
+         rebote). La estela lo sigue y el tramo del riel se llena a la par; al
+         llegar a cada lugar se enciende con su paso. */
+      T.salidas.forEach((sale, k) => {
+        const hasta = `0% ${PARADAS[k + 1] * 100}%`;
+        vuelta.to(
           caja,
           {
             motionPath: {
@@ -462,86 +478,85 @@ function armar(root: HTMLElement): {
               start: PARADAS[k],
               end: PARADAS[k + 1],
             },
-            ...entrada,
+            ...panel,
           },
-          t,
-        )
-        // La estela sigue a la cajita: mismo largo, mismo resorte.
-        .to(estela, { drawSVG: `0% ${PARADAS[k + 1] * 100}%`, ...entrada }, t)
-        // El tramo del riel se llena a la par.
-        .to(tramos[k], { scaleY: 1, ...entrada }, t);
+          sale,
+        );
+        if (k === 0) {
+          vuelta.fromTo(
+            estela,
+            { drawSVG: "0% 0%" },
+            { drawSVG: hasta, ...panel, immediateRender: false },
+            sale,
+          );
+        } else {
+          vuelta.to(estela, { drawSVG: hasta, ...panel }, sale);
+        }
+        vuelta.to(tramos[k], { scaleY: 1, ...panel }, sale);
 
-      const llega = t + llegada;
-      if (k < HITOS.length) {
-        aparecer(viaje, hitos[k], { scale: 1 }, pop, llega);
-        viaje.to(estaciones[k], { opacity: 1, ...OPACIDAD_GSAP }, llega);
-        ping(viaje, pings[k + 1], llega);
-        encender(k + 1, llega);
-      } else {
-        // Entrega: la cajita se achica y se va en la oficina, que se enciende
-        // en ámbar (punto, halo, brillo y un pulso) junto con el paso 04.
-        const enciende = llega + T.entrega;
-        viaje
-          .to(cajaCuerpo, { scale: 0.35, ...tacto }, llega)
-          .to(cajaCuerpo, { opacity: 0, ...SALIDA_GSAP }, llega + 0.06)
-          .to(oficinaAro, { scale: 1.8, ...lento }, enciende)
-          .to(oficinaAro, { opacity: 0, ...OPACIDAD_GSAP }, enciende)
-          .to(luz, { scale: 1, ...pop }, enciende)
-          .to(oficinaLuz, { opacity: 1, ...OPACIDAD_GSAP }, enciende);
-        aparecer(viaje, [halo, brillo], { scale: 1 }, pop, enciende);
-        ping(viaje, pulso, enciende, 2.6);
-        encender(PARADAS.length - 1, enciende);
-      }
-      t += entrada.duration + T.espera;
-    }
-    viaje.call(() => {
-      vivo = true;
-      sincronizarVapor();
+        const llega = sale + llegada;
+        if (k < HITOS.length) {
+          aparecer(hitos[k], { scale: 1 }, pop, llega);
+          vuelta
+            .to(luces[k], { opacity: 1, ...OPACIDAD_GSAP }, llega)
+            .to(puntos[k + 1], { scale: 1, ...pop }, llega)
+            .call(activar, [k + 1], llega);
+          ping(pings[k], llega);
+          if (k === 0) {
+            // 02: el globito chico se da vuelta. Es la respuesta.
+            vuelta.to(giro, { scaleX: -1, ...pop }, llega + T.giro);
+          } else {
+            // 03: el pedido quedó cerrado; el globito pasa a ser la cajita.
+            const cambio = llega + T.cambio;
+            vuelta
+              .to(msj, { scale: 0.5, ...tacto }, cambio)
+              .to(msj, { opacity: 0, ...SALIDA_GSAP }, cambio);
+            aparecer(cajaPop, { scale: 1 }, pop, cambio);
+            vuelta.set(giro, { scaleX: 1 }, T.giroVuelve);
+          }
+        } else {
+          // 04: la cajita se apoya en la mesa, que se enciende en ámbar (aro,
+          // brillo y un pulso) junto con su paso, y sube el vapor.
+          const entrega = llega + T.entrega;
+          vuelta
+            .to(cajaCuerpo, { scale: 0.8, ...tacto }, entrega)
+            .to(mesaLuz, { opacity: 1, ...OPACIDAD_GSAP }, entrega);
+          aparecer(brillo, { scale: 1 }, pop, entrega);
+          ping(pulso, entrega, 1.6);
+          vuelta
+            .to(luces[k], { opacity: 1, ...OPACIDAD_GSAP }, entrega)
+            .to(puntos[k + 1], { scale: 1, ...pop }, entrega)
+            .call(activar, [k + 1], entrega)
+            .set(vapor, { opacity: 1 }, entrega + T.vapor)
+            .to(
+              volutas,
+              { drawSVG: "0% 100%", ...entrada, stagger: 0.08 },
+              entrega + T.vapor,
+            );
+        }
+      });
+      // Hasta VUELTA todo quieto y servido: ese último cuadro es el del SSR.
+      vuelta.set({}, {}, VUELTA);
     });
 
-    /* Disparo: el mapa arranca al entrar a la vista; el viaje, con el mapa
-       armado y los pasos a la vista. Cada uno una sola vez. */
-    let introHecha = false;
-    let pasosALaVista = false;
-    let viajando = false;
-    const quizasViajar = () => {
-      if (viajando || !introHecha || !pasosALaVista) return;
-      viajando = true;
-      viaje.play();
+    /* Corre solo con la sección a la vista; afuera, en pausa. Se decide
+       también en cada refresh: si se arma en medio de un cambio de
+       matchMedia (al volver de reducir movimiento), ScrollTrigger la mide
+       recién en el refresh siguiente. */
+    const seguir = (self: ScrollTrigger) => {
+      if (self.isActive) vuelta.play();
+      else vuelta.pause();
     };
-    intro.call(
-      () => {
-        introHecha = true;
-        quizasViajar();
-      },
-      [],
-      T.listo,
-    );
-    let introCorriendo = false;
-    ScrollTrigger.create({
+    zona = ScrollTrigger.create({
       trigger: lienzo,
-      ...ZONA.mapa,
+      start: ZONA.vuelta.start,
+      endTrigger: lista,
+      end: ZONA.vuelta.end,
       refreshPriority: 0,
-      onToggle: (self) => {
-        if (!self.isActive || introCorriendo) return;
-        introCorriendo = true;
-        intro.play();
-      },
+      onToggle: seguir,
+      onRefresh: seguir,
     });
-    ScrollTrigger.create({
-      trigger: lista,
-      ...ZONA.pasos,
-      // Función: se vuelve a decidir en cada refresh (al cruzar el corte).
-      start: () =>
-        window.matchMedia(MQ_COLUMNA).matches
-          ? ZONA.pasosColumna.start
-          : ZONA.pasos.start,
-      refreshPriority: 0,
-      onToggle: (self) => {
-        pasosALaVista = self.isActive;
-        quizasViajar();
-      },
-    });
+    if (zona.isActive) vuelta.play();
   } catch (error) {
     limpiar();
     throw error;
@@ -569,21 +584,28 @@ export function ProcesoGrid({
 
       // Todo se arma recién con los plugins registrados. Hasta entonces (y si
       // no llegan) queda el estado final del servidor: no se esconde nada
-      // antes. armar() decide en ese momento si la sección ya está a la vista.
+      // antes.
       let desmontado = false;
       const montar = contextSafe(() => {
         if (desmontado) return;
         const mm = gsap.matchMedia();
         // Reducir movimiento: la versión quieta del SSR, sin tocar nada.
-        mm.add(MQ_MOVER, () => {
+        mm.add(MQ_MOVER, (deMedia) => {
           // Contexto propio: si algo falla al armar, se revierte lo que alcanzó
-          // a crearse y queda la versión estática (fail-open).
-          const escena = gsap.context(() => {}, root);
+          // a crearse y queda la versión estática (fail-open). Se crea Y se
+          // llena fuera del contexto de matchMedia: Context.add se anota en el
+          // contexto que esté activo al correr, y si quedara adentro, al
+          // cambiar a reducir movimiento matchMedia lo revertiría antes que la
+          // limpieza de abajo, que tiene que revertir primero la vuelta y
+          // recién después la escena (ver armar).
+          const escena = fuera(deMedia, () => gsap.context(() => {}, root));
           let armado = { limpiar: () => {}, despues: () => {} };
           try {
-            escena.add(() => {
-              armado = armar(root);
-            });
+            fuera(deMedia, () =>
+              escena.add(() => {
+                armado = armar(root, escena);
+              }),
+            );
           } catch (error) {
             if (process.env.NODE_ENV !== "production") console.error(error);
             escena.revert();
@@ -630,35 +652,30 @@ export function ProcesoGrid({
         <div className={s.cuerpo}>
           <div className={s.mapa}>
             <div data-lienzo className={s.lienzo}>
-              <MapaTrama />
               <Mapa />
+              {/* Rótulos: HTML sobre el SVG (mantienen su tamaño a cualquier
+                  ancho del mapa). GSAP solo toca la opacidad de los
+                  [data-luz], nunca el span que se centra con `translate`. */}
               <div aria-hidden>
-                <span data-etq="anillo" className={cn(s.etq, s.etqAnillo)}>
-                  {MAPA_COPY.anillo}
+                <span className={cn(s.etq, s.etqOrigen)}>
+                  <span className={s.etqNum}>{pasos[0]?.n}</span>{" "}
+                  {MAPA_COPY.origen}
                 </span>
-                <span data-etq="cocina" className={cn(s.etq, s.etqCocina)}>
-                  {MAPA_COPY.cocina}
-                </span>
-                <span data-etq="oficina" className={cn(s.etq, s.etqOficina)}>
+                <span className={cn(s.etq, s.etqParada2)}>
                   <span data-luz className="block">
-                    {MAPA_COPY.destino}
+                    {pasos[1]?.n}
                   </span>
                 </span>
-                {HITOS.map((h, i) => (
-                  <span
-                    key={h.f}
-                    data-etq="estacion"
-                    className={cn(
-                      s.etq,
-                      s.etqEstacion,
-                      i === 0 ? s.etqEstacion1 : s.etqEstacion2,
-                    )}
-                  >
-                    <span data-luz className="block">
-                      {pasos[i + 1]?.n}
-                    </span>
+                <span className={cn(s.etq, s.etqParada3)}>
+                  <span data-luz className="block">
+                    {pasos[2]?.n}
                   </span>
-                ))}
+                </span>
+                <span className={cn(s.etq, s.etqDestino)}>
+                  <span data-luz className="block">
+                    {pasos[3]?.n} {MAPA_COPY.destino}
+                  </span>
+                </span>
               </div>
             </div>
           </div>
@@ -681,7 +698,7 @@ export function ProcesoGrid({
                       <span data-tramo className={s.tramoLleno} />
                     </span>
                   ) : null}
-                  <div data-texto className={s.texto}>
+                  <div className={s.texto}>
                     <h3 data-titulo className={s.titulo}>
                       {p.title}
                     </h3>
@@ -700,109 +717,22 @@ export function ProcesoGrid({
   );
 }
 
-/**
- * La ciudad: una trama de puntos muy tenue, solo adentro del anillo. Va en su
- * propio SVG, quieto y debajo del mapa: el mapa se redibuja en cada cuadro
- * mientras anima (DrawSVG, la cajita, el vapor) y con la trama adentro el
- * navegador volvía a rasterizar también el patrón entero. Queda siempre a la
- * vista: es la base sobre la que se dibuja el resto.
- */
-function MapaTrama() {
-  return (
-    <svg
-      viewBox="0 0 400 320"
-      className={s.svg}
-      aria-hidden
-      focusable="false"
-    >
-      <defs>
-        <clipPath id="proceso-mapa-dentro">
-          <path d={ANILLO} />
-        </clipPath>
-        <pattern
-          id="proceso-mapa-puntos"
-          width="12"
-          height="12"
-          patternUnits="userSpaceOnUse"
-        >
-          <circle
-            cx="6"
-            cy="6"
-            r="0.85"
-            className="fill-crema"
-            fillOpacity={0.13}
-          />
-        </pattern>
-      </defs>
-      <rect
-        x="0"
-        y="0"
-        width="400"
-        height="320"
-        fill="url(#proceso-mapa-puntos)"
-        clipPath="url(#proceso-mapa-dentro)"
-      />
-    </svg>
-  );
-}
-
 /** El mapa en SVG. Decorativo (aria-hidden): lo que cuenta lo cuentan los
- *  pasos. Estado del SSR: el final (ruta recorrida, oficina encendida). */
+ *  pasos. Estado del SSR: el final de la vuelta (onda recorrida, caja
+ *  apoyada en la mesa encendida, con su vapor). */
 function Mapa() {
   return (
     <svg
-      viewBox="0 0 400 320"
+      viewBox="0 0 400 200"
       className={cn(s.svg, s.svgVivo)}
       aria-hidden
       focusable="false"
     >
-      <defs>
-        {/* La ruta punteada se revela con un trazo que va de la cocina a la
-            oficina (la máscara se dibuja con DrawSVG): el punteado no se
-            puede dibujar directo porque su dasharray es el de los puntos. */}
-        <mask
-          id="proceso-ruta-plan"
-          maskUnits="userSpaceOnUse"
-          x="0"
-          y="0"
-          width="400"
-          height="320"
-        >
-          <path
-            data-m="ruta-trazo"
-            d={RUTA}
-            fill="none"
-            stroke="white"
-            strokeWidth={8}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </mask>
-      </defs>
-
-      {/* Circunvalación: una banda muy tenue (la calzada, siempre a la vista)
-          y el trazo fino, que es el que se dibuja. */}
+      {/* La onda: punteada (el plan, siempre a la vista) y la estela que deja
+          el viajero. */}
       <path
-        d={ANILLO}
-        className="fill-none stroke-crema"
-        strokeOpacity={0.06}
-        strokeWidth={10}
-        strokeLinejoin="round"
-      />
-      <path
-        data-m="anillo"
-        d={ANILLO}
-        className="fill-none stroke-crema"
-        strokeOpacity={0.6}
-        strokeWidth={1.2}
-        strokeLinecap="round"
-      />
-
-      {/* Ruta: punteada (el plan) y la estela que deja la cajita. */}
-      <path
-        data-m="punteada"
+        data-m="plan"
         d={RUTA}
-        mask="url(#proceso-ruta-plan)"
         className="fill-none stroke-crema"
         strokeOpacity={0.4}
         strokeWidth={1.4}
@@ -819,14 +749,14 @@ function Mapa() {
         strokeLinejoin="round"
       />
 
-      {/* Aros que se abren cuando se enciende un paso (cocina y estaciones).
-          En reposo no se ven. */}
-      {[COCINA, ...HITOS].map((p) => (
+      {/* Aros que se abren cuando se enciende una parada. En reposo no se
+          ven. */}
+      {HITOS.map((h) => (
         <circle
-          key={`ping-${p.x}`}
+          key={`ping-${h.f}`}
           data-m="ping"
-          cx={p.x}
-          cy={p.y}
+          cx={h.x}
+          cy={h.y}
           r="6"
           opacity={0}
           className="fill-none stroke-crema"
@@ -834,7 +764,8 @@ function Mapa() {
         />
       ))}
 
-      {/* Estaciones del recorrido (pasos 02 y 03). */}
+      {/* Paradas 02 y 03: el aro queda siempre; el punto se apaga y se
+          enciende. */}
       {HITOS.map((h) => (
         <g key={h.f}>
           <circle
@@ -856,125 +787,160 @@ function Mapa() {
         </g>
       ))}
 
-      {/* Cocina de Salguero, con su vapor. */}
-      <g data-m="cocina">
-        <circle
-          cx={COCINA.x}
-          cy={COCINA.y}
-          r="12"
-          className="fill-none stroke-crema"
-          strokeOpacity={0.3}
-          strokeWidth={1}
+      {/* Tu mensaje: el globito con los tres puntitos que escriben. El toque
+          de envío escala el grupo entero. */}
+      <g data-m="globo">
+        <path
+          d={GLOBO}
+          className="fill-bg stroke-crema"
+          strokeOpacity={0.8}
+          strokeWidth={1.2}
+          strokeLinejoin="round"
         />
-        <circle cx={COCINA.x} cy={COCINA.y} r="4.6" className="fill-crema" />
-      </g>
-      {/* Cada voluta en su grupo: el viaje dibuja el trazo y el vaivén mueve
-          el grupo (animaciones separadas, elementos separados). */}
-      <g data-m="vapor" className="fill-none stroke-crema">
-        {VAPOR.map((d) => (
-          <g key={d} data-m="voluta">
-            <path
-              d={d}
-              strokeOpacity={0.42}
-              strokeWidth={1.1}
-              strokeLinecap="round"
-            />
-          </g>
+        {TECLAS.map((t) => (
+          <circle
+            key={t.x}
+            data-m="tecla"
+            cx={t.x}
+            cy={t.y}
+            r="2.2"
+            className="fill-crema"
+            fillOpacity={0.75}
+          />
         ))}
       </g>
 
-      {/* Tu oficina: aro crema y, al llegar la cajita, la luz ámbar (punto,
-          brillo, halo y un pulso que se abre). */}
+      {/* Tu mesa, vista desde arriba: el círculo tapa la punta de la onda;
+          encima, la luz ámbar (brillo, aro y un pulso que se abre) y las 4
+          sillas. */}
       <circle
-        data-m="brillo"
-        cx={OFICINA.x}
-        cy={OFICINA.y}
-        r="17"
-        className="fill-amarillo"
-        fillOpacity={0.1}
+        cx={MESA.x}
+        cy={MESA.y}
+        r="15"
+        className="fill-bg stroke-crema"
+        strokeOpacity={0.5}
+        strokeWidth={1.2}
       />
       <circle
-        data-m="halo"
-        cx={OFICINA.x}
-        cy={OFICINA.y}
-        r="21"
+        data-m="brillo"
+        cx={MESA.x}
+        cy={MESA.y}
+        r="14.4"
+        className="fill-amarillo"
+        fillOpacity={0.12}
+      />
+      <circle
+        data-m="mesa-luz"
+        cx={MESA.x}
+        cy={MESA.y}
+        r="15"
         className="fill-none stroke-amarillo"
-        strokeOpacity={0.9}
         strokeWidth={1.2}
       />
       <circle
         data-m="pulso"
-        cx={OFICINA.x}
-        cy={OFICINA.y}
-        r="12"
+        cx={MESA.x}
+        cy={MESA.y}
+        r="15"
         opacity={0}
         className="fill-none stroke-amarillo"
         strokeWidth={1}
       />
-      <g data-m="oficina">
+      {SILLAS.map((p) => (
         <circle
-          data-m="oficina-aro"
-          cx={OFICINA.x}
-          cy={OFICINA.y}
-          r="12"
-          opacity={0}
-          className="fill-none stroke-crema"
-          strokeOpacity={0.3}
-          strokeWidth={1}
+          key={`${p.x}-${p.y}`}
+          cx={p.x}
+          cy={p.y}
+          r="1.9"
+          className="fill-crema"
+          fillOpacity={0.45}
         />
-        <circle
-          cx={OFICINA.x}
-          cy={OFICINA.y}
-          r="4.6"
-          className="fill-bg stroke-crema"
-          strokeWidth={1.2}
-        />
-        <circle
-          data-m="oficina-luz"
-          cx={OFICINA.x}
-          cy={OFICINA.y}
-          r="4.6"
-          className="fill-amarillo"
-        />
-      </g>
+      ))}
 
-      {/* La cajita con la cuchara, dibujada alrededor de (0,0). Tres capas, cada
-          una movida por su propia animación (así ninguna pisa la
-          transformación de otra al revertir): "caja" = su punto en la ruta
-          (MotionPath), "caja-pop" = sale de la cocina, "caja-cuerpo" = se
-          entrega. En el SSR ya se entregó (no se ve). */}
-      <g data-m="caja" transform={`translate(${OFICINA.x} ${OFICINA.y})`}>
-        <g data-m="caja-pop" opacity={0}>
-          <g data-m="caja-cuerpo">
+      {/* El viajero, dibujado alrededor de (0,0). Capas separadas, cada una
+          movida por su propia animación (así ninguna pisa la transformación
+          de otra al revertir): "caja" = su punto en la onda (MotionPath),
+          "msj" = el globito chico (aparece y se va), "giro" = se da vuelta en
+          02, "caja-pop" = la cajita aparece en 03, "caja-cuerpo" = se apoya
+          en la mesa. En el SSR ya se apoyó: la caja en la mesa, a 0.8. */}
+      <g data-m="caja" transform={`translate(${MESA.x} ${MESA.y})`}>
+        <g data-m="msj" opacity={0}>
+          <g data-m="giro">
             <rect
-              x="-12"
-              y="-6.5"
-              width="24"
-              height="16"
-              rx="2.2"
+              x="-8"
+              y="-7"
+              width="16"
+              height="11"
+              rx="4.5"
               className="fill-bg stroke-crema"
               strokeOpacity={0.9}
               strokeWidth={1.1}
             />
-            <rect
-              x="-13.5"
-              y="-10.5"
-              width="27"
-              height="5.5"
-              rx="1.8"
-              className="fill-surface stroke-crema"
+            <path
+              d="M-4 3.6L-6.2 8L0 3.6"
+              className="fill-bg stroke-crema"
               strokeOpacity={0.9}
               strokeWidth={1.1}
+              strokeLinejoin="round"
             />
-            <g
-              transform="translate(-1.05 -4) scale(0.062)"
-              className="fill-amarillo"
-            >
-              <ellipse cx="17" cy="27" rx="17" ry="27" />
-              <rect x="12.25" y="48" width="9.5" height="132" rx="4.75" />
+            {PUNTITOS.map((x) => (
+              <circle
+                key={x}
+                cx={x}
+                cy="-1.5"
+                r="1"
+                className="fill-crema"
+                fillOpacity={0.8}
+              />
+            ))}
+          </g>
+        </g>
+        <g data-m="caja-pop">
+          <g data-m="caja-cuerpo" transform="scale(0.8)">
+            <g transform="scale(0.85)">
+              <rect
+                x="-12"
+                y="-6.5"
+                width="24"
+                height="16"
+                rx="2.2"
+                className="fill-bg stroke-crema"
+                strokeOpacity={0.9}
+                strokeWidth={1.1}
+              />
+              <rect
+                x="-13.5"
+                y="-10.5"
+                width="27"
+                height="5.5"
+                rx="1.8"
+                className="fill-surface stroke-crema"
+                strokeOpacity={0.9}
+                strokeWidth={1.1}
+              />
+              <g
+                transform="translate(-1.05 -4) scale(0.062)"
+                className="fill-amarillo"
+              >
+                <ellipse cx="17" cy="27" rx="17" ry="27" />
+                <rect x="12.25" y="48" width="9.5" height="132" rx="4.75" />
+              </g>
             </g>
           </g>
         </g>
+      </g>
+
+      {/* Vapor de la mesa servida. */}
+      <g data-m="vapor" className="fill-none stroke-crema">
+        {VAPOR.map((d) => (
+          <path
+            key={d}
+            d={d}
+            strokeOpacity={0.42}
+            strokeWidth={1.1}
+            strokeLinecap="round"
+          />
+        ))}
       </g>
     </svg>
   );

@@ -222,7 +222,7 @@ export const hero = {
  *      arriba, en tres columnas).
  *   4. fichas (solo desktop): una por producto, fila por fila, cuando se
  *      acomodan. En mobile la caja abierta queda sola, sin rótulos.
- *   5. cierre: título grande, bajada y botón, centrado debajo de la caja
+ *   5. cierre: título grande y botón, centrado debajo de la caja
  *      abierta en todos los anchos (la caja sube lo justo para dejarle lugar).
  *   6. salida: la caja abierta y el cierre se alejan juntos (escala y
  *      opacidad, sobre el mismo fondo) mientras Servicios sube pegado por
@@ -474,7 +474,7 @@ export const heroSecuencia = {
   },
   /**
    * Momento 2: frase confirmada por Benjamin, con "el mismo día" en la
-   * itálica amarilla (como "a tu oficina" en el cierre). Va centrada en el
+   * itálica amarilla (como "lucir así" en el cierre). Va centrada en el
    * espacio libre debajo de la caja (desktop y mobile), en dos renglones, y
    * entra palabra por palabra con el scroll. Se va antes de que la caja, que
    * baja mientras suben los productos, llegue hasta ella.
@@ -524,24 +524,25 @@ export const heroSecuencia = {
   ] as HeroSecuenciaFicha[],
   /**
    * Momento 5: el cierre, el remate del hero (pedido de Benjamin, 30/9/2026:
-   * "el texto de Así llega a tu oficina se pierde"). Centrado debajo de la
-   * caja abierta, en desktop y en mobile: título display grande con "a tu
-   * oficina" en la itálica amarilla, la bajada y "Armar mi pedido" (F8) en la
+   * "el texto de Así llega a tu oficina se pierde"; texto y sin bajada desde
+   * el 5/10/2026). Centrado debajo de la caja abierta, en desktop y en
+   * mobile: título display grande con "lucir así" en la itálica amarilla y
+   * "Quiero el mío" (antes "Armar mi pedido", de F8; cambiado el 5/10/2026
+   * para no repetir "pedido" debajo del título) en la
    * pill amarilla primaria, el único botón amarillo del escenario en ese
    * momento. Antes, el encuadre (productos, caja y fichas) sube y, si hace
    * falta, se achica lo justo para que el cierre entre entero debajo de la
    * caja (`ajuste`, medido en cada refresh; `escalaMin` es el tope).
    * Dura como los otros momentos (QA 30/9/2026: quedaba menos de media
    * pantalla): entra en `desde`, apenas terminado el ajuste, y se sigue
-   * leyendo hasta bien entrada la salida (ver `salida`). Título, bajada y
-   * botón entran casi juntos (~0.45 s, RITMO en HeroSecuencia): con rueda
+   * leyendo hasta bien entrada la salida (ver `salida`). Título y botón
+   * entran casi juntos (~0.45 s, RITMO en HeroSecuencia): con rueda
    * continua a ~1000 px/s el cierre queda entero antes de soltarse el pin
    * (QA 30/9/2026: el botón no llegaba a verse pleno antes de la salida).
    */
   cierre: {
-    titulo: { pre: "Así llega ", em: "a tu oficina", post: "." } as EmphasisTitle,
-    bajada: "Armada a tu medida, con mozos o delivery, dentro de Circunvalación.",
-    boton: { label: "Armar mi pedido", href: "#cotizar" } as CTA,
+    titulo: { pre: "Tu pedido puede ", em: "lucir así", post: "." } as EmphasisTitle,
+    boton: { label: "Quiero el mío", href: "#cotizar" } as CTA,
     desde: { desktop: 0.84, mobile: 0.83 },
     ajuste: { tramo: { desde: 0.71, hasta: 0.84 }, escalaMin: 0.66 } as HeroAjusteCierre,
   },
@@ -574,8 +575,8 @@ export const servicios = {
     {
       id: "catering",
       title: "Catering para eventos",
-      desc: "Mesas dulces y saladas para cumpleaños, recibidas y eventos de empresa. Armamos la propuesta según tu evento, cantidad de invitados y presupuesto.",
-      etiqueta: "Eventos sociales y corporativos",
+      desc: "Mesas dulces y saladas para cumpleaños, recibidas y reuniones de empresa.",
+      etiqueta: "Sociales y corporativos",
       ctaLabel: "Cotizar catering",
       servicioValue: "Catering para evento",
       image: "/media/catering.jpg",
@@ -586,7 +587,7 @@ export const servicios = {
     {
       id: "pasteleria",
       title: "Pastelería para eventos",
-      desc: "Tortas, alfajores, budines y mesa dulce. Pastelería casera hecha a pedido.",
+      desc: "Tortas, alfajores, budines y mesa dulce, todo casero.",
       etiqueta: "Por encargo",
       ctaLabel: "Cotizar pastelería",
       servicioValue: "Pastelería por encargo",
@@ -598,7 +599,7 @@ export const servicios = {
     {
       id: "box-regalo",
       title: "Boxes dulces y salados",
-      desc: "Cajas de regalo para fechas especiales, armadas a tu medida.",
+      desc: "Cajas de regalo para fechas especiales, a tu gusto.",
       etiqueta: "Envíos dentro de Circunvalación",
       ctaLabel: "Cotizar un box",
       servicioValue: "Box de regalo",
@@ -611,8 +612,8 @@ export const servicios = {
     {
       id: "box-corporativo",
       title: "Boxes corporativos",
-      desc: "Cajas individuales para eventos de empresa, jornadas y ocasiones especiales, o para agasajar a tu equipo en una fecha importante. Se arman a medida del evento.",
-      etiqueta: "Empresas · eventos y ocasiones especiales",
+      desc: "Cajas individuales para jornadas de trabajo o para agasajar a tu equipo.",
+      etiqueta: "Empresas · eventos y agasajos",
       ctaLabel: "Cotizar box corporativo",
       servicioValue: "Box corporativo",
       image: "/media/box-corporativo-gift.jpg",
@@ -833,7 +834,7 @@ export const proceso = {
     {
       n: "02",
       title: "Recibís propuesta y precio",
-      desc: "Armamos un menú a medida de tu evento y tu presupuesto.",
+      desc: "Te pasamos un menú pensado para tu evento y tu presupuesto.",
     },
     {
       n: "03",
@@ -851,12 +852,15 @@ export const proceso = {
    * Es el único botón de la sección (amarillo).
    */
   cta: { label: "Contanos tu evento", href: "#cotizar" } as CTA,
-  /** Rótulos del mapa del recorrido (decorativo, aria-hidden: los pasos llevan el contenido). */
-  mapa: {
-    cocina: "Cocina de Salguero",
-    destino: "Tu oficina",
-    anillo: "Circunvalación",
-  },
+  /**
+   * Rótulos de las dos puntas del recorrido de Cómo trabajamos (decorativo,
+   * aria-hidden: los pasos llevan el contenido). Salen del título ("Del
+   * mensaje a la mesa"): sirven para cualquier lugar y cualquier persona, sin
+   * zonas, direcciones ni tiempos. Los números salen de `pasos[i].n`.
+   * Reemplazan a "Cocina de Salguero", "Tu oficina" y "Circunvalación"
+   * (pedido de Benjamin, 5/10/2026).
+   */
+  mapa: { origen: "Tu mensaje", destino: "Tu mesa" },
 };
 
 /* ========================================================================== *
@@ -871,10 +875,11 @@ export const empresas = {
    * Etiquetas debajo del título (L2): datos que ayudan a decidir a quien
    * organiza para una empresa (RR.HH., compras), no rubros (esos ya los dicen
    * las palabras gigantes). Todos confirmados por Flor: trabajamos con factura,
-   * sin cantidades mínimas, pedido con 48 horas de anticipación y opciones sin
-   * TACC preparadas y embaladas por separado (nunca "apto celíaco").
+   * sin cantidades mínimas y pedido con 48 horas de anticipación. "Sin TACC
+   * embalado aparte" se sacó el 5/10/2026 (pedido de Benjamin); el dato sigue
+   * en las preguntas frecuentes.
    */
-  items: ["Con factura", "Sin mínimos", "Pedido con 48 hs", "Sin TACC embalado aparte"],
+  items: ["Con factura", "Sin mínimos", "Pedido con 48 hs"],
   cta: { label: "Cotizar para mi empresa", href: "#cotizar" } as CTA,
   /**
    * Servicio que "Cotizar para mi empresa" deja preseleccionado en el
@@ -919,11 +924,11 @@ export const faq = {
   items: [
     {
       q: "¿Tienen opciones sin TACC, veganas o vegetarianas?",
-      a: "Sí. Las opciones sin TACC van preparadas y embaladas aparte, y también tenemos veganas y vegetarianas según cada servicio. Indicanos tus preferencias al hacer el pedido y las sumamos a la propuesta.",
+      a: "Sí, tenemos opciones sin TACC, veganas y vegetarianas. Avisanos al hacer el pedido.",
     },
     {
       q: "¿Con cuánta anticipación tengo que reservar?",
-      a: "Con al menos 48 horas, y horneamos todo el mismo día de tu evento. Si reservás antes, mejor: con más tiempo diseñamos una propuesta de autor a tu medida y cuidamos cada detalle.",
+      a: "Con al menos 48 horas, y horneamos todo el mismo día de tu evento. Si reservás antes, mejor: con más tiempo diseñamos una propuesta de autor y cuidamos cada detalle.",
     },
     {
       q: "¿Hay cantidades mínimas?",
