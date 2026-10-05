@@ -93,11 +93,9 @@ function borde(h: HTMLElement, pantalla: string): string {
 export function PalabrasQueSeEncienden({
   title,
   className,
-  as: Tag = "h2",
 }: {
   title: EmphasisTitle;
   className?: string;
-  as?: "h1" | "h2" | "h3";
 }) {
   const ref = useRef<HTMLHeadingElement>(null);
   const { partes, total } = useMemo(() => trocear(title), [title]);
@@ -174,7 +172,7 @@ export function PalabrasQueSeEncienden({
   );
 
   return (
-    <Tag ref={ref} className={className}>
+    <h2 ref={ref} className={className}>
       {partes.map((parte, i) => {
         if (parte.tipo === "espacio") return parte.texto;
         return (
@@ -189,6 +187,6 @@ export function PalabrasQueSeEncienden({
           </span>
         );
       })}
-    </Tag>
+    </h2>
   );
 }

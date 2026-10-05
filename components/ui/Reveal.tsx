@@ -32,8 +32,7 @@ import { OPACIDAD, RESORTE } from "@/lib/fisica";
  * foco antes de su entrada (Tab a un botón que quedó en el borde de abajo).
  *
  * Las props `x`/`y` permiten entradas direccionales (por defecto sube 24px).
- * `duration` queda en la firma por compatibilidad pero ya no se usa: el tiempo
- * lo da el resorte.
+ * El tiempo lo da el resorte.
  *
  * El `delay` de cascada se anula en una sola columna (mobile): ahí cada placa
  * entra al viewport aislada, así que un delay fijo por índice se percibe como
@@ -62,8 +61,6 @@ export function Reveal({
   delay?: number;
   y?: number;
   x?: number;
-  /** Sin uso: el tiempo lo da el resorte `entrada` (lib/fisica.ts). */
-  duration?: number;
 }) {
   const reduceMotion = useReducedMotion();
   const ref = useRef<HTMLDivElement>(null);

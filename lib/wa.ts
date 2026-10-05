@@ -21,7 +21,7 @@ function formatFecha(iso?: string): string | null {
  * Arma el mensaje de WhatsApp con el pedido de presupuesto. El texto (saludo,
  * nombres de los datos y cierre) vive en content/data.ts (cotizador.whatsapp).
  */
-export function buildWhatsappMessage(f: QuoteForm): string {
+function buildWhatsappMessage(f: QuoteForm): string {
   const t = cotizador.whatsapp;
   const lines: string[] = [
     t.saludo,

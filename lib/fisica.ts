@@ -31,7 +31,7 @@ type Resorte = {
 };
 
 /**
- * Medidos con el solver de motion 13 (scratchpad/cierre/plan-suavizado/resortes.mjs).
+ * Medidos con el solver de motion 13 (con un script local, fuera del repo).
  * ζ = damping / (2·√(stiffness·mass)). "Asienta" = queda a menos del 0.5 % de la meta.
  */
 export const RESORTE = {

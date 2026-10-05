@@ -1,394 +1,283 @@
 # PENDIENTES · Salguero Gourmet
 
-Registro vivo de lo que falta confirmar y de las notas técnicas del proyecto.
-Cada dato no confirmado vive como `[[PLACEHOLDER]]` en `content/data.ts`.
+Registro vivo de lo que falta hacer o confirmar y de las notas técnicas vigentes.
+Cada dato no confirmado vive como `[[PLACEHOLDER]]` en `content/data.ts` (hoy no queda
+ninguno). Lo ya resuelto está resumido al final, en "Historia".
 
 ---
 
-## A · Datos del cliente — RESUELTOS (agosto 2026)
+## 1 · Falta hacer o confirmar
 
-Los ocho pendientes del brief quedaron **cargados** en `content/data.ts` con los datos que
-pasó el cliente.
+### Antes de pasar la beta (`dopamina`) a `main`
+- **Prueba en dispositivos reales.** Benjamin la probó en su celular con wifi y anda bien
+  (5/10/2026). Falta una prueba con datos móviles (4G) y, si su celular no es un iPhone,
+  una en iPhone con Safari: entrar y salir de los pins del hero y de Reseñas con el dedo,
+  rotar el teléfono en el hero y el poster con ahorro de energía. Si se puede, también un
+  Android de gama media (fluidez de la secuencia del hero y de la galería, y que no se note
+  el armado de Empresas, Galería y Flor mientras se scrollea).
+- **Fecha del sitemap.** `site.lastUpdated` (`content/data.ts`) está en 2026-10-05. Si el
+  copy cambia antes del pase a `main`, ponerle la fecha del pase.
+- **Rendimiento en celular.** Lighthouse real: 87 (ver "Notas técnicas"). Supera el piso
+  de 80 que aceptó el cliente, pero la meta del proyecto es 90+ (CLAUDE.md §9) y la FASE 5
+  sigue abierta.
+- **Dos excepciones a la regla fail-open (CLAUDE.md §5.5), para decidir y, si quedan,
+  anotarlas en §5.5:**
+  (a) en el hero, antes de hidratar y con JS y movimiento, algunas capas arrancan ocultas;
+  una red CSS (`.hs-diferida`, `hs-failsafe` en `globals.css`) las muestra a los 4 s si el
+  JS no llega; (b) el error de los campos del cotizador abre y cierra su alto (`height` y
+  `marginTop` con el resorte `panel`, `components/ui/Field.tsx`), y §5.5 pide solo
+  transform y opacity (§7.5 exceptúa solo el FAQ). La alternativa a (b) es reservar el
+  renglón del error y animar solo opacidad e `y`, que cambia el alto del formulario en
+  reposo. Mientras tanto, al abrir o cerrar se pide un `ScrollTrigger.refresh(true)`.
 
-| # | Pendiente | Dónde vive | Estado |
-|---|---|---|---|
-| 1 | ~~Anticipación mínima~~ | `politicas.anticipacionMinima` + FAQ #2 | ✅ Al menos 48 hs antes de la fecha del evento (+ seña del 50%) |
-| 2 | ~~Seña / porcentaje~~ | `politicas.senaPorcentaje` + FAQ #6 | ✅ 50% |
-| 3 | ~~Medios de pago~~ | `politicas.mediosDePago` + FAQ #6 | ✅ Efectivo, transferencia o depósito bancario |
-| 4 | ~~Horario de atención~~ | `politicas.horarioAtencion` + aside cotizador | ✅ 9 a 17 hs |
-| 5 | ~~¿Es Flor en la foto?~~ | `flor.identidadConfirmada` | ✅ Sí (`true`) |
-| 6 | ~~Link del perfil de Google~~ | `contacto.googleProfileUrl` / `resenas.profileUrl` | ✅ https://share.google/WSgW27pZTcjI7gejG |
-| 7 | ~~¿El 351 2300715 es WhatsApp?~~ | `contacto.whatsappConfirmado` | ✅ Sí (`true`) |
-| 8 | ~~¿Reseña de Nahir = box de regalo?~~ | `resenas.items[3].servicioConfirmado` | ✅ Sí (`true`) |
+### Diseño y textos que tiene que confirmar Benjamin
+- **Cierre del hero** ("Tu pedido puede *lucir así*." + pill "Quiero el mío" a `#cotizar`,
+  sin bajada desde el 5/10/2026). En compu el título va en un renglón; en el celular, en
+  dos ("Tu pedido puede / lucir así."). Confirmar: (1) mientras se ve el cierre también
+  está en pantalla la pill "Pedir presupuesto" del nav, o sea dos botones amarillos a la
+  vez; (2) para que entre el cierre, el encuadre se achica en pantallas bajas (tope 0.66,
+  `heroSecuencia.cierre.ajuste.escalaMin`). Todo se cambia en `heroSecuencia.cierre`.
+- **Secuencia del hero:** `caja-v6` en compu (sombra oscura en lugar del halo oliva, WebP
+  q80 a q88) y `caja-v7` en celular (sombras de afuera más suaves y el hueco de la
+  mermelada relleno). Si no la aprueba, la vuelta a `caja-v5` está en `_assets/archivo/`
+  (solo en el disco: hay que devolverla a `public/` con otro nombre de carpeta).
+- **Hero en compu de 1200px o más:** las columnas del hero se miden desde el borde de la
+  ventana (el título arranca en x=43 a 1440), mientras el logo y las secciones arrancan en
+  el contenedor. Alinearlas al contenedor achica la caja (13% a 1880, 24% a 1920) y a 1920
+  parte el título del inicio en tres renglones. Es una decisión de diseño.
+- **Servicios:** las 4 marcas amarillas de progreso y los números "01" a "04" del mazo.
+- **Bocaditos en Servicios en el celular:** en 375 y 390 las cartas del mazo tapan casi
+  todas las piezas. Si lo quiere más cargado: nítidas que asomen del borde y desenfocadas
+  sobre el título y entre cartas.
+- **Empresas después de Servicios** (pedido suyo del 30/9/2026, "veamos cómo queda"):
+  confirmar que queda. El menú de arriba no tiene link a Empresas (el mockup no lo tiene);
+  si lo quiere, es una línea en `nav.links`.
+- **Empresas, palabras y etiquetas:** arriba "Coffee breaks · Desayunos" y abajo "Mesas
+  gourmet · Agasajos" (`empresas.palabras`); en la pose de lectura se ven enteras "Coffee
+  breaks" y "Agasajos". Debajo del título, "Con factura", "Sin mínimos" y "Pedido con
+  48 hs" (`empresas.items`). Si quiere ver las cuatro palabras enteras hace falta letra
+  más chica o filas en bucle.
+- **Botones al final de Reseñas y de Cómo trabajamos (L6):** "Pedir presupuesto"
+  (`resenas.cta`) y "Contanos tu evento" (`proceso.cta`), los dos a `#cotizar`. Confirmar
+  los textos y que no le sobren con la pill del nav en pantalla.
+- **Coffee break en el cotizador (L3):** "Coffee break o desayuno de trabajo" es la
+  primera opción (`cotizador.form.servicioOptions`), así que queda elegida si nadie
+  preseleccionó otra, y "Cotizar para mi empresa" la elige a propósito
+  (`empresas.servicio`).
+- **Finger food en la galería:** el marquee usa un cuadro del clip 4 rotulado "Finger
+  food". Confirmar el rótulo y la foto.
+- **Visor de la galería:** usa `destacadas` + "Mesa dulce" al final (18 ítems), para que
+  cada foto del carril abra la suya.
 
-### Pendientes adicionales de las FAQ — también RESUELTOS
-- ✅ **Cantidades mínimas** → "Sin cantidades mínimas" (`politicas.cantidadesMinimas`, FAQ #3).
-- ✅ **Opciones sin TACC / veganas / vegetarianas** → nos adaptamos según el servicio (FAQ #1).
-- ✅ **Vajilla / personal** → se adapta a lo que necesita el cliente (FAQ #4).
-- ✅ **Costo de envío por zona** → se acuerda al hacer el pedido (FAQ #5).
+### Panel de gestión
+- **No se toca por ahora** (decisión de Benjamin, 5/10/2026). Consecuencia conocida: el
+  `MAPA_SERVICIO` del panel (`app/api/leads/route.ts` en su repo) no tiene "Coffee break o
+  desayuno de trabajo", así que en el sitio publicado esos pedidos entrarían como "otro"
+  (el panel ya tiene el tipo `coffee`). Es una línea cuando se retome.
 
-### Abierto (diferido por decisión del usuario)
-- ⏳ **Reseña de "Javier Sauret" con etiqueta "Evento a medida"** (punto 11 del cliente).
-  Decisión: por ahora se dejan las **4 reseñas actuales**; se sumará la de Javier Sauret
-  ("Evento a medida") más adelante, cuando llegue el **texto** de la reseña (no se inventa
-  copy de reseñas). La de Nahir ya quedó confirmada como "Box de regalo".
+### Datos del cliente
+- **Reseña de Javier Sauret ("Evento a medida"):** diferida hasta que llegue el texto (no
+  se inventa copy de reseñas).
+- **Reseñas:** se ven solo las 4 con servicio confirmado (Mauricio Schmid, María
+  Candelaria Contreras, Maria Victoria Garcia y Franco Businello). Las 5 sin servicio
+  confirmado se sacaron de `content/data.ts` (5/10/2026) y quedaron en
+  `_assets/archivo/data-retirado-2026-10-05.ts` por si vuelven.
+- **Cantidad de reseñas:** no se muestra en ninguna parte de la página (pedido de Benjamin,
+  5/10/2026). Va solo en el JSON-LD, desde `site.reviewCount` (34): actualizarlo cuando
+  cambie en Google.
 
----
+### Dominio y Google (fuera del código)
+- Verificar que esté hecho: (1) en Vercel, `salguerogourmet.com` como dominio **Primary**
+  (es el apex; www redirige al apex); (2) en Google Search Console, una **propiedad de
+  Dominio** verificada por TXT en el DNS de Vercel, con el sitemap
+  (`https://salguerogourmet.com/sitemap.xml`); (3) la URL del sitio en el perfil de Google
+  Business.
+- El meta `google-site-verification` viejo (de la propiedad `vercel.app`, en
+  `app/layout.tsx`) se saca recién cuando la propiedad de Dominio esté verificada.
 
-## B · Discrepancias de copy
-
-- ✅ **"viandas" en FAQ.** RESUELTO: la respuesta de cantidades mínimas se reescribió
-  ("Sin cantidades mínimas") y ya no menciona viandas.
-- ✅ **Galería y servicios renovados** con el material nuevo (agosto 2026): fotos elegidas
-  por el cliente en servicios (IMG_2171/1745/1903 + box en mano) y galería con 8 gemas
-  (tarta de rejilla, alfajores, oficio, bombas, mesa+vasitos, evento de noche, coffee boxes,
-  flat-lay). Con captions descriptivos.
-- 📸 **Los HEIC del cliente son imágenes en mosaico.** Decodificar SIEMPRE con el default de
-  ffmpeg (sin `-map`), que reconstruye la grilla a full-res (~2266x4028). `-map [0:v]` toma un
-  solo tile y da falsos "borrosos". Hay una biblioteca rica de fotos buenas sin usar (spreads,
-  flat-lays, oficio, eventos corporativos El Norte/Coca/Samsung/FCEFyN) para futuras pasadas.
-
----
-
-## C · Notas técnicas / de assets
-
-- ✅ **Dominio definitivo: `salguerogourmet.com`** (comprado en Vercel, agosto 2026).
-  En el código todo deriva de `site.url` (`content/data.ts`): canonical, metadataBase,
-  OG, sitemap, robots y JSON-LD. Es el **apex** (sin www); Vercel redirige www -> apex.
-  Config externa a completar (fuera del código): (1) en Vercel, asignar el dominio al
-  proyecto y ponerlo como **Primary**; (2) en Google Search Console, crear una **propiedad
-  de Dominio** verificada por **TXT en el DNS de Vercel** y reenviar el sitemap
-  (`https://salguerogourmet.com/sitemap.xml`); (3) actualizar la URL del sitio en el perfil
-  de Google Business. El `.vercel.app` sigue funcionando pero el canonical ya apunta al
-  dominio real. El meta `google-site-verification` viejo (de la propiedad vercel.app) queda
-  inofensivo.
-
-- **Nombres de video con doble extensión.** Los originales llegaron como
-  `salguero_navidad.mp4.mp4`, `salguero_caja_navidena.mp4.mp4`, `salguero_box.mp4.mp4`.
-  En FASE 2 se comprimen y se guardan en `public/media/` con nombre normalizado
-  (`salguero_navidad.mp4`, etc.).
-- **Videos crudos fuera de git.** Los 3 `.mp4` originales (~76MB) quedan en `_assets/` solo
-  como referencia y están en `.gitignore`. Al repo/deploy solo van las versiones comprimidas
-  (`public/media/`, FASE 2).
-- ✅ **ffmpeg instalado** (Gyan.FFmpeg 9.0, vía winget). Videos comprimidos a 720px de ancho,
-  30fps, sin audio, H.264 CRF 28, `+faststart` en `public/media`: navidad 2.15MB (hero
-  recortado 4:5), caja 1.61MB, box 1.58MB. No queda en el PATH de shells nuevos: usar la ruta
-  completa del `.exe` (`%LOCALAPPDATA%\Microsoft\WinGet\Packages\Gyan.FFmpeg_...\bin\ffmpeg.exe`).
-- ✅ **Poster del hero (LCP)** generado: `public/media/salguero_navidad-poster.jpg` (58KB, 4:5).
-- ✅ **Hero: montaje liviano (resuelto).** El clip único de 1.74MB castigaba Lighthouse
-  mobile (94→77), así que se reemplazó por un **montaje de 2 escenas en un archivo**
-  (mesa dulce + bocaditos salados, crudos `cortados-2` y `cortados-6`), crossfade de 0.5s,
-  recorte 4:5, 800×1000, 6.4s, `-an -crf 30 +faststart`:
-  `public/media/hero-montage.mp4` (**386KB**) + `hero-poster.jpg`
-  (LCP). El video ahora también corre en mobile (solo se omite en Save-Data / 2G /
-  reduced-motion). Se eliminó el `hero.mp4` viejo. Material curado en el estudio gráfico.
-- ✅ **Performance mobile: TBT/LCP son de JS, no de imágenes.** Lighthouse mobile ~74:
-  lo bajan TBT (751ms, peso 30%) y LCP (3.2s, peso 25%), los dos por hidratación/JS
-  (CLS 0, SI 98, FCP 89). Bundle real de prod: ~197KB transfer / ~640KB decoded de JS.
-  Medir SIEMPRE con `next start` (prod), no con `next dev` (dev infla el JS a ~4.7MB con
-  HMR y React en modo desarrollo). Optimizaciones aplicadas: (1) Lenis se difiere a idle
-  (`SmoothScroll`), (2) `ScrollProgress` se monta recién en idle (`lib/useAfterIdle.ts`),
-  (3) `LazyMotion` + `m.*` en vez de `motion.*` (saca drag/layout del runtime; aporte de
-  bundle chico pero baja el costo por componente), (4) el video del hero espera al evento
-  `load` antes de bajar para no competir con el poster (LCP). **Resultado: 74 → 80**
-  (LCP 73 → 88, TBT 40 → 47). **80 es el baseline mobile aceptado por el cliente.**
-- ❌ **Lazy-hydration del Cotizador + galería (probado y REVERTIDO).** Se intentó bajar el
-  TBT difiriendo el montaje de las secciones client pesadas con code-split +
-  IntersectionObserver (`useNearViewport`, `CotizadorLazy`, `GaleriaLightboxLazy`).
-  **Empeoró: 80 → 65.** El montaje diferido rompió el CLS (0 → 0.24, porque el swap
-  placeholder→real sí shifteó en la medición de Lighthouse) y el TBT subió (646 → 823ms,
-  los chunks diferidos terminan ejecutándose dentro de la ventana de medición). Revertido
-  en el commit siguiente. **No reintentar por esta vía.** Si algún día se quiere más score,
-  el grueso restante es `motion` (dep más pesada): habría que reducir animaciones o su
-  runtime, que es un trade-off de diseño para hablar con el cliente.
-- **Nombres de fotos con sufijo descriptivo.** Los archivos reales son
-  `galeria-01-alfajores.jpg`, `servicios-catering.jpg`, etc. (el brief los nombraba
-  `galeria-01`). Las rutas en `content/data.ts` ya usan los nombres reales.
-- **Captura de leads hacia el panel (sept 2026).** El submit del cotizador ahora
-  también dispara un POST fail-open a `https://admin.salguerogourmet.com/api/leads`
-  (repo `D:\salguero-admin`), que crea cliente + evento "cotizado" en el panel. Si la
-  API falla o no existe, el flujo de WhatsApp no se entera (fetch con `keepalive`,
-  catch vacío). En dev apunta a `http://localhost:3001` (permitido en el connect-src
-  de la CSP solo en development; la CSP de prod solo suma el dominio del admin).
-  El subdominio `admin.salguerogourmet.com` ya está asignado y andando (verificado
-  2026-09-04). **Pendiente:** confirmar con el cliente el mapeo de servicios
-  landing → panel: "Pastelería por encargo" → `mesa_dulce`, "Box de regalo" y
-  "Box corporativo" → `box`, "Catering para evento" → `catering`, resto → `otro`
-  (tabla en `salguero-admin/app/api/leads/route.ts`).
-- **npm: postinstall diferido.** `unrs-resolver` (dependencia de ESLint) tiene un
-  postinstall no ejecutado por la política de scripts de npm 11. Se resolverá solo si el
-  gate de build/lint lo pide (`npm approve-scripts`).
-- **Hero sin video (rama `dopamina`, sept 2026).** El video del hero era un montaje de
-  clips que ya están en la galería, así que se retiró. Hoy el hero es la secuencia de la
-  caja (`HeroSecuencia`: canvas + tapa en vivo, ver la sección F). Se borraron
-  `components/sections/HeroVideo.tsx`, `components/ui/Parallax.tsx`,
-  `public/media/hero-montage.mp4`, `public/media/hero-poster.jpg` y `hero.media` de
-  `content/data.ts` (siguen en el historial de git; los crudos, en `_assets/`). La nota
-  del "montaje liviano" de más arriba queda como historia. ✅ CLAUDE.md §2, §4, §6 y §7
-  ya están actualizados (GSAP permitido, hero con la secuencia, excepción amarilla de
-  Empresas).
-- **Escenas anteriores del hero (historia).** `HeroCaja` (caja en SVG con recortes
-  circulares) y la primera secuencia de prueba quedaron sin uso. Sus recortes se movieron
-  de `public/media/caja/` a `_assets/caja-provisoria/` (con la carpeta de fuentes "nano
-  banana fondo verde") y las secuencias viejas a `_assets/beta-sin-uso/` (ignorada por
-  git). `HeroCaja` quedó archivado en `_assets/archivo/` (ver F.2).
+### Respaldo y ramas
+- **Respaldar fuera de la PC** `_assets/archivo/` (incluye `caja-v4`, la fuente de las
+  secuencias del hero), `_assets/contenido/` (fuentes de los cuadros y de los bocaditos) y
+  `_assets/productos-recortes/`. Están ignorados por git y existen solo en el disco: no se
+  suben al repo por el peso.
+- **Rama `rebrand-2026`** (en pausa desde el 13/9): existe solo en esta PC. Subirla si se
+  quiere conservar o borrarla si se descarta.
+- **Rama remota `claude/hide-scrollbar-3fpf1f`:** su cambio ya está en `app/globals.css`;
+  se puede borrar en GitHub.
 
 ---
 
-## D · Decisiones cerradas (NO revisar, NO "mejorar")
+## 2 · Aprobado por Benjamin (5/10/2026)
+
+- **La física de `lib/fisica.ts` para producción** (resortes de framer-motion,
+  `resorteGsap` en GSAP y `ease-resorte` en CSS, en lugar de la curva
+  `[0.16, 1, 0.3, 1]`). CLAUDE.md §5.5 y §6 y DESIGN.md §4 ya lo dicen.
+- **"en Google" debajo de las estrellas de Reseñas**, sin la cantidad de reseñas (lo pidió él:
+  las estrellas son de Google).
+- **Las animaciones de la beta tal como están.** Entre ellas:
+  - Hero: recorrido fijo de 3.5 pantallas en compu y 2.6 en el celular
+    (`heroSecuencia.recorrido`), con el cierre que se aleja y se apaga junto con la caja.
+  - Reseñas: el 5.0 va de 0.0 a 5.0 y las estrellas se llenan de a una atados al scroll,
+    en las dos direcciones; sin JS o con reducir movimiento, 5.0 quieto con las cinco
+    llenas.
+  - Empresas: dos filas de palabras gigantes que cruzan con el scroll y frenan en la pose
+    de lectura (`CENTRO` en `Empresas.tsx`: 0.55 en compu, 0.12 en el celular, donde la
+    fila casi se detiene), con la cuchara del logo meciéndose como separador.
+  - Cuchara de progreso con reducir movimiento: visible y quieta (es un indicador).
+
+---
+
+## 3 · Notas técnicas vigentes
+
+- **Dominio:** `salguerogourmet.com` (apex). Todo deriva de `site.url`
+  (`content/data.ts`): canonical, metadataBase, OG, sitemap, robots y JSON-LD.
+- **Leads al panel (`Cotizador.tsx`):** el aviso al panel sale solo desde el sitio
+  publicado (hostname `salguerogourmet.com` o `www.salguerogourmet.com`) hacia
+  `https://admin.salguerogourmet.com/api/leads`. En un preview de Vercel o en un
+  `next start` local no se avisa a nadie; en desarrollo va al panel local
+  (`localhost:3001`). Es fail-open: si el panel falla, el envío por WhatsApp sigue igual.
+  `lib/wa.ts` no cambia. Clarity también carga solo en el dominio real.
+- **JSON-LD (`components/chrome/JsonLd.tsx`):** tipo `FoodEstablishment` + `Bakery`. El
+  `aggregateRating` lleva `site.reviewCount`, que no se ve en la página (CLAUDE.md §7.4).
+- **Secuencia del hero:** compu en `public/media/secuencia/caja-v6/desktop/` (172 cuadros
+  720x1280, ~9.5 MB) y celular en `caja-v7/mobile/` (172 cuadros 540x960, ~6.6 MB); la
+  tapa en `caja-v6/` (`tapa-v3.webp` y `tapa-blur-v3.webp`). Después de `load` baja una
+  primera pasada (1 de cada 8 cuadros); desde el primer scroll, el resto por tramos cerca
+  de donde está la persona (`seguir` de `HeroSecuenciaMotor.ts`). Con ahorro de datos se
+  saltean. No usar AVIF, no sacar cuadros ni bajar de q80 sin prueba en un iPhone real y
+  el OK de Benjamin. Un iPad que rota entre vertical y horizontal cruza el corte
+  (860x600) y baja las dos versiones.
+- **Video de la mesa en el celular:** `mesa-mobile-v2.mp4` (1.8 MB, todo cuadros clave);
+  `mesa.mp4` de compu (2.7 MB).
+- **Caché de `/media` (solo producción, `next.config.ts`):** `/media/secuencia/*` y
+  `/media/productos/*` con caché de un año `immutable`; el resto, una semana con
+  `stale-while-revalidate`. Regla: lo que cambie en `secuencia/` o `productos/` cambia de
+  carpeta o de nombre (`caja-v8`, `mesa-mobile-v3`...). Nunca se pisa un archivo en el
+  lugar.
+- **Imágenes:** `images.qualities` es `[88]` (todas las fotos piden 88; el poster del
+  hero no pasa por el optimizador).
+- **Orden de los ScrollTriggers:** se fijan el hero, Servicios (solo compu), la intro de
+  la galería, Flor (compu con alto) y Reseñas. Esos pins y los triggers de Empresas,
+  galería y Cómo trabajamos llevan `refreshPriority: 0`, y ScrollTrigger ordena los
+  refresh por posición en la página. El pie y el mazo de Reseñas van con `-1`. Todo pin
+  nuevo lleva `0`. `lib/gsap.ts` recalcula cuando terminan de cargar las fuentes.
+- **`anticipatePin` solo en táctiles:** `anticiparPin()` de `lib/gsap.ts` en todos los
+  pins. Con rueda o trackpad (Lenis), anticipar fijaba el pin 60 a 80px antes: un salto
+  visible.
+- **Ancla `#resenas`:** a propósito aterriza al final de su escena (todo armado), con un
+  `scroll-margin-top` negativo que calcula `Resenas.tsx`. No es un error.
+- **CustomSelect:** escribir una letra con la lista cerrada la abre en la opción elegida,
+  no en la que coincide con la letra.
+- **Rendimiento:** medir SIEMPRE con el build de producción
+  (`npm run build && npx next start -p 3100`), nunca con `next dev` (en dev da ~64).
+  - Lighthouse real de Benjamin (5/10/2026, Mobile, incógnito): **87** (FCP 1,4 s · LCP
+    3,1 s · TBT 280 ms · CLS 0 · SI 2,9 s). La nota estimada del 4/10 era 72; dos vueltas
+    de rendimiento la llevaron a 87 en celular y 100 en compu, sin sacar animaciones.
+  - Lo que falta para 90+: el LCP de Lighthouse en celular lo frenan el JS de Next y la
+    hidratación (~255 KB) y las 4 fuentes precargadas (~155 KB), no el hero. Precargar el
+    poster no mejoró nada. Lo que queda es de riesgo medio (diferir JS antes del primer
+    pintado, precargar menos fuentes). Medir en el preview de Vercel (h2 y brotli) antes
+    de seguir.
+  - **No reintentar la hidratación diferida** del Cotizador y la galería (probada en
+    `main`: bajó de 80 a 65 porque rompió el CLS y subió el TBT).
+- **Fotos HEIC del cliente:** son imágenes en mosaico. Decodificar SIEMPRE con el default
+  de ffmpeg (sin `-map`), que reconstruye la grilla a resolución completa; `-map [0:v]`
+  toma un solo tile y da falsos "borrosos". Hay muchas fotos buenas sin usar (spreads,
+  flat-lays, oficio, eventos corporativos) para futuras pasadas.
+- **npm:** `unrs-resolver` (dependencia de ESLint) tiene un postinstall no ejecutado por la
+  política de scripts de npm 11. Se resuelve solo si el lint lo pide
+  (`npm approve-scripts`).
+- **Lint:** ESLint ignora `_assets/**` y `.claude/**` (los worktrees de Claude traen su
+  propio `.next`).
+
+---
+
+## 4 · Archivo: lo que el sitio no usa
+
+El 30/9/2026 todo lo sin uso se movió a `_assets/archivo/`, conservando la ruta, en vez de
+borrarlo: se vuelve atrás moviéndolo de nuevo. La carpeta está ignorada por git y
+`tsconfig.json` y ESLint la excluyen. Lo que estaba en git **ya no está trackeado**: queda
+en la historia de git (commit 76ab383) y en la copia local.
+
+Archivado:
+- `components/sections/HeroCaja.tsx` y `HeroCajaArte.tsx`, y `heroCaja` de
+  `content/data.ts` (`_assets/archivo/codigo/`).
+- `components/ui/Placa.tsx` y `Entrada.tsx`; la variante `tinta` de `Pill` y el
+  `tono="oscuro"` de `Kicker` y `Etiqueta` (eran de la banda amarilla de Empresas).
+- En `app/globals.css`: `.err-in` y los `@keyframes` `err-in`, `dd-in`, `overlay-in` y
+  `overlay-up` (`_assets/archivo/codigo/app/globals-sin-uso.css`).
+- `public/media/secuencia/caja-v3/`, `caja-v4/` y `caja-v5/`. **`caja-v4` es la fuente de
+  `caja-v6` y `caja-v7`** (y de cualquier versión futura): no borrarla.
+- `public/media/secuencia/empresas/` (videos y posters de la vieja Empresas).
+- `public/media/galeria-alfajores.jpg`, `galeria-clip-2.mp4` y `galeria-clip-5.mp4` con
+  sus posters, y el video anterior de la mesa para el celular.
+- Los datos de `content/data.ts` que nadie leía (5/10/2026):
+  `_assets/archivo/data-retirado-2026-10-05.ts`.
+
+Fuera de `public/` y de git, a propósito: `_assets/caja-provisoria/` y
+`_assets/beta-sin-uso/` (escenas viejas del hero) y `_assets/productos-recortes/` (los 13
+recortes originales de los bocaditos; guardar si se van a regenerar variantes).
+
+`public/media/flor-trabajando.jpg` se borró (5/10/2026): ningún componente la mostraba.
+La copia original sigue en `_assets/fotos/flor-trabajando.jpg`.
+
+---
+
+## 5 · Decisiones cerradas (NO revisar, NO "mejorar")
 
 1. **Logo:** wordmark `SALGUERO 🥄 GOURMET` con cuchara SVG amarilla. Sin sello circular,
    sin trío de utensilios. Favicon = cuchara sola.
 2. **Sin sticky bar inferior en mobile.** Alcanza el nav sticky superior con su pill.
 3. **Reseñas etiquetadas por servicio**, nunca por fecha.
-4. **Paleta y jerarquía del mockup, sin agregar colores.**
+4. **Paleta y jerarquía del mockup, sin agregar colores.** Única excepción: las palabras
+   gigantes amarillas de Empresas (30/9/2026).
 
 ---
 
-## E · Estado de fases
+## 6 · Estado de fases
 
 - [x] **FASE 0** · Lectura + scaffold + documentos.
-- [x] **FASE 1** · Base (tokens, fuentes, Lenis, primitivas, Wordmark, icon.svg, muestra).
-- [x] **FASE 2** · Hero (clip limpio + poster) + Servicios (fotos elegidas por el cliente).
-- [x] **FASE 3** · Galería (marquee con las gemas) + La cocina de Flor + Reseñas.
+- [x] **FASE 1** · Base (tokens, fuentes, Lenis, primitivas, Wordmark, ícono, muestra).
+- [x] **FASE 2** · Hero + Servicios (fotos elegidas por el cliente).
+- [x] **FASE 3** · Galería + La cocina de Flor + Reseñas.
 - [x] **FASE 4** · Proceso + Empresas + FAQ + Cotizador (WhatsApp + preselección) + Footer + Nav.
 - [ ] FASE 5 · SEO + performance + a11y + pasada mobile.
 - [ ] FASE 6 · Entrega (build final, guía de deploy en Vercel, cómo cargar datos faltantes).
 
 ---
 
-## F · Beta "dopamina" (rama `dopamina`, sept 2026)
+## 7 · Historia (resuelto)
 
-Beta autorizada por Benjamin: GSAP + ScrollTrigger en todas las escenas, estilo Apple.
-Integrada el 29/9/2026 (copy nuevo movido a `content/data.ts`, orden de ScrollTriggers
-verificado, `tsc` y `eslint` limpios).
-
-Orden de la página desde el 30/9/2026: Hero · Servicios · Empresas · Galería · La
-cocina de Flor · Reseñas · Cómo trabajamos · Preguntas · Cotizador · Pie.
-
-### F.1 · Decisiones que tiene que confirmar Benjamin
-- **Cierre del hero (rehecho el 30/9/2026; texto nuevo y sin bajada desde el 5/10/2026).**
-  Centrado debajo de la caja abierta: "Tu pedido puede *lucir así*." grande (con "lucir así"
-  en la itálica amarilla) y "Quiero el mío" (antes "Armar mi pedido", de F8) en la pill amarilla primaria
-  a `#cotizar`. Confirmar: (1) mientras se ve el cierre
-  también está en pantalla la pill "Pedir presupuesto" del nav, o sea dos botones amarillos
-  a la vez (F8 lo evitaba con un botón fantasma); (2) para que entre el cierre, los
-  productos se achican en pantallas bajas (0.86 en 1280x720, 0.79 en 375x667, hasta 0.66);
-  (3) a 390 el título entra en un renglón con ~29px de margen por lado: verlo en un iPhone.
-  Todo se cambia en `heroSecuencia.cierre` (`content/data.ts`).
-- **Servicios:** las 4 marcas amarillas de progreso y los números "01" a "04" del mazo.
-- **Cuchara de progreso con reducir movimiento:** hoy queda visible y quieta (es un
-  indicador). Si la quieren oculta en ese modo, es un cambio chico en `ScrollProgress`.
-- **Reseñas:** se muestran solo las 4 con servicio confirmado (Mauricio Schmid, María
-  Candelaria Contreras, Maria Victoria Garcia, Franco Businello); las otras 5 ya no
-  aparecen. La cantidad de reseñas ya no se muestra en ninguna parte de la página (pedido
-  de Benjamin, 5/10/2026): ni en Reseñas, ni en la tira de confianza ("5.0 en Google"), ni
-  en las cifras del hero ("en Google"), ni en el texto para lectores de pantalla. Solo va
-  en el JSON-LD, desde `site.reviewCount` (34): actualizar ese número cuando cambie en
-  Google.
-- **El 5.0 de Reseñas atado al scroll (5/10/2026):** el número va de 0.0 a 5.0 y las
-  estrellas se llenan de a una con el scroll (scrub, tramo `TRAMO`), en las dos
-  direcciones: bajando sube y se llenan, subiendo baja y se vacían. Al acercarse, antes
-  del pin, se ve 0.0 con las estrellas vacías (el número nunca se oculta). Sin JS y con
-  reducir movimiento, 5.0 quieto con las cinco llenas. Con la línea de la cantidad se fue
-  también el "en Google" que estaba al lado del 5.0: la fuente queda en "Ver perfil de
-  Google". Confirmar con Benjamin que no lo extraña.
-- **Galería:** el visor ahora usa `destacadas` + "Mesa dulce" al final (18 ítems), para que
-  cada foto del carril abra la suya.
-- **Excepción a "nada oculto en CSS" (CLAUDE.md §5.5) en el hero:** antes de hidratar, con
-  JS y movimiento, algunas capas arrancan ocultas y una red CSS (`.hs-diferida`,
-  `hs-failsafe` en `globals.css`) las muestra a los 4s si el JS no llega. Decidir si queda
-  y, si queda, anotarla en §5.5.
-- **CLAUDE.md §5.5 y la física de la beta:** §5.5 todavía pide la ease
-  `[0.16, 1, 0.3, 1]`, pero la beta la reemplazó por `lib/fisica.ts`. Texto propuesto: "En
-  la beta 'dopamina' la curva fija [0.16,1,0.3,1] se reemplazó por la física de
-  lib/fisica.ts (resortes de motion por stiffness/damping/mass, resorteGsap en GSAP y
-  ease-resorte en CSS)." Falta el OK de Benjamin para editar CLAUDE.md.
-- **Error de los campos del cotizador:** abre y cierra su alto (`height` y `marginTop`
-  con el resorte `panel`, `components/ui/Field.tsx`). §5.5 pide solo transform y opacity y
-  §7.5 exceptúa solo el FAQ: sumarlo a la excepción, o reservar el renglón del error y
-  animar solo opacidad e `y` (cambia el alto del formulario en reposo). Mientras tanto, al
-  terminar de abrir o cerrar se pide un `ScrollTrigger.refresh(true)` (como el FAQ).
-- **Halo y compresión de la secuencia del hero (`caja-v6`, 30/9/2026):** el hero pasó de
-  `caja-v5` a `caja-v6`, regenerada desde `caja-v4` (la fuente, con el vaso corregido en
-  162 a 172; hoy en `_assets/archivo/media/secuencia/`). Lleva el borde semitransparente
-  de cada producto a sombra oscura en TODOS los cuadros (en `caja-v5` el halo oliva
-  seguía en el reposo, 150 a 172), con el alfa idéntico, y va en WebP q80 (q82 a q88
-  donde hace falta para quedar a 40 dB o más): 10% menos de peso. Falta el OK de Benjamin
-  viendo la comparación lado a lado. Si no la aprueba, volver `carpeta`, `tapa.imagen` y
-  `tapa.desenfocada` de `heroSecuencia` a `caja-v5` (archivada en
-  `_assets/archivo/media/secuencia/caja-v5/`, hay que devolverla a `public/`).
-- **Hero en desktop de 1200px o más:** las columnas (inicio, cifras, cierre y confianza) se
-  miden desde el borde de la ventana: el título arranca en x=43 a 1440 y en 168 a 1920,
-  mientras el logo y todas las secciones arrancan en 164 y 404. Alinearlas al contenedor de
-  1112px (`--hs-ancho: min(100vw, calc(1112px + 2 * var(--hs-pad)))`) achica la caja 13% a
-  1880 y 24% a 1920 (el marco también se mide con ese ancho), baja el título del cierre a
-  su mínimo (25.6px) y a 1920 el título del inicio se parte en tres renglones. Es una
-  decisión de diseño: captura antes/después en `pulir/fix-r2/z-alinear-sin-vs-con.jpg`.
-- **Bocaditos en Servicios mobile:** el mapa le da densidad alta, pero en 375 y 390 las
-  cartas opacas del mazo tapan casi todas las piezas (solo asoman manchas en los bordes).
-  Si Benjamin lo quiere más cargado: priorizar ahí nítidas que asomen del borde y ubicar
-  las desenfocadas sobre "Nuestras formas de servirte" y entre cartas.
-- **Leads fuera de dev (`Cotizador.tsx`):** el destino se decide por `NODE_ENV` y no por el
-  dominio: un preview de Vercel de esta rama, o `next start` abierto por IP desde el
-  celular, mandaría leads reales al panel. Propuesta (toca el ruteo de leads, por eso
-  espera su OK): producción solo si el hostname termina en `salguerogourmet.com`, y si no,
-  `localhost:3001`. No cambia `lib/wa.ts` ni el envío por WhatsApp.
-- **Empresas después de Servicios (pedido de Benjamin, 30/9/2026, "veamos cómo
-  queda"):** cambian las costuras Servicios→Empresas, Empresas→Galería y Cómo
-  trabajamos→Preguntas. El menú de arriba no suma link a Empresas (el mockup aprobado no
-  lo tiene); si lo quiere, es una línea en `nav.links` de `content/data.ts`. Confirmar el
-  orden y el aire entre esas secciones con las capturas.
-- **Cuchara como separador en Empresas:** entre las palabras gigantes va la cuchara del
-  logo (el mismo dibujo del wordmark), meciéndose con su fila. Confirmar que le gusta ahí.
-- **Empresas, dos palabras por fila (QA 30/9/2026, al día el 4/10/2026):** con tres por
-  fila, a la velocidad aprobada del cruce, cuatro de las seis palabras no llegaban a verse.
-  Hoy arriba va "Coffee breaks · Desayunos" y abajo "Mesas gourmet · Agasajos"
-  (`empresas.palabras`), con la letra a 11vw en el celular (36 a 64px) y 9.5vw desde 760px
-  (72 a 176px). "Boxes corporativos" y "Fechas especiales" ya no aparecen en la sección.
-  Cómo se mueve (`Empresas.tsx`): con la sección centrada en pantalla cada fila pasa por su
-  **pose de lectura**, la del HTML, con su frase entera y centrada: "Coffee breaks" arriba
-  y "Agasajos" abajo. Son las dos únicas que se ven enteras; "Desayunos" y "Mesas gourmet"
-  asoman cortadas mientras cruzan. La curva frena en la pose (`CENTRO`): en compu pasa al
-  0.55 de la velocidad media (la curva `deslizar` aprobada el 30/9) y en el celular al 0.12,
-  o sea que ahí la fila **casi se detiene** para que "Coffee breaks", que deja 15px por lado
-  a 390, se alcance a leer. Sin JS o con reducir movimiento queda la pose de lectura quieta
-  (11vw también con `scripting: none`). Las etiquetas de abajo del título ya no repiten
-  rubros: son "Con factura", "Sin mínimos", "Pedido con 48 hs" y "Sin TACC embalado aparte"
-  (L2, datos confirmados por Flor). Si prefiere ver las cuatro palabras enteras o la letra
-  más grande, hace falta letra más chica (unos 10vw en el celular) o más velocidad
-  (repetir las filas en bucle): consultarlo con él.
-- **Empresas en el celular, la pausa casi quieta (4/10/2026):** confirmar con Benjamin que
-  le gusta que la fila casi se detenga en la pose de lectura (`CENTRO.mobile` = 0.12 en
-  `Empresas.tsx`). Si la quiere más viva, subir ese número hacia el 0.55 de compu, sabiendo
-  que se bajó porque "Coffee breaks" casi llena el ancho y tiene que alcanzar a leerse.
-- **Botones nuevos al final de Reseñas y de Cómo trabajamos (L6, octubre 2026):** debajo de
-  las cartas de Reseñas, "Pedir presupuesto" (`resenas.cta`, el único amarillo de la
-  sección) y al cierre de Cómo trabajamos, "Contanos tu evento" (`proceso.cta`), los dos a
-  `#cotizar`. Confirmar los textos y que no le sobren con la pill del nav en pantalla.
-- **Coffee break en el cotizador (L3, octubre 2026):** "Coffee break o desayuno de
-  trabajo" es la primera opción del tipo de servicio (`cotizador.form.servicioOptions`),
-  así que queda elegida si nadie preseleccionó otra (el cierre del hero y el nav), y
-  "Cotizar para mi empresa" la deja elegida a propósito (`empresas.servicio`). Confirmar
-  con Benjamin. **Falta en el panel:** el `MAPA_SERVICIO` de
-  `salguero-admin/app/api/leads/route.ts` no tiene esa opción, así que hoy esos pedidos
-  entran como "otro" (el panel ya tiene el tipo `coffee`). Es una línea en el otro repo.
-- **Finger food en la galería:** el marquee usa un cuadro del clip 4 rotulado "Finger food"
-  en lugar de "Como en casa". Confirmar el rótulo y la foto.
-- **Hero un poco más largo (QA 30/9/2026):** el remate "Así llega a tu oficina" duraba
-  menos de media pantalla. El recorrido fijo pasó de 3.2 a 3.5 pantallas en desktop y de
-  2.4 a 2.6 en mobile (todos los momentos se alargan ~9%), y el cierre se aleja y se apaga
-  junto con la caja. Si el hero se siente largo, se puede volver atrás solo con
-  `heroSecuencia.recorrido`.
-
-### F.2 · Archivo: lo que el sitio no usa (para borrar cuando Benjamin apruebe)
-El 30/9/2026 (plan de optimización) todo lo sin uso se MOVIÓ a `_assets/archivo/`,
-conservando la ruta, en vez de borrarlo: se vuelve atrás moviéndolo de nuevo. La carpeta
-está en `.gitignore` (lo que ya estaba en git se movió con `git mv` y sigue trackeado),
-`tsconfig.json` la excluye y ESLint la ignora, así que ni tsc, ni lint, ni Tailwind la
-escanean.
-
-Ya archivado:
-- ~~`components/sections/HeroCaja.tsx` y `HeroCajaArte.tsx`~~ →
-  `_assets/archivo/codigo/components/sections/`.
-- ~~`heroCaja` y `HeroCajaProducto` de `content/data.ts`~~ →
-  `_assets/archivo/codigo/content/heroCaja.ts`.
-- ~~`components/ui/Placa.tsx` y `components/ui/Entrada.tsx`~~ →
-  `_assets/archivo/codigo/components/ui/` (con `git mv`).
-- ~~Variante `tinta` de `Pill` y `tono="oscuro"` de `Kicker` y `Etiqueta`~~ (eran de la
-  banda amarilla de Empresas): los tres archivos enteros, antes del recorte, en
-  `_assets/archivo/codigo/components/ui/`.
-- ~~En `app/globals.css`: `.err-in` y `@keyframes err-in`, `dd-in`, `overlay-in` y
-  `overlay-up`~~ → `_assets/archivo/codigo/app/globals-sin-uso.css`.
-- ~~`public/media/secuencia/caja-v3/` y `caja-v4/`~~ →
-  `_assets/archivo/media/secuencia/`. `caja-v4` es la fuente de `caja-v6` (y de cualquier
-  versión futura): no borrarla.
-- ~~`public/media/secuencia/caja-v5/`~~ (el hero usa `caja-v6`) →
-  `_assets/archivo/media/secuencia/caja-v5/`.
-- ~~`public/media/secuencia/empresas/`~~ (8 archivos, ~2.1MB: los videos y posters de
-  Empresas; ya no lleva video ni canvas) → `_assets/archivo/media/secuencia/empresas/`.
-- ~~`public/media/galeria-alfajores.jpg`, `galeria-clip-2.mp4` y `galeria-clip-5.mp4`
-  (con sus posters)~~ → `_assets/archivo/media/` (con `git mv`).
-- ~~El video de la mesa para celular anterior~~ (hoy `mesa-mobile-v2.mp4`) →
-  `_assets/archivo/media/secuencia/galeria/`.
-
-Sigue donde está (a propósito):
-- `_assets/caja-provisoria/` y `_assets/beta-sin-uso/` (fuera de `public/` y de git).
-- `_assets/productos-recortes/`: los 13 recortes originales de los bocaditos (el sitio usa
-  las variantes de `public/media/productos/nitido` y `fondo`). Guardar si se van a
-  regenerar variantes.
-- `public/media/flor-trabajando.jpg`: es la foto de `_assets/fotos/SELECCION.md` (la
-  sección usa `flor-alternativa.jpg`); el visitante no la baja.
-
-### F.3 · Técnicas
-- **Peso de la secuencia del hero:** desktop ~10.0MB (172 cuadros 720x1280) y mobile
-  ~7.0MB (172 cuadros 540x960), en `caja-v6`. Después de `load` se baja una primera
-  pasada; desde el primer scroll, el resto por tramos (`seguir` de
-  `HeroSecuenciaMotor.ts`: solo los cuadros cercanos a donde está la persona). Con ahorro
-  de datos se saltean. Medir Lighthouse mobile con `next start` (baseline aceptado: 80).
-  No usar AVIF, no sacar cuadros ni bajar de q80 sin prueba en un iPhone real y el OK de
-  Benjamin.
-- **Video de la mesa en celular:** `mesa-mobile-v2.mp4` (1.8MB, todo cuadros clave,
-  x264 CRF 25) en vez del anterior de 2.4MB; `mesa.mp4` de compu no cambió.
-- **Caché de `/media` (solo producción, `next.config.ts`):** `/media/secuencia/*` y
-  `/media/productos/*` con caché de un año `immutable`; el resto de `/media` una semana
-  con `stale-while-revalidate`. Regla: lo que cambie en `secuencia/` o `productos/`
-  cambia de carpeta o de nombre (`caja-v7`, `mesa-mobile-v3`...). Nunca se pisa un
-  archivo en el lugar.
-- **Orden de los ScrollTriggers:** se fijan el hero, servicios (solo compu), la intro de
-  galería, Flor (compu con alto) y reseñas. Esos pins y los triggers de Empresas, galería
-  y Cómo trabajamos (que ya no se fija) llevan `refreshPriority: 0` y con eso
-  ScrollTrigger ordena todos los refresh por posición en la página (verificado a 1440 y
-  390: cada pin arranca justo debajo del nav y un refresh extra no mueve nada). El pie y
-  el mazo de reseñas después de su pin van con `-1` (últimos). Todo pin nuevo tiene que
-  llevar `0`. `lib/gsap.ts` recalcula cuando terminan de cargar las fuentes.
-- **Ancla `#resenas`:** a propósito aterriza al final de su escena (todo armado), con un
-  `scroll-margin-top` negativo que calcula `Resenas.tsx`. No es un error.
-- **Gancho de QA solo en desarrollo:** `canvas.__motor` (hero).
-- **`anticipatePin` solo en táctiles:** `anticiparPin()` de `lib/gsap.ts` en todos los pins
-  (servicios, galería, Flor y reseñas, también en sus modos de desktop, que se usan
-  en tablets táctiles en horizontal). Con rueda o trackpad (Lenis) anticipar fijaba el pin 60 a 80px antes: un
-  salto visible, medido y corregido en la integración.
-- **CustomSelect:** escribir una letra con la lista cerrada la abre en la opción elegida,
-  no en la que coincide con la letra (como antes).
-- **Pasada de suavizado global** (Lenis, curvas y resortes) a cargo del grupo de Empresas.
-- **Rendimiento en celular (4/10/2026): mejor, todavía NO listo para producción.**
-  Medido con `next start` y el perfil de celular de la QA (412x823, CPU x4, 4G; mediana
-  de 3 cargas; nota estimada con las curvas de Lighthouse):
-
-  | | Antes | Ahora |
-  |---|---|---|
-  | Nota estimada celular | 65 | 72 |
-  | TBT celular | 1,69 s | 0,84 s |
-  | TTI celular | 11,1 s | 7,5 s |
-  | El hero responde al scroll | 6,3 s | 5,3 s |
-  | FCP / LCP celular | 2,7 s | 2,7 s (sin cambios) |
-  | Nota estimada / TBT compu | 95 / 185 ms | 98 / 122 ms |
-
-  Qué se hizo, sin sacar animaciones y con el mismo resultado en pantalla (recorrido
-  completo a 390 y 1440 igual al de la QA final: mismas alturas, pins y capturas):
-  (1) se sacaron dos refresh completos de ScrollTrigger que se repetían al cargar
-  (`refrescarSiNadieLoHace` en Servicios y el del hero tras la primera pasada, que ahora
-  solo corre si las fuentes todavía cargaban); (2) las escenas que no fijan nada ni
-  cambian el alto se arman al acercarse (`alAcercarse` / `useGSAPAlAcercarse` de
-  `lib/gsap.ts`): Empresas, la fila de fotos de Galería en celular, Flor en celular, la
-  entrada de Preguntas, el wordmark del pie y los títulos que se encienden; (3) la pila
-  de Servicios en celular usa un solo ScrollTrigger en vez de siete. Al cargar se
-  crean 14 triggers en celular (antes 57). Lo que se arma al acercarse va en tareas de
-  menos de 50 ms (`enTareas`): recorriendo la página con el dedo no aparecen tareas
-  largas. Herramientas y mediciones: `scratchpad/cierre2/correcciones-qa/`.
-  **Lo que falta para 90+ en celular** (decisiones de diseño o trabajo grande):
-  (a) FCP y LCP de 2,7 s: la primera maquetación del HTML cuesta ~1 s con CPU x4 (la
-  publicada, ~0,6 s); bajar el HTML y el CSS de la primera carga. (b) El armado de las
-  escenas que sí fijan (hero, Servicios, intro de Galería, Reseñas) sigue en una tarea de
-  ~0,5 s: en buena parte, maquetaciones forzadas al pasar cada sección a su modo
-  (`data-sv`, `data-hs`, `data-rs`); haría falta poner esos modos por CSS antes de
-  hidratar, que cambia lo que se ve sin JS. (c) El refresh completo que ScrollTrigger
-  encola al crear los pins (~0,17 s), que es de GSAP.
-
-### F.4 · Pruebas en dispositivos reales (las capturas no alcanzan)
-- iPhone con Safari: el poster con ahorro de energía; el scroll táctil al entrar y salir
-  de los pins (hero, reseñas); el hero al rotar el teléfono.
-- Un Android de gama media: fluidez de la secuencia del hero y de la galería.
-- Un Android de gama media: que no se note el armado de Empresas, la fila de fotos de
-  Galería y Flor mientras se scrollea (se arman a 1.5 y 2.5 pantallas de entrar).
+- **Datos del cliente (agosto 2026):** anticipación mínima 48 hs antes del evento con seña
+  del 50%; medios de pago efectivo, transferencia o depósito; horario de atención 9 a
+  17 hs; sin cantidades mínimas; opciones sin TACC, veganas y vegetarianas según el
+  servicio; vajilla y personal según lo que necesite el cliente; envío por zona se acuerda
+  al hacer el pedido. Confirmados el 7/8/2026: el número del sitio es WhatsApp y la de la
+  foto de su sección es Flor. Todo eso vive como texto en las FAQ, en Empresas y en el cotizador. La reseña
+  de Nahir (box de regalo) se reemplazó el 7/8/2026 por la de Franco Businello (Evento a
+  medida).
+- **Copy:** la respuesta de cantidades mínimas ya no menciona viandas. Galería y Servicios
+  se renovaron en agosto con las fotos que eligió el cliente.
+- **Hero de `main`:** pasó de un clip a un montaje liviano y quedó en Lighthouse mobile 80
+  (baseline aceptado por el cliente), con Lenis y `ScrollProgress` diferidos a idle y
+  `LazyMotion` + `m.*`. En la beta el video se retiró y el hero pasó a la secuencia de la
+  caja; `HeroVideo.tsx`, `Parallax.tsx` y los videos viejos quedan en la historia de git.
+- **Beta "dopamina":** GSAP + ScrollTrigger en todas las escenas, estilo Apple, autorizada
+  por Benjamin. Integrada el 29/9/2026; Empresas pasó después de Servicios el 30/9;
+  optimización (código y media sin uso al archivo, caché inmutable, carga por tramos,
+  CLS 0) el 30/9; rendimiento en celular el 4 y 5/10; subida a GitHub con vista previa en
+  Vercel el 5/10/2026. CLAUDE.md ya refleja GSAP, el hero con la secuencia, la excepción
+  amarilla de Empresas y la física aprobada.
+- **Limpieza del 5/10/2026:** se sacaron del repo la configuración local de Claude Code
+  (`.claude/settings.local.json` y `launch.json`, ahora ignoradas) y el `.gitkeep`
+  sobrante; `.gitignore` ignora `_assets/` entero salvo `fotos/` y el mockup; README
+  propio del proyecto; se desinstaló el paquete `motion` (todo usa `framer-motion` vía
+  `lib/motion.ts`); se sacaron de `content/data.ts` los datos que nadie leía (campos de
+  contacto, `politicas`, los flags de confirmación, `flor.foto.fallback` junto con
+  `public/media/flor-trabajando.jpg`, los `required` del formulario y las 5 reseñas sin
+  servicio confirmado), guardados en `_assets/archivo/data-retirado-2026-10-05.ts`;
+  `site.lastUpdated` pasó a 2026-10-05; se sacó el gancho de QA del hero
+  (`canvas.__motor`, `estado()`, `EstadoMotor`); 404 en español (`app/not-found.tsx`); JSON-LD con `FoodEstablishment` + `Bakery` (el tipo
+  `Caterer` no existe en schema.org); `images.qualities` en `[88]`; `interest-cohort`
+  fuera de la `Permissions-Policy`; se borró la rama `mejoras-2026` (ya estaba en
+  `main`).

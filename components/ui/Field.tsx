@@ -43,14 +43,12 @@ function Campo({
   error,
   errorId,
   children,
-  className,
 }: {
   label: string;
   required?: boolean;
   error?: string;
   errorId?: string;
   children: React.ReactNode;
-  className?: string;
 }) {
   const reducir = useReducedMotion();
   const entra = reducir
@@ -70,7 +68,7 @@ function Campo({
         opacity: SALIDA,
       };
   return (
-    <label className={cn("mb-[18px] flex flex-col gap-[7px]", className)}>
+    <label className="mb-[18px] flex flex-col gap-[7px]">
       <span className="text-[13.5px] font-medium text-crema">
         {label} {required ? <i className="not-italic text-amarillo">*</i> : null}
       </span>
@@ -107,14 +105,12 @@ type FieldProps = {
   label: string;
   required?: boolean;
   error?: string;
-  fieldClassName?: string;
 } & Omit<InputHTMLAttributes<HTMLInputElement>, "required">;
 
 export function Field({
   label,
   required,
   error,
-  fieldClassName,
   className,
   name,
   ...props
@@ -126,7 +122,6 @@ export function Field({
       required={required}
       error={error}
       errorId={id}
-      className={fieldClassName}
     >
       <input
         name={name}
@@ -144,14 +139,12 @@ type TextAreaProps = {
   label: string;
   required?: boolean;
   error?: string;
-  fieldClassName?: string;
 } & Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, "required">;
 
 export function TextArea({
   label,
   required,
   error,
-  fieldClassName,
   className,
   name,
   ...props
@@ -163,7 +156,6 @@ export function TextArea({
       required={required}
       error={error}
       errorId={id}
-      className={fieldClassName}
     >
       <textarea
         name={name}

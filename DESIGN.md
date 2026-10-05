@@ -65,11 +65,12 @@ Escalas clave (del mockup):
 
 ## 4. Motion (fail-open)
 
-- Ease único del mockup: `cubic-bezier(0.16, 1, 0.3, 1)`. **En la beta "dopamina"** esa
-  curva se reemplazó por la física de `lib/fisica.ts`: resortes de motion (`RESORTE`), su
-  versión para GSAP (`resorteGsap`), `SCRUB`, `TRAMO` y `COSTURA` para las escenas de scroll,
-  y en CSS los tokens `ease-resorte` (500 ms) y `ease-resorte-lento` (650 ms) de
-  `globals.css`. Falta el OK de Benjamin para llevarla a producción (CLAUDE.md §5.5).
+- Ease único del mockup: `cubic-bezier(0.16, 1, 0.3, 1)`. **Desde la beta "dopamina"** esa
+  curva se reemplazó por la física de `lib/fisica.ts`: resortes de framer-motion
+  (`RESORTE`), su versión para GSAP (`resorteGsap`), `SCRUB`, `TRAMO` y `COSTURA` para las
+  escenas de scroll, y en CSS los tokens `ease-resorte` (500 ms) y `ease-resorte-lento`
+  (650 ms) de `globals.css`. Aprobada por Benjamin para producción el 5/10/2026
+  (CLAUDE.md §5.5).
 - Solo `transform` y `opacity`. Nada de animar layout.
 - `whileInView` **una sola vez** (`viewport={{ once: true }}`), pequeño stagger en grids
   (delays escalonados ~0.08 / 0.15 / 0.22s como en el mockup).
@@ -130,8 +131,9 @@ asterisco requerido en amarillo. Textarea `min-height:110px; resize:vertical`.
 Flash de preselección: outline amarillo que se apaga en ~1.4s (`@keyframes flash`).
 
 ### `Reveal`
-Wrapper fail-open sobre `motion`: hijo visible por defecto, `whileInView` una vez con el
-ease del sistema; respeta `useReducedMotion()`.
+Wrapper fail-open sobre framer-motion (vía `lib/motion.ts`): hijo visible por defecto,
+`whileInView` una vez con el resorte `entrada` de `lib/fisica.ts`; respeta
+`useReducedMotion()`.
 
 ## 6. Medidas específicas por sección (referencia rápida)
 
@@ -140,7 +142,7 @@ En el orden de la página de la beta "dopamina" (Empresas va después de Servici
 
 | Sección | Mockup (grid / detalle) | Beta "dopamina" |
 |---|---|---|
-| Hero | `1.15fr .75fr`, gap 56px; media `max-width:400px`, `aspect-ratio:4/5`, radio 10px. | Secuencia de la caja centrada y fijada (`HeroSecuencia`, cuadros WebP en `public/media/secuencia/caja-v6/`), textos por momentos alrededor; sin JS o con reducir movimiento, versión quieta. |
+| Hero | `1.15fr .75fr`, gap 56px; media `max-width:400px`, `aspect-ratio:4/5`, radio 10px. | Secuencia de la caja centrada y fijada (`HeroSecuencia`, cuadros WebP en `public/media/secuencia/caja-v6/desktop/` para compu y `caja-v7/mobile/` para celular, tapa en `caja-v6/`), textos por momentos alrededor; sin JS o con reducir movimiento, versión quieta. |
 | Servicios | `repeat(2,1fr)`, gap 18px; 2 placas `serv-wide` ocupan fila completa con imagen a un lado (`1.15fr 1fr`). Imagen 200px (wide hasta 270px). | Misma grilla en el HTML; en compu "mazo" fijado, en celular "pila" sticky sin pin. |
 | Empresas | banda `surface` con borde arriba/abajo; items como etiquetas + CTA a la derecha. | Sin banda ni líneas: dos filas de palabras gigantes amarillas (cuchara del logo como separador) que cruzan con el scroll, y abajo, centrados, kicker, título, etiquetas y la pill "Cotizar para mi empresa". |
 | Galería | 2 tracks marquee; `figure` 280px ancho, `img` 230px alto radio 8px. | Intro con el video de la mesa fijado (pin corto en compu, más largo en celular) y después el marquee doble en compu o el carril deslizable en celular. La versión quieta mantiene el marquee del mockup. |

@@ -1,6 +1,11 @@
 # Selección de fotos · Salguero Gourmet
+
+> **Histórico (agosto 2026).** Esta es la selección original. El sitio ya no usa estos
+> nombres: las fotos se sirven desde `public/media/` con otros nombres (por ejemplo
+> `catering.jpg`, `pasteleria.jpg`, `galeria-*.jpg`) y algunas cambiaron. La sección de
+> Flor usa `flor-alternativa.jpg`. La asignación vigente está en `content/data.ts`.
+
 Archivos ya convertidos a JPG (máx 2000px), renombrados por ubicación en la landing.
-Copiar esta carpeta a `_assets/fotos/` del proyecto.
 
 ## Asignación y porqué
 

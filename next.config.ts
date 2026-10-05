@@ -40,7 +40,7 @@ const securityHeaders = [
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   {
     key: "Permissions-Policy",
-    value: "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+    value: "camera=(), microphone=(), geolocation=()",
   },
   {
     key: "Strict-Transport-Security",
@@ -92,9 +92,11 @@ const nextConfig: NextConfig = {
   images: {
     // AVIF primero (mejor compresion), WebP de fallback.
     formats: ["image/avif", "image/webp"],
-    // Calidades permitidas (Next 16 rechaza con 400 las que no estén acá): 75 para
-    // el poster del hero (LCP) y 88 para las imágenes de contenido (más nitidez).
-    qualities: [75, 88],
+    // Calidades permitidas: todas las imágenes del sitio piden 88 (más nitidez).
+    // Next 16 rechaza con 400 un pedido directo a /_next/image con otra calidad, y
+    // un <Image> con otra (o sin `quality`) se lleva a la permitida más cercana.
+    // El poster del hero no pasa por el optimizador (unoptimized).
+    qualities: [88],
   },
   // Headers de seguridad (hardening) aplicados a todas las respuestas y, solo
   // en producción, caché para /media (Next sirve public/ con max-age=0: cada

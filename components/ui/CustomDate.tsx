@@ -6,6 +6,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import { cotizador } from "@/content/data";
 import { AnimatePresence, m, useReducedMotion } from "@/lib/motion";
 import { cn } from "@/lib/cn";
 import { OPACIDAD, RESORTE, SALIDA } from "@/lib/fisica";
@@ -41,6 +42,8 @@ const formatDisplay = (s: string) => {
     ? `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`
     : "";
 };
+/** Lo que muestra el campo mientras no hay fecha elegida. */
+const PLACEHOLDER = cotizador.form.fields.fecha.placeholder;
 const sameDay = (a: Date, b: Date) =>
   a.getFullYear() === b.getFullYear() &&
   a.getMonth() === b.getMonth() &&
@@ -96,19 +99,15 @@ const MES = {
  */
 export function CustomDate({
   label,
-  required,
   name,
   value = "",
   onChange,
-  placeholder = "dd/mm/aaaa",
   ayuda,
 }: {
   label: string;
-  required?: boolean;
   name: string;
   value?: string;
   onChange: (value: string) => void;
-  placeholder?: string;
   /** Línea de ayuda debajo del campo (siempre visible; el trigger la anuncia). */
   ayuda?: string;
 }) {
@@ -280,8 +279,7 @@ export function CustomDate({
   return (
     <div className="mb-[18px] flex flex-col gap-[7px]" ref={rootRef}>
       <span id={labelId} className="text-[13.5px] font-medium text-crema">
-        {label}{" "}
-        {required ? <i className="not-italic text-amarillo">*</i> : null}
+        {label}
       </span>
       <div className="relative">
         <button
@@ -303,7 +301,7 @@ export function CustomDate({
           }}
           className={cn(control, selected ? "text-crema" : "text-crema-dim")}
         >
-          <span>{selected ? formatDisplay(value) : placeholder}</span>
+          <span>{selected ? formatDisplay(value) : PLACEHOLDER}</span>
           <CalendarIcon
             className="size-[18px] shrink-0 text-crema-dim"
             aria-hidden

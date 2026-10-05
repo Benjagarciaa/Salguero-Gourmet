@@ -114,25 +114,21 @@ export interface FaqItem {
  * ========================================================================== */
 
 export const contacto = {
-  whatsappDigits: "5493512300715",
+  // WhatsApp confirmado por el cliente (el 351 2300715).
   whatsappDisplay: "+54 351 230 0715",
   whatsappHref: "https://wa.me/5493512300715",
-  /** Confirmado por el cliente: el 351 2300715 es WhatsApp. */
-  whatsappConfirmado: true,
   email: "salguerogourmet@gmail.com",
   instagramHandle: "@salguerogourmet",
   instagramUrl: "https://instagram.com/salguerogourmet",
-  // Nombre del perfil de Google, confirmado en el brief del cliente (no aparece en el mockup).
-  googleProfileName: "Salguero Gourmet Catering",
   // Link público del perfil de Google, confirmado por el cliente.
   googleProfileUrl: "https://share.google/WSgW27pZTcjI7gejG",
-  ciudad: "Córdoba capital",
-  zonaDelivery: "anillo de Circunvalación de Córdoba capital",
+  // Horario de atención confirmado por el cliente (agosto 2026). Lo muestra el
+  // aside del cotizador.
+  horarioAtencion: "9 a 17 hs",
 } as const;
 
 export const site = {
   name: "Salguero Gourmet",
-  aniosTrayectoria: 15,
   rating: 5.0,
   reviewCount: 34,
   // Dominio de produccion definitivo (comprado en Vercel). Es el apex, sin www:
@@ -141,24 +137,11 @@ export const site = {
   // Fecha real de última actualización del contenido (copy/reseñas). Alimenta el
   // <lastmod> del sitemap; actualizar SOLO cuando cambia el contenido, no en cada
   // deploy, para que sea una señal honesta a los buscadores.
-  lastUpdated: "2026-09-14",
+  lastUpdated: "2026-10-05",
   // Descripcion base para meta/OG/JSON-LD (alineada al posicionamiento de autor).
   description:
     "Gastronomía de autor para empresas, instituciones y eventos en Córdoba: desayunos, coffee breaks y mesas gourmet, cuidadas hasta el último detalle. Pedí tu presupuesto por WhatsApp.",
   tagline: "Catering gourmet de autor en Córdoba",
-} as const;
-
-/**
- * Políticas comerciales CONFIRMADAS por el cliente (agosto 2026). Fuente de verdad
- * para el copy de las FAQ y el aside del cotizador.
- */
-export const politicas = {
-  // Anticipación mínima de 48 hs antes del evento; se reserva con la seña del 50%.
-  anticipacionMinima: "Al menos 48 hs antes de la fecha del evento.",
-  senaPorcentaje: "50%",
-  mediosDePago: "Efectivo, transferencia o depósito bancario",
-  cantidadesMinimas: "Sin cantidades mínimas",
-  horarioAtencion: "9 a 17 hs",
 } as const;
 
 /* ========================================================================== *
@@ -673,6 +656,8 @@ export const galeria = {
     { image: "/media/galeria-bowl.jpg", caption: "Recién horneadas", alt: "Bowl con cookies caseras recién horneadas" },
     { image: "/media/galeria-pepas.jpg", caption: "Como en casa", alt: "Armando pastelería a mano sobre la mesa dulce" },
   ] as GaleriaFoto[],
+  /** Botón que abre el visor con `destacadas` (GaleriaLightbox.tsx). */
+  verCompleta: "Ver galería completa",
   /**
    * Escena de la galería (GaleriaEscena.tsx): intro con el video de la mesa
    * ligado al scroll y, después, las fotos (desktop: marquee doble; mobile:
@@ -713,16 +698,11 @@ export const flor = {
   title: { pre: "La cocina y ", em: "Flor" } as EmphasisTitle,
   body: "Detrás de cada mesa está Flor, al frente de Salguero Gourmet desde hace más de quince años. Cocina casera, atención personalizada y el mismo cuidado para un cumpleaños de diez personas que para un evento de empresa.",
   etiqueta: "Al frente desde el primer día",
+  // Confirmado por el cliente: la persona de la foto es Flor.
   foto: {
     src: "/media/flor-alternativa.jpg",
-    /** Respaldo (la de fondo verde institucional). */
-    fallback: "/media/flor-trabajando.jpg",
     alt: "Flor sirviendo en la mesa de un evento de Salguero Gourmet",
-    /** Encuadre cálido contra la pared de madera; el neón es el lema de la marca. */
-    cropNote: "encuadre cálido",
   },
-  /** Confirmado por el cliente: la persona de la foto es Flor. */
-  identidadConfirmada: true,
 };
 
 /* ========================================================================== *
@@ -779,39 +759,6 @@ export const resenas = {
       author: "Franco Businello",
       servicio: "Evento a medida",
       servicioConfirmado: true,
-    },
-    {
-      quote:
-        "Excelente experiencia, lo recomiendo muchísimo para todo tipo de eventos!!",
-      author: "Franco Rotti",
-      servicio: "Eventos",
-      servicioConfirmado: false,
-    },
-    {
-      quote:
-        "Excelente servicio. La comida espectacular y la atención también, ¡muchas gracias! Recomendado.",
-      author: "Camila",
-      servicio: "Evento",
-      servicioConfirmado: false,
-    },
-    {
-      quote: "Excelente atención y servicio! Súper recomendable.",
-      author: "Carla Almada",
-      servicio: "Evento",
-      servicioConfirmado: false,
-    },
-    {
-      quote: "Muy rica la torta. Es recomendable.",
-      author: "Nora d'Almeida",
-      servicio: "Mesa dulce",
-      servicioConfirmado: false,
-    },
-    {
-      quote:
-        "Todo excelente, muy buena la disposición de Flor. ¡Felicidades y que sigan los éxitos!",
-      author: "Verónica Benegas",
-      servicio: "Evento",
-      servicioConfirmado: false,
     },
   ] as Resena[],
 };
@@ -963,27 +910,27 @@ export const cotizador = {
   },
   form: {
     fields: {
-      nombre: { label: "Nombre", required: true, placeholder: "Tu nombre" },
+      // Los obligatorios (nombre, contacto, servicio y descripción) los marca
+      // Cotizador.tsx con `required`.
+      nombre: { label: "Nombre", placeholder: "Tu nombre" },
       contacto: {
         label: "WhatsApp o email",
-        required: true,
         placeholder: "Para responderte",
       },
-      servicio: { label: "Tipo de servicio", required: true },
+      servicio: { label: "Tipo de servicio" },
       fecha: {
         label: "Fecha del evento",
-        required: false,
+        /** Lo que muestra el campo mientras no hay fecha elegida (CustomDate.tsx). */
+        placeholder: "dd/mm/aaaa",
         /** Ayuda debajo del campo (anticipación confirmada por Flor). */
         ayuda: "Pedí con al menos 48 hs de anticipación.",
       },
       personas: {
         label: "Cantidad de personas",
-        required: false,
         placeholder: "Aprox.",
       },
       descripcion: {
         label: "Contanos qué estás organizando",
-        required: true,
         placeholder: "Tipo de evento, horario, qué te imaginás para la mesa...",
       },
     },
@@ -1036,7 +983,7 @@ export const cotizador = {
       { label: "Email", value: contacto.email, href: `mailto:${contacto.email}` },
       { label: "Instagram", value: contacto.instagramHandle, href: contacto.instagramUrl },
       // Horario confirmado (9 a 17 hs); la UI cae a "A confirmar" solo si es placeholder.
-      { label: "Horario de atención", value: politicas.horarioAtencion, href: null },
+      { label: "Horario de atención", value: contacto.horarioAtencion, href: null },
     ] as { label: string; value: string; href: string | null }[],
     etiqueta: "Respondemos a la brevedad",
   },
@@ -1057,4 +1004,18 @@ export const footer = {
   navLabel: "Pie de página",
   /** Link a #inicio. */
   arriba: "Volver arriba",
+};
+
+/* ========================================================================== *
+ * Página 404 (app/not-found.tsx)
+ * ========================================================================== */
+
+export const noEncontrada = {
+  /** Título de la pestaña (con la plantilla del layout: "... · Salguero Gourmet"). */
+  metaTitulo: "Página no encontrada",
+  kicker: "Error 404",
+  titulo: { pre: "No encontramos ", em: "esta página" } as EmphasisTitle,
+  texto:
+    "Puede que el link esté mal escrito o que la página ya no exista. Desde el inicio ves nuestros servicios y pedís tu presupuesto.",
+  boton: { label: "Volver al inicio", href: "/" } as CTA,
 };

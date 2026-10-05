@@ -19,8 +19,8 @@
 }
 
 /* Física del sitio en CSS: los resortes `hover` y `panel` de lib/fisica.ts
-   (RESORTE) muestreados cada 20 ms como linear() (con el script
-   scratchpad/cierre/plan-suavizado/tokens2.mjs). `static`: Tailwind emite SIEMPRE
+   (RESORTE) muestreados cada 20 ms como linear() (con un script local, fuera
+   del repo). `static`: Tailwind emite SIEMPRE
    las variables en :root (las usan también los .module.css) y genera las
    clases ease-resorte y ease-resorte-lento.
    - ease-resorte = hover {380, 34}, con 500 ms (duration-500 ease-resorte).

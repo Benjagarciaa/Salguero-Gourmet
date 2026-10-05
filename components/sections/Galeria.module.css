@@ -229,6 +229,19 @@
     gap: 8px;
   }
 }
+/* Debajo de 360px (iPhone SE de 320, Galaxy Fold de 280) ya no entran y
+   ensanchaban la página: el contador queda arriba y las acciones abajo,
+   centradas (a 280 el ícono de Instagram baja un renglón más). */
+@media (max-width: 359.98px) {
+  .cabecera,
+  .acciones {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .cabecera {
+    row-gap: 12px;
+  }
+}
 .ig {
   display: inline-flex;
   align-items: center;

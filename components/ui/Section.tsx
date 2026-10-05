@@ -25,14 +25,12 @@ export function Section({
   id,
   flush,
   className,
-  containerClassName,
   pbClassName = "pb-[76px]",
   children,
 }: {
   id?: string;
   flush?: boolean;
   className?: string;
-  containerClassName?: string;
   pbClassName?: string;
   children: React.ReactNode;
 }) {
@@ -41,7 +39,7 @@ export function Section({
       id={id}
       className={cn(flush ? "" : "pt-[76px]", pbClassName, className)}
     >
-      <Container className={containerClassName}>{children}</Container>
+      <Container>{children}</Container>
     </section>
   );
 }

@@ -240,19 +240,6 @@ export function pasadasDeCarga(total: number, pasos: number[]): number[][] {
   return pasadas;
 }
 
-export interface EstadoMotor {
-  /** Posición pedida (cuadro con decimales). */
-  pos: number;
-  /** Posición dibujada (distinta de `pos` mientras se asienta o ya asentada). */
-  vista: number;
-  /** Los dos cuadros que tocan estaban decodificados en el último dibujo. */
-  exacto: boolean;
-  /** Lo último dibujado: "12", o "12+13" en un fundido ("" sin dibujo). */
-  dibujado: string;
-  bajados: number;
-  decodificados: number;
-}
-
 export interface MotorSecuencia {
   /** Pide mostrar la posición `f` (cuadro con decimales; se acota al rango). */
   irA(f: number): void;
@@ -299,8 +286,6 @@ export interface MotorSecuencia {
   dormir(): void;
   /** Vuelve a medir el lienzo y a decodificar la ventana del cuadro actual. */
   despertar(): void;
-  /** Estado para QA (no se usa en el sitio). */
-  estado(): EstadoMotor;
   /**
    * Corta decodificaciones, observers y el frame pendiente, y suelta las
    * descargas (las que siguen en vuelo quedan un rato para otro motor).
@@ -359,7 +344,6 @@ export function crearMotor({
   /** Último tamaño CSS del lienzo (el ResizeObserver avisa también dormido). */
   let tamCss = { w: 0, h: 0 };
   let avisado = false;
-  let bajados = 0;
   /** Adopciones en curso: `cargar` las espera para no pedir dos veces un cuadro. */
   let adopciones: Promise<void> = Promise.resolve();
   /** Pedidos en vuelo y los que fallaron (no se piden de nuevo). */
@@ -680,10 +664,7 @@ export function crearMotor({
     enVuelo.delete(i);
     if (muerto) return;
     if (blob) {
-      if (!blobs[i]) {
-        blobs[i] = blob;
-        bajados++;
-      }
+      if (!blobs[i]) blobs[i] = blob;
     } else {
       // Un cuadro que falla no frena la secuencia (se usa el vecino) ni se
       // vuelve a pedir en bucle.
@@ -806,7 +787,6 @@ export function crearMotor({
           if (!actual.includes(url)) return;
           // Marca de bajado (no se vuelve a pedir).
           fijos.add(i);
-          bajados++;
           blobs[i] = blobs[i] ?? new Blob();
           // El mismo archivo, de la caché, a un bitmap decodificado fuera del
           // hilo principal (como los demás cuadros). Si no se puede, el <img>.
@@ -886,17 +866,6 @@ export function crearMotor({
       pedirDibujo();
       // La carga por tramos sigue desde donde quedó.
       bombear();
-    },
-
-    estado() {
-      return {
-        pos,
-        vista,
-        exacto,
-        dibujado: dibujadoClave.split(/[|@]/)[0],
-        bajados,
-        decodificados: listos.filter(Boolean).length,
-      };
     },
 
     destruir() {

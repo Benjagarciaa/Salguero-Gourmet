@@ -189,7 +189,7 @@ export function refrescarSiNadieLoHace(): () => void {
  *
  * Sin IntersectionObserver arma enseguida. Devuelve la cancelación.
  */
-export const MARGEN_ACERCARSE = "150%";
+const MARGEN_ACERCARSE = "150%";
 
 export function alAcercarse(
   el: Element,

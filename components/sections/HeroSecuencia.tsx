@@ -156,7 +156,7 @@ const PALABRA_DESDE = 135;
  * arrancan las piezas si hay palabras (`piezas`) y separación entre piezas
  * (`pieza`). El cierre va más junto: su tramo propio de scroll es corto (~450
  * px en 1440x900) y con rueda continua (~1000 px/s) el botón, que esperaba a
- * que terminara el título, no llegaban a verse enteros antes de la
+ * que terminara el título, no llegaba a verse entero antes de la
  * salida. Ahora arranca casi con las palabras: todo el cierre queda a la
  * vista (opacidad 0.95) en ~0.45 s (antes ~0.95 s).
  */
@@ -1422,11 +1422,6 @@ export function HeroSecuencia({
                 },
               });
               motor = m;
-              if (process.env.NODE_ENV !== "production") {
-                // Solo para QA (medir la suavidad desde el navegador).
-                (canvas as HTMLCanvasElement & { __motor?: MotorSecuencia })
-                  .__motor = m;
-              }
               if (lienzoTapa && tapaImg) {
                 // Lo que mueve al canvas de los cuadros dentro del escenario
                 // (del más interno al más externo) y cómo leer lo que le puso
@@ -1520,7 +1515,6 @@ export function HeroSecuencia({
     "--hs-ar-m": (mobile.ancho / mobile.alto).toFixed(5),
     "--hs-foco": `${foco.x}% ${foco.y}%`,
     "--hs-caja-inicio": (encuadre.cajaInicio.abajo / 100).toFixed(4),
-    "--hs-caja-final": (encuadre.cajaFinal.abajo / 100).toFixed(4),
     "--hs-zoom": String(acercamiento.escala),
     "--hs-zoom-angosta": String(acercamiento.escalaAngosta),
   } as React.CSSProperties;

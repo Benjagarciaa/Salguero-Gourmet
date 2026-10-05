@@ -30,7 +30,6 @@ interface PillProps {
   rel?: string;
   type?: "button" | "submit" | "reset";
   onClick?: React.MouseEventHandler<HTMLElement>;
-  "aria-label"?: string;
 }
 
 /**
@@ -48,7 +47,6 @@ export function Pill({
   rel,
   type = "button",
   onClick,
-  "aria-label": ariaLabel,
 }: PillProps) {
   const classes = cn(base, sizes[size], variants[variant], className);
   // Blinda pestañas nuevas: si un caller abre _blank sin pasar rel, igual sale
@@ -63,7 +61,6 @@ export function Pill({
         target={target}
         rel={relFinal}
         onClick={onClick}
-        aria-label={ariaLabel}
         className={classes}
       >
         {children}
@@ -75,7 +72,6 @@ export function Pill({
     <button
       type={type}
       onClick={onClick}
-      aria-label={ariaLabel}
       className={classes}
     >
       {children}

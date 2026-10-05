@@ -8,7 +8,7 @@ import {
   useState,
 } from "react";
 import { ZoomIn } from "lucide-react";
-import type { GaleriaFoto } from "@/content/data";
+import { galeria, type GaleriaFoto } from "@/content/data";
 import { trasCargaInactivo } from "@/lib/video";
 import type {
   GaleriaLightboxCapas,
@@ -67,11 +67,9 @@ export function precargarLightbox() {
  */
 export function GaleriaLightbox({
   fotos,
-  label = "Ver galería completa",
   ref,
 }: {
   fotos: GaleriaFoto[];
-  label?: string;
   ref?: React.Ref<GaleriaLightboxHandle>;
 }) {
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -126,7 +124,7 @@ export function GaleriaLightbox({
         className="inline-flex shrink-0 items-center gap-2 rounded-full border border-hairline bg-transparent px-5 py-[10px] text-[14px] font-medium text-crema transition-[translate,scale,border-color] duration-500 ease-resorte hover:-translate-y-0.5 hover:border-crema-dim active:translate-y-0 active:scale-[0.97] active:duration-150"
       >
         <ZoomIn className="size-4 text-amarillo" aria-hidden />
-        {label}
+        {galeria.verCompleta}
       </button>
 
       {pedido && Capas ? (

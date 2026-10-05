@@ -62,10 +62,10 @@ export function Galeria() {
         {/* Cada banda entra desde la dirección hacia la que scrollea; el clip
             evita overflow horizontal transitorio por el corrimiento de 48px. */}
         <div className="flex flex-col gap-3 overflow-x-clip sm:gap-4">
-          <Reveal y={0} x={48} duration={0.9}>
+          <Reveal y={0} x={48}>
             <Track fotos={track1} />
           </Reveal>
-          <Reveal y={0} x={-48} duration={0.9}>
+          <Reveal y={0} x={-48}>
             <Track fotos={track2} reverse />
           </Reveal>
         </div>

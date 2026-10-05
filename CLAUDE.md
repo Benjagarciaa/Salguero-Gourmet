@@ -20,9 +20,10 @@ Solo delivery dentro del anillo de Circunvalación. No hay retiro.
    comportamiento**. Ya está aprobado por el cliente. No rediseñar, no "mejorar" el layout
    por iniciativa propia. El sitio final es *el mockup elevado*: mismas decisiones, mejor
    ejecución.
-2. **Las fotos de `_assets/fotos/`** mandan sobre las imágenes del mockup. Cada archivo ya
-   está nombrado por su destino y reemplaza al frame de video equivalente. Ver
-   `_assets/fotos/SELECCION.md` para saber qué foto va en cada lugar y por qué.
+2. **Las fotos de `_assets/fotos/`** mandan sobre las imágenes del mockup. Cada archivo
+   reemplaza al frame de video equivalente. `_assets/fotos/SELECCION.md` explica la
+   selección original y por qué; es histórico: el sitio sirve las fotos desde
+   `public/media/` con otros nombres y la asignación vigente está en `content/data.ts`.
 3. **Este proyecto (CLAUDE.md + PROMPT MAESTRO)** manda en **stack, calidad y en lo que el
    mockup no puede mostrar**: la secuencia de la caja en el hero (ver §7.1), smooth
    scroll, `lib/wa.ts`, SEO, performance, accesibilidad.
@@ -75,12 +76,12 @@ tracking `+0.14em`). CTA: pill (radio 999px) amarilla con texto `#241C15`.
    transcribirlo, no reescribirlo. Español argentino, **voseo, sin guion largo (—) ni medio
    (–)**.
 5. **Animación fail-open (regla aprendida en este proyecto, innegociable):** ningún
-   elemento arranca oculto en CSS estático. El contenido es visible por defecto; `motion`
-   anima por encima con `whileInView` una sola vez, ease `[0.16, 1, 0.3, 1]` (en la beta
-   "dopamina" esa curva se reemplazó por la física de resortes de `lib/fisica.ts`, con vía
-   libre de Benjamin para el localhost; confirmar con él antes de pasarla a producción). Solo
-   `transform` y `opacity`. `useReducedMotion()` en todo componente animado. Sin listeners
-   de scroll manuales.
+   elemento arranca oculto en CSS estático. El contenido es visible por defecto;
+   framer-motion (vía `lib/motion.ts`) anima por encima con `whileInView` una sola vez, con
+   la física de resortes de `lib/fisica.ts` (reemplazó a la ease `[0.16, 1, 0.3, 1]` del
+   mockup; aprobada por Benjamin para producción el 5/10/2026). Solo `transform` y
+   `opacity`. `useReducedMotion()` en todo componente animado. Sin listeners de scroll
+   manuales.
 6. **Verificación visual:** revisar cada sección a 390px y 1440px antes del checkpoint y
    comparar contra el mockup. Si no hay browser/Playwright, pedir captura.
 7. **Antes de escribir código Next, leer `node_modules/next/dist/docs/`** (Next 16 tiene
@@ -89,8 +90,11 @@ tracking `+0.14em`). CTA: pill (radio 999px) amarilla con texto `#241C15`.
 ## 6. Stack
 
 Next.js 16 (app router, sin `src/`) + TypeScript + Tailwind v4 (`@theme` en CSS) +
-`motion` + `lenis` + `lucide-react` + **GSAP** (`gsap` + `@gsap/react`). Sin backend.
-Deploy: Vercel. Imágenes con `next/image` y `sizes` explícito.
+`framer-motion` (se importa siempre de `@/lib/motion`, nunca de `motion/react`; el paquete
+`motion` ya no se usa) + `lenis` + `lucide-react` + **GSAP** (`gsap` + `@gsap/react`). Sin
+backend. Deploy: Vercel. Imágenes con `next/image` y `sizes` explícito. Física de las
+animaciones: `lib/fisica.ts` (resortes de framer-motion, `resorteGsap` para GSAP y los
+tokens `ease-resorte` en CSS), aprobada por Benjamin para producción el 5/10/2026.
 
 **GSAP está permitido desde la beta "dopamina"** (autorizado por Benjamin, sept 2026) para
 las escenas de scroll (pin, scrub, ScrollTrigger y sus plugins: DrawSVG, MotionPath, etc.).
@@ -114,9 +118,11 @@ Reglas de uso:
 1. **Hero con la secuencia de la caja** (reemplazó al video desde la beta "dopamina"):
    `HeroSecuencia` fija el hero y el scroll recorre una secuencia de cuadros dibujada en
    un `<canvas>` (`HeroSecuenciaMotor.ts`, cuadros WebP con alfa en
-   `public/media/secuencia/caja-v4/`) con la tapa en vivo en otro canvas
-   (`HeroSecuenciaTapa.ts`): la caja se abre y los productos suben. Datos y tiempos en
-   `heroSecuencia` (`content/data.ts`). El servidor pinta el primer cuadro con la caja
+   `public/media/secuencia/caja-v6/desktop/` para compu y `caja-v7/mobile/` para celular)
+   con la tapa en vivo en otro canvas (`HeroSecuenciaTapa.ts`, imágenes en
+   `public/media/secuencia/caja-v6/`): la caja se abre y los productos suben. La fuente de
+   los cuadros (`caja-v4`) está archivada fuera de git, en `_assets/archivo/`. Datos y
+   tiempos en `heroSecuencia` (`content/data.ts`). El servidor pinta el primer cuadro con la caja
    cerrada (LCP); los cuadros se bajan después de `load`. Con `prefers-reduced-motion` o
    sin JS: versión quieta completa (último cuadro y todos los textos).
 2. **Lenis smooth scroll** global (excepto reduced-motion).
@@ -129,8 +135,8 @@ Reglas de uso:
 4. **Contadores** de la tira de confianza (+15 años y +200 eventos), pero inicializados en
    el valor final para SSR (el HTML servido muestra los números reales). **La cantidad de
    reseñas NO se muestra en la página** (pedido de Benjamin, 5/10/2026): la tira dice
-   "5.0 en Google", las cifras del hero "5.0 en Google" y Reseñas, solo el 5.0 y las
-   estrellas; tampoco va en el texto para lectores de pantalla. `site.reviewCount` (hoy 34) va
+   "5.0 en Google", las cifras del hero "5.0 en Google" y Reseñas, el 5.0 con las
+   estrellas con "en Google" debajo, sin número (pedido de Benjamin, 5/10/2026); tampoco va en el texto para lectores de pantalla. `site.reviewCount` (hoy 34) va
    SOLO en el JSON-LD (`components/chrome/JsonLd.tsx`, invisible, para Google), nunca
    escrita a mano.
 5. **Micro-mejoras permitidas** (sin cambiar layout): transiciones más finas, hover states,
@@ -138,14 +144,15 @@ Reglas de uso:
 
 ## 8. Secciones (9 + footer, en este orden)
 
-1. Hero (secuencia de la caja + tira de confianza) · 2. Servicios (4 placas, cada una con su foto
-`servicios-*.jpg`) · 3. Galería (marquee doble con `galeria-01..08`, cada foto con su
-etiqueta) · 4. La cocina de Flor (`flor-trabajando.jpg` recortada cerrada; confirmar
-identidad) · 5. Reseñas (5.0 que cuenta de 0.0 a 5.0 con las estrellas, atado al scroll · sin la
-cantidad de reseñas, que va solo en el JSON-LD · las 4 del mockup por servicio) · 6. Cómo trabajamos
-(4 pasos; paso 4 = delivery, sin retiro) · 7. Banda empresas (eventual, no recurrente) ·
-8. FAQ (6 preguntas; envíos = anillo de Circunvalación) · 9. Cotizador (form + WhatsApp,
-email e Instagram directos) · Footer.
+1. Hero (secuencia de la caja + tira de confianza) · 2. Servicios (4 placas, cada una con su
+foto de `public/media/`) · 3. Banda empresas (eventual, no recurrente; va después de
+Servicios desde el 30/9/2026, pedido de Benjamin; en el mockup era la 7ª) · 4. Galería
+(marquee doble con las fotos `galeria-*` y clips, cada uno con su etiqueta) · 5. La cocina
+de Flor (`flor-alternativa.jpg`, encuadre cálido) · 6. Reseñas (5.0 que cuenta de 0.0 a 5.0
+con las estrellas, atado al scroll · sin la cantidad de reseñas, que va solo en el JSON-LD ·
+las 4 con servicio confirmado, etiquetadas por servicio) · 7. Cómo trabajamos (4 pasos;
+paso 4 = delivery, sin retiro) · 8. FAQ (6 preguntas; envíos = anillo de Circunvalación) ·
+9. Cotizador (form + WhatsApp, email e Instagram directos) · Footer.
 
 ## 9. Performance y accesibilidad
 
@@ -156,15 +163,15 @@ Fuentes `display: swap`. Foco visible amarillo. Contraste AA. Objetivo Lighthous
 ## 10. Estructura de carpetas
 
 ```
-app/                      # Next app router (layout, page, icon.tsx, opengraph, sitemap, robots)
+app/                      # Next app router (layout, page, not-found, icon.tsx, opengraph, sitemap, robots)
 components/
-  chrome/                 # nav, footer, smooth-scroll provider
-  sections/               # una por sección de la landing
-  ui/                     # primitivas: Section, SectionHead, Etiqueta, Pill, Placa, Field, Reveal, Wordmark
+  chrome/                 # nav, footer, smooth-scroll provider, JSON-LD
+  sections/               # una por sección de la landing (más las piezas del hero)
+  ui/                     # primitivas: Section, SectionHead, Etiqueta, Pill, Field, Reveal, Wordmark
 content/data.ts           # TODO el copy, tipado
-lib/                      # wa.ts y utilidades
-public/media/             # fotos e (en FASE 2) videos comprimidos + posters
-_assets/                  # material original del cliente (referencia; videos crudos gitignored)
+lib/                      # wa.ts, gsap.ts, motion.ts, fisica.ts y utilidades
+public/media/             # fotos, clips, posters y secuencias de cuadros (secuencia/)
+_assets/                  # material del cliente (referencia; en git solo fotos/ y el mockup)
 ```
 
 ## 11. Fases

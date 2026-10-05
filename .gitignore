@@ -40,23 +40,19 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Salguero: raw source videos (~76MB) live in _assets as reference only.
-# The compressed, web-ready versions live in public/media (added in FASE 2).
-_assets/*.mp4
-_assets/*.mp4.mp4
+# Salguero: _assets/ es material de referencia y de trabajo (no va al deploy).
+# En git quedan solo las fotos elegidas por el cliente y el mockup aprobado.
+# Todo lo demás vive solo en el disco: videos crudos, fuentes de las secuencias
+# (contenido/), recortes de productos, media vieja de la beta y lo archivado
+# (archivo/: código y media sin uso, incluida caja-v4, la fuente de la
+# secuencia del hero). Lo que se archivó y estaba en git ya no está trackeado:
+# queda en la historia de git (commit 76ab383) y en la copia local.
+# Ni git ni Tailwind miran lo ignorado.
+_assets/*
+!_assets/fotos/
+!_assets/mockup-salguero-v4.html
 
-# Salguero (beta dopamina): fuentes pesadas locales (videos y fotos originales
-# de donde salen las secuencias y los videos de las escenas). No van al repo.
-_assets/contenido/
-# Media que la beta dejó de usar (secuencias viejas del hero), fuera de public/
-# hasta que Benjamin apruebe borrarla. Ver PENDIENTES.md.
-_assets/beta-sin-uso/
-# Lo archivado (código y media sin uso, movido fuera de public/ y de components/
-# para poder volver atrás): ni git ni Tailwind lo miran. Lo que ya estaba
-# trackeado se movió con `git mv` y sigue trackeado. Incluye
-# media/secuencia/caja-v4, la fuente de la secuencia del hero (caja-v6).
-_assets/archivo/
-_assets/caja-provisoria/
-
-# Recortes en alta de los productos (material para redes, no los usa la web)
-_assets/productos-recortes/
+# Claude Code: configuración local de cada máquina y worktrees de otras sesiones.
+.claude/settings.local.json
+.claude/launch.json
+.claude/worktrees/

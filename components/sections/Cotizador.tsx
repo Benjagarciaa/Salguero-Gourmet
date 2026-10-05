@@ -178,15 +178,14 @@ export function Cotizador() {
           title={cotizador.head.title}
           description={cotizador.head.intro}
         />
-        <div className="grid gap-9 min-[860px]:grid-cols-[1.15fr_0.85fr] min-[860px]:gap-[52px]">
+        {/* minmax(0,1fr) en mobile: con la columna automática, la opción larga
+          del select y la placa de contacto la ensanchaban más que la pantalla
+          (y la página) en teléfonos de 320px y 280px. */}
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-9 min-[860px]:grid-cols-[1.15fr_0.85fr] min-[860px]:gap-[52px]">
           {/* Cascada corta campo por campo (cada fila con su propio Reveal
             fail-open) que guía el ojo hacia el botón de WhatsApp. */}
           <form onSubmit={onSubmit} noValidate>
-            <Reveal
-              y={14}
-              duration={0.6}
-              className="grid gap-x-[14px] sm:grid-cols-2"
-            >
+            <Reveal y={14} className="grid gap-x-[14px] sm:grid-cols-2">
               <Field
                 label={fields.nombre.label}
                 required
@@ -212,12 +211,7 @@ export function Cotizador() {
             {/* z: la lista abierta (y el calendario, en la fila de abajo)
               pinta sobre las filas siguientes aun durante la entrada, cuando
               cada Reveal tiene su transform (contexto de apilamiento). */}
-            <Reveal
-              y={14}
-              duration={0.6}
-              delay={0.06}
-              className="relative z-30"
-            >
+            <Reveal y={14} delay={0.06} className="relative z-30">
               <CustomSelect
                 label={fields.servicio.label}
                 required
@@ -229,7 +223,6 @@ export function Cotizador() {
             </Reveal>
             <Reveal
               y={14}
-              duration={0.6}
               delay={0.12}
               className="relative z-20 grid gap-x-[14px] sm:grid-cols-2"
             >
@@ -249,7 +242,7 @@ export function Cotizador() {
                 onChange={(v) => setField("personas", v)}
               />
             </Reveal>
-            <Reveal y={14} duration={0.6} delay={0.18}>
+            <Reveal y={14} delay={0.18}>
               <TextArea
                 label={fields.descripcion.label}
                 required
@@ -261,7 +254,7 @@ export function Cotizador() {
                 error={touched.descripcion ? errors.descripcion : undefined}
               />
             </Reveal>
-            <Reveal y={14} duration={0.6} delay={0.24}>
+            <Reveal y={14} delay={0.24}>
               <Pill type="submit">{cotizador.form.submitLabel}</Pill>
               {/* Ayuda por si el navegador no abre WhatsApp (L4). */}
               <p className="mt-3 text-[12.5px] leading-[1.45] text-crema-dim">
@@ -285,6 +278,9 @@ export function Cotizador() {
               </h3>
               {cotizador.aside.datos.map((d) => {
                 const external = d.href?.startsWith("http");
+                // Email: si no entra en una línea (teléfonos de menos de
+                // ~334px), corta después de la @ y no se sale de la placa.
+                const arroba = d.value.indexOf("@");
                 return (
                   <div key={d.label} className="flex flex-col gap-[3px]">
                     <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-crema-dim">
@@ -297,7 +293,15 @@ export function Cotizador() {
                         rel={external ? "noopener noreferrer" : undefined}
                         className="text-[16.5px] font-medium text-crema hover:text-amarillo"
                       >
-                        {d.value}
+                        {arroba > 0 ? (
+                          <>
+                            {d.value.slice(0, arroba + 1)}
+                            <wbr />
+                            {d.value.slice(arroba + 1)}
+                          </>
+                        ) : (
+                          d.value
+                        )}
                       </a>
                     ) : (
                       <span className="text-[16.5px] font-medium text-crema-dim">
