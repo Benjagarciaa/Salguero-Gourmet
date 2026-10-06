@@ -16,8 +16,43 @@
  * LCP (la secuencia del hero, ~1 MB en celular, lo llevaba de ~3.6 a ~8.5 s
  * simulados; los chunks de la decoración y el cuadro 0 del motor, unos
  * cientos de ms más).
+ *
+ * Para lo del hero (despuesDeLoad y despuesDelPintado), la intención también
+ * cuenta como pintado: si la persona ya usó la página (rueda, dedo, tecla o
+ * puntero), la está viendo. Sin esto, una rueda apenas entrar cortaba el
+ * registro de LCP antes de la entrada de la imagen del hero y, si `load`
+ * llegaba antes que la entrada de la primera pintura, la secuencia esperaba
+ * todo el respaldo (la caja quieta en el cuadro 0 ~1.5 s y después un salto).
+ * Lighthouse no genera input: para PageSpeed es lo mismo que antes.
  */
 const RESPALDO_MS = 1500;
+
+/**
+ * Intención: se escucha desde que se evalúa el módulo (pasivo, en captura)
+ * hasta la primera; ahí avisa a los que esperan (`alIntentar`).
+ */
+const TIPOS_INTENCION = [
+  "wheel",
+  "touchstart",
+  "keydown",
+  "pointerdown",
+] as const;
+let intencion = false;
+const alIntentar = new Set<() => void>();
+if (typeof window !== "undefined") {
+  const opciones = { capture: true, passive: true } as const;
+  const marcar = () => {
+    if (intencion) return;
+    intencion = true;
+    TIPOS_INTENCION.forEach((t) =>
+      window.removeEventListener(t, marcar, opciones),
+    );
+    const avisar = Array.from(alIntentar);
+    alIntentar.clear();
+    avisar.forEach((fn) => fn());
+  };
+  TIPOS_INTENCION.forEach((t) => window.addEventListener(t, marcar, opciones));
+}
 
 function cuandoSePinte(
   fn: () => void,
@@ -41,7 +76,10 @@ function cuandoSePinte(
       .some((e) => e.name === "first-contentful-paint");
   let vivo = true;
   let cargo = !conLoad || document.readyState === "complete";
-  let listo = (!conLcp && !conPaint) || (cargo && yaPinto());
+  let listo =
+    (!conLcp && !conPaint) ||
+    (cargo && yaPinto()) ||
+    (esperarHero && intencion);
   let respaldo = 0;
   const observadores: PerformanceObserver[] = [];
   const terminar = () => {
@@ -49,16 +87,17 @@ function cuandoSePinte(
     observadores.forEach((o) => o.disconnect());
     window.clearTimeout(respaldo);
     window.removeEventListener("load", alCargar);
+    alIntentar.delete(marcarListo);
   };
   const intentar = () => {
     if (!vivo || !cargo || !listo) return;
     terminar();
     fn();
   };
-  const marcarListo = () => {
+  function marcarListo() {
     listo = true;
     intentar();
-  };
+  }
   function alCargar() {
     cargo = true;
     if (yaPinto()) listo = true;
@@ -90,6 +129,8 @@ function cuandoSePinte(
       }
     });
   }
+  // La persona ya usa la página: la está viendo (solo para lo del hero).
+  if (!listo && esperarHero) alIntentar.add(marcarListo);
   if (!cargo) window.addEventListener("load", alCargar, { once: true });
   intentar();
   return terminar;

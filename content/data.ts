@@ -643,7 +643,7 @@ export const galeria = {
     { image: "/media/galeria-clip-3-poster.jpg", video: "/media/galeria-clip-3.mp4", caption: "En una empresa", alt: "Video de una mesa de alfajores y budines en un evento corporativo" },
     { image: "/media/galeria-meriendas.jpg", caption: "Meriendas", alt: "Boxes de desayuno abiertos con budín, pan y limonada" },
     { image: "/media/box-corporativo-gift.jpg", caption: "Boxes corporativos", alt: "Box gourmet con budín, focaccia, queso, mermelada y nueces, con luces y sticker de Salguero Gourmet" },
-    { image: "/media/galeria-08-desayuno-mano.jpg", caption: "Box en mano", alt: "Box de desayuno en mano con budín, alfajores y limonada" },
+    { image: "/media/galeria-box-blanca.jpg", caption: "Lista para regalar", alt: "Caja blanca de regalo con ventana y el sello de Salguero Gourmet, sostenida con las dos manos" },
     { image: "/media/galeria-caja.jpg", caption: "Box de regalo", alt: "Box de regalo abierto con budín, alfajores y dulces" },
     { image: "/media/galeria-noche.jpg", caption: "Eventos de noche", alt: "Facturas en pedestales con luz azul en un evento de noche" },
     { image: "/media/galeria-clip-1-poster.jpg", video: "/media/galeria-clip-1.mp4", caption: "La mesa servida", alt: "Video de la mesa dulce con budines, alfajores y facturas sobre tablas de madera" },
