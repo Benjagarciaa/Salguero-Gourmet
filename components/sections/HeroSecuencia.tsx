@@ -238,14 +238,92 @@ function failsafeCorrio(): boolean {
     );
 }
 
-/** Corre `fn` después del evento load (o ya, si la página terminó de cargar). */
+/**
+ * Corre `fn` después del evento load Y de que la imagen del hero se pintó (o
+ * ya, si las dos cosas pasaron). "Se pintó" = la primera pintura ya había
+ * pasado al llegar `load` (lo normal) o, si no, una entrada de LCP de imagen
+ * adentro de #inicio (el cuadro del <img> o la tapa). Si el LCP termina siendo
+ * un texto, `RESPALDO_MS` después de la primera pintura; donde no hay LCP
+ * (Safari), la primera pintura; sin PerformanceObserver, solo `load`.
+ *
+ * En una página visible el hero se pinta antes o casi junto con `load`: la
+ * secuencia se baja igual que siempre. En una pestaña que el navegador
+ * todavía no muestra (abierta en segundo plano, o un navegador automatizado
+ * que demora los cuadros, como el de PageSpeed) no hay pintura hasta
+ * mostrarse, y la secuencia (~1 MB en celular) esperaba solo a `load`: se
+ * bajaba antes de que el hero se viera, compitiéndole, y Lighthouse la
+ * contaba dentro del LCP (de ~3.6 a ~8.5 s simulados).
+ */
+const RESPALDO_MS = 1500;
 function despuesDeLoad(fn: () => void): () => void {
-  if (document.readyState === "complete") {
+  const tipos =
+    typeof PerformanceObserver !== "undefined"
+      ? (PerformanceObserver.supportedEntryTypes ?? [])
+      : [];
+  const conLcp = tipos.includes("largest-contentful-paint");
+  const conPaint = tipos.includes("paint");
+  // La primera pintura con contenido ya pasó: la página se está mostrando
+  // (lo normal en una página visible, antes de `load`): como siempre, sin
+  // esperar a la entrada de LCP (los observadores avisan un poco después).
+  const yaPinto = () =>
+    conPaint &&
+    performance
+      .getEntriesByType("paint")
+      .some((e) => e.name === "first-contentful-paint");
+  let vivo = true;
+  let cargo = document.readyState === "complete";
+  let listo = (!conLcp && !conPaint) || (cargo && yaPinto());
+  let respaldo = 0;
+  const observadores: PerformanceObserver[] = [];
+  const terminar = () => {
+    vivo = false;
+    observadores.forEach((o) => o.disconnect());
+    window.clearTimeout(respaldo);
+    window.removeEventListener("load", alCargar);
+  };
+  const intentar = () => {
+    if (!vivo || !cargo || !listo) return;
+    terminar();
     fn();
-    return () => {};
+  };
+  const marcarListo = () => {
+    listo = true;
+    intentar();
+  };
+  function alCargar() {
+    cargo = true;
+    if (yaPinto()) listo = true;
+    intentar();
   }
-  window.addEventListener("load", fn, { once: true });
-  return () => window.removeEventListener("load", fn);
+  const observar = (
+    tipo: string,
+    alVer: (entradas: PerformanceEntryList) => void,
+  ) => {
+    const o = new PerformanceObserver((lista) => alVer(lista.getEntries()));
+    o.observe({ type: tipo, buffered: true });
+    observadores.push(o);
+  };
+  if (conLcp) {
+    // LCP de una imagen del hero (`url`, adentro de #inicio): ya se ve.
+    observar("largest-contentful-paint", (entradas) => {
+      const delHero = entradas.some((e) => {
+        const lcp = e as LargestContentfulPaint;
+        return Boolean(lcp.url && lcp.element?.closest("#inicio"));
+      });
+      if (delHero) marcarListo();
+    });
+  }
+  if (conPaint) {
+    observar("paint", () => {
+      if (!conLcp) marcarListo();
+      else if (!respaldo) {
+        respaldo = window.setTimeout(marcarListo, RESPALDO_MS);
+      }
+    });
+  }
+  if (!cargo) window.addEventListener("load", alCargar, { once: true });
+  intentar();
+  return terminar;
 }
 
 /** Posición en el timeline acotada para que ningún tramo lo alargue más de 1. */
