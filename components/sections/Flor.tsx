@@ -15,7 +15,7 @@ import {
   prepararTransformes,
   ScrollTrigger,
   scrollNativo,
-  useGSAP,
+  useGSAPEnCola,
 } from "@/lib/gsap";
 import { COSTURA, OPACIDAD_GSAP, SCRUB, TRAMO } from "@/lib/fisica";
 import { flor } from "@/content/data";
@@ -156,7 +156,7 @@ export function Flor() {
   const cuerpoRef = useRef<HTMLParagraphElement>(null);
   const emRef = useRef<HTMLElement>(null);
 
-  useGSAP(
+  useGSAPEnCola(
     () => {
       const root = rootRef.current;
       const escena = escenaRef.current;

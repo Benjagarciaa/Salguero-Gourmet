@@ -16,7 +16,7 @@ import {
   refrescarSiNadieLoHace,
   ScrollTrigger,
   scrollNativo,
-  useGSAP,
+  useGSAPEnCola,
 } from "@/lib/gsap";
 import { COSTURA, SCRUB, TRAMO } from "@/lib/fisica";
 import { cn } from "@/lib/cn";
@@ -108,7 +108,7 @@ function oscuro(nivel: number): number {
 export function Servicios() {
   const rootRef = useRef<HTMLElement>(null);
 
-  useGSAP(
+  useGSAPEnCola(
     () => {
       const root = rootRef.current;
       if (!root) return;

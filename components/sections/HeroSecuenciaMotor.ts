@@ -1,5 +1,6 @@
 import type { HeroSecuenciaVersion } from "@/content/data";
 import { resorteGsap } from "@/lib/fisica";
+import { despuesDelPintado } from "@/lib/pintado";
 
 /* ==========================================================================
  * Motor de la secuencia de cuadros (sin React y sin GSAP).
@@ -346,6 +347,18 @@ export function crearMotor({
   let avisado = false;
   /** Adopciones en curso: `cargar` las espera para no pedir dos veces un cuadro. */
   let adopciones: Promise<void> = Promise.resolve();
+  /**
+   * El hero ya se ve (despuesDelPintado, lib/pintado.ts): la adopción pide su
+   * archivo recién entonces. En una página visible ya pasó al armar (no espera
+   * nada); en una pestaña que todavía no se muestra, el pedido no le compite
+   * a la primera pintura. Mientras tanto se ve el <img>, el mismo cuadro.
+   */
+  let pintado: Promise<void> | null = null;
+  let cancelarPintado = () => {};
+  const esperarPintado = () =>
+    (pintado ??= new Promise<void>((resolve) => {
+      cancelarPintado = despuesDelPintado(resolve);
+    }));
   /** Pedidos en vuelo y los que fallaron (no se piden de nuevo). */
   const enVuelo = new Set<number>();
   const fallidos = new Set<number>();
@@ -776,6 +789,7 @@ export function crearMotor({
       const url = urlDeCuadro(version, i);
       const adopcion = img
         .decode()
+        .then(esperarPintado)
         .then(() => {
           if (muerto || listos[i] || !img.naturalWidth) return;
           let actual = img.currentSrc;
@@ -871,6 +885,7 @@ export function crearMotor({
     destruir() {
       if (muerto) return;
       muerto = true;
+      cancelarPintado();
       cortarAsentado();
       window.clearTimeout(esperaReposo);
       // Las esperas terminan; las descargas en vuelo quedan para otro motor

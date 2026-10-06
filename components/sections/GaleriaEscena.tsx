@@ -25,7 +25,7 @@ import {
   prepararTransformes,
   ScrollTrigger,
   scrollNativo,
-  useGSAP,
+  useGSAPEnCola,
 } from "@/lib/gsap";
 import { COSTURA, rampa, resorteGsap, SCRUB, TRAMO } from "@/lib/fisica";
 import { ahorroDeDatos, calentarVideo, trasCargaInactivo } from "@/lib/video";
@@ -249,7 +249,7 @@ export function GaleriaEscena({
   const rootRef = useRef<HTMLDivElement>(null);
   const lightboxRef = useRef<GaleriaLightboxHandle>(null);
 
-  useGSAP(
+  useGSAPEnCola(
     () => {
       const root = rootRef.current;
       if (!root) return;

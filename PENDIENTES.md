@@ -17,9 +17,11 @@ ninguno). Lo ya resuelto está resumido al final, en "Historia".
   el armado de Empresas, Galería y Flor mientras se scrollea).
 - **Fecha del sitemap.** `site.lastUpdated` (`content/data.ts`) está en 2026-10-05. Si el
   copy cambia antes del pase a `main`, ponerle la fecha del pase.
-- **Rendimiento en celular.** Lighthouse real: 87 (ver "Notas técnicas"). Supera el piso
-  de 80 que aceptó el cliente, pero la meta del proyecto es 90+ (CLAUDE.md §9) y la FASE 5
-  sigue abierta.
+- **Rendimiento en celular.** Tercera vuelta (6/10/2026, ver "Notas técnicas"):
+  Lighthouse local con la config de PageSpeed, 90-91 en celular y 100 en compu. Falta
+  confirmarlo en PageSpeed Insights con la versión publicada. Para decidir (Benjamin):
+  cargar Clarity recién con la primera interacción le saca ~100 ms de bloqueo a la carga
+  (PageSpeed lo cuenta), pero no graba las visitas que no tocan nada.
 - **Dos excepciones a la regla fail-open (CLAUDE.md §5.5), para decidir y, si quedan,
   anotarlas en §5.5:**
   (a) en el hero, antes de hidratar y con JS y movimiento, algunas capas arrancan ocultas;
@@ -180,6 +182,27 @@ ninguno). Lo ya resuelto está resumido al final, en "Historia".
     de seguir.
   - **No reintentar la hidratación diferida** del Cotizador y la galería (probada en
     `main`: bajó de 80 a 65 porque rompió el CLS y subió el TBT).
+  - **Tercera vuelta (6/10/2026).** Local, mediana de 6 (celular) y de 3 (compu),
+    contra el build anterior: celular 86,5 -> 90,5 (TBT 227 -> 147 ms, LCP 3,53 ->
+    3,30 s); compu 100 -> 100 y, con CPU x3, 90 -> 100 (TBT 255 -> 54 ms). Sin cambios
+    en lo que se ve (capturas, anclas, sin JS, reducir movimiento y resize iguales).
+  - **Cola de armado (`useGSAPEnCola`, `lib/gsap.ts`).** El hero, Servicios, Galería,
+    Flor y Reseñas se arman cada uno en su propia tarea apenas termina la hidratación,
+    no todos juntos adentro del commit (era una tarea de ~150 ms). Una escena nueva que
+    fija o cambia el alto de la página va con `useGSAPEnCola`; las que no, con
+    `useGSAPAlAcercarse` (que ahora empieza a mirar desde la cola, después de los pins).
+  - **Fuentes recortadas (`app/fonts`).** Playfair Display (normal e itálica) y
+    JetBrains Mono son los archivos de Google Fonts (subset latin) recortados con
+    `pyftsubset <archivo> --unicodes=U+0020-007E,U+00A0-00A1,U+00A9-00AB,U+00AE,U+00B0,U+00B4,U+00B7,U+00BA-00BB,U+00BF,U+00C1,U+00C9,U+00CD,U+00D1,U+00D3,U+00DA,U+00DC,U+00E1,U+00E9,U+00ED,U+00F1,U+00F3,U+00FA,U+00FC,U+00D7,U+2007-200A,U+2013-2014,U+2018-201A,U+201C-201E,U+2022,U+2026,U+202F,U+2039-203A,U+20AC,U+2122,U+2190-2193,U+2212 --layout-features='*' --flavor=woff2`
+    (la Mono con `--layout-features=ccmp,frac,locl,mark,kern,liga,mkmk`, sin `calt`:
+    sin ligaduras de código). 43 KB menos antes de pintar. Si un titular o una etiqueta
+    nuevos usan un carácter fuera de esa lista, sale con la letra de respaldo: sumarlo
+    al recorte. DM Sans sigue entera (Google), porque es la del cotizador.
+  - **Después de pintar (`lib/pintado.ts`).** Lo que se pide al hidratar y no hace falta
+    para ver el hero (los chunks de bocaditos y cuchara, el cuadro 0 del motor del
+    hero, Clarity) espera a la primera pintura. En una página visible no cambia nada;
+    en una pestaña que todavía no se muestra (o el Chrome de PageSpeed cuando demora los
+    cuadros) no le compite al hero.
 - **Fotos HEIC del cliente:** son imágenes en mosaico. Decodificar SIEMPRE con el default
   de ffmpeg (sin `-map`), que reconstruye la grilla a resolución completa; `-map [0:v]`
   toma un solo tile y da falsos "borrosos". Hay muchas fotos buenas sin usar (spreads,

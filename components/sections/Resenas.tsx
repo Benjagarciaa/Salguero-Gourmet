@@ -19,7 +19,7 @@ import {
   prepararTransformes,
   scrollNativo,
   ScrollTrigger,
-  useGSAP,
+  useGSAPEnCola,
 } from "@/lib/gsap";
 import styles from "./Resenas.module.css";
 
@@ -296,7 +296,7 @@ export function Resenas() {
   const rootRef = useRef<HTMLElement>(null);
   const showProfile = !isPlaceholder(resenas.profileUrl);
 
-  useGSAP(
+  useGSAPEnCola(
     () => {
       const root = rootRef.current;
       if (!root) return;
