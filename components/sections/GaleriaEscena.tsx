@@ -365,6 +365,11 @@ export function GaleriaEscena({
         const conFunciones: gsap.core.Animation[] = [];
         // Costura sobre el envoltorio (marco + título): el pin se fija
         // COSTURA.d px antes y el escenario frena hasta quedar debajo del nav.
+        const recorridoIntro = () =>
+          Math.round(
+            window.innerHeight *
+              (desktop ? RECORRIDO.desktop : RECORRIDO.mobile),
+          );
         const costuraDeIntro = conCostura(
           {
             trigger: intro,
@@ -381,11 +386,7 @@ export function GaleriaEscena({
             // posición en la página (hay secciones que arman sus pins tarde).
             refreshPriority: 0,
             start: () => `top ${altoNav() + d}px`,
-            end: () =>
-              `+=${Math.round(
-                window.innerHeight *
-                  (desktop ? RECORRIDO.desktop : RECORRIDO.mobile),
-              )}`,
+            end: () => `+=${recorridoIntro()}`,
             scrub: SCRUB,
             onRefreshInit: () => {
               conFunciones.forEach((t) => t.invalidate());
@@ -407,7 +408,7 @@ export function GaleriaEscena({
               : undefined,
           },
           costuraIntro,
-          { d },
+          { d, recorrido: recorridoIntro },
         );
         limpiezas.push(costuraDeIntro.limpiar);
         const introTl = gsap.timeline({

@@ -517,11 +517,21 @@ export function HeroSecuencia({
           // tapaba el cierre). El servidor no les pone transform ni opacidad
           // en línea: el modo nuevo arranca de cero. Fuera del registro del
           // contexto (ignore): al revertir este modo no hay nada que restaurar.
-          ctx.ignore(() =>
-            gsap.set(animados, {
-              clearProps: "transform,translate,rotate,scale,opacity",
-            }),
+          // Solo lo que GSAP ya tocó (tiene su caché, _gsap): con los demás no
+          // hay nada que limpiar, y el set les creaba la caché leyendo el
+          // transform de cada uno intercalado con las escrituras (un recálculo
+          // de estilos forzado por elemento al hidratar; rendimiento, el
+          // resultado en pantalla es el mismo).
+          const tocados = animados.filter(
+            (el) => (el as HTMLElement & { _gsap?: unknown })._gsap,
           );
+          if (tocados.length) {
+            ctx.ignore(() =>
+              gsap.set(tocados, {
+                clearProps: "transform,translate,rotate,scale,opacity",
+              }),
+            );
+          }
           quitarPreparacion = prepararTransformes(
             animados.filter((el) => el !== capaFichas),
             animados,

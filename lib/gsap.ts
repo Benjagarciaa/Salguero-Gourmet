@@ -427,7 +427,18 @@ export function conCostura(
     d = COSTURA.d,
     entrada = true,
     salida = true,
-  }: { d?: number; entrada?: boolean; salida?: boolean } = {},
+    recorrido,
+  }: {
+    d?: number;
+    entrada?: boolean;
+    salida?: boolean;
+    /**
+     * El recorrido del pin en px (lo mismo que suma el `end` "+=..."). Con
+     * él, el margen inicial ya es el real y el primer refresh no tiene que
+     * corregirlo (sin él se supone un pin largo, D >= 8d).
+     */
+    recorrido?: () => number;
+  } = {},
 ): { vars: ScrollTrigger.Vars; limpiar: () => void } {
   const els = Array.isArray(contenido) ? contenido : [contenido];
   const objetivo = vars.pin === true ? vars.trigger : vars.pin;
@@ -450,10 +461,13 @@ export function conCostura(
   const margenPara = (dd: number) =>
     (entrada ? dd : 0) + (salida ? dd : 0);
 
-  // Margen inicial: el de un pin largo (D >= 8d). Se fija ANTES de crear el
-  // ScrollTrigger: el estado "original" del pin que ScrollTrigger restaura en
-  // cada refresh lo incluye, y la variable se puede cambiar después.
-  let margen = margenPara(d);
+  // Margen inicial: el del recorrido real si quien llama lo pasa; si no, el
+  // de un pin largo (D >= 8d). Se fija ANTES de crear el ScrollTrigger: el
+  // estado "original" del pin que ScrollTrigger restaura en cada refresh lo
+  // incluye, y la variable se puede cambiar después. Con un pin corto y el
+  // margen supuesto, el primer refresh lo corregía y pedía otro refresh
+  // completo de la página (rendimiento: uno de más en cada carga).
+  let margen = margenPara(recorrido ? tramo(recorrido()).dd : d);
   let margenPrevio = "";
   if (fijado) {
     margenPrevio = fijado.style.marginBottom;
