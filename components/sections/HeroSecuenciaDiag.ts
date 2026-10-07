@@ -11,12 +11,17 @@ import type { MotorSecuencia } from "./HeroSecuenciaMotor";
  *   - cuadro: el de la posición del scroll y el que está en el lienzo;
  *   - decod: decodificaciones hechas, en vuelo y ms (media móvil y máxima);
  *   - paso (1 de cada cuántos cuadros en movimiento) y bitmaps vivos, MB y
- *     capacidad; red: descargas en vuelo y KB/s medidos.
+ *     capacidad; red: descargas en vuelo y KB/s medidos;
+ *   - escena: líneas que arma HeroSecuencia sobre la geometría (modo,
+ *     scroll, alto del hero y del pin, progreso del pin, dónde cae
+ *     Servicios) y el último error de la página, para ver en un iPhone
+ *     si el pin ocupa su lugar.
  * ========================================================================== */
 
 export function montarDiag(
   motor: MotorSecuencia,
   objetivo: () => number,
+  escena: () => string[] = () => [],
 ): () => void {
   const caja = document.createElement("div");
   caja.setAttribute("aria-hidden", "true");
@@ -55,6 +60,7 @@ export function montarDiag(
       `paso ${d.paso}  bitmaps ${d.bitmaps} (${mb} MB) de ${d.capacidad}`,
       `red ${d.descargas} en vuelo  ${kbs === null ? "-" : Math.round(kbs)} KB/s`,
       `${navigator.vendor || "?"} dpr ${devicePixelRatio}`,
+      ...escena(),
     ].join("\n");
   };
   const intervalo = window.setInterval(pintar, 250);

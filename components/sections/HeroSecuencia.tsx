@@ -1293,7 +1293,37 @@ export function HeroSecuencia({
           // ni se baja.
           if (new URLSearchParams(location.search).has("hsdiag")) {
             void import("./HeroSecuenciaDiag").then(({ montarDiag }) => {
-              if (vivo) quitarDiag = montarDiag(m, () => valores.cuadro);
+              if (!vivo) return;
+              let error = "-";
+              const anotarError = (e: ErrorEvent | PromiseRejectionEvent) => {
+                const r = "reason" in e ? e.reason : e.error ?? e.message;
+                error = String(r).slice(0, 60);
+              };
+              window.addEventListener("error", anotarError);
+              window.addEventListener("unhandledrejection", anotarError);
+              const servicios = document.getElementById("servicios");
+              const geometria = () => {
+                const st = pinRef.current;
+                const spacer = root.querySelector<HTMLElement>(".pin-spacer");
+                const raiz = document.scrollingElement;
+                const desborde = (el: Element) => getComputedStyle(el).overflowY;
+                const pin = st
+                  ? `${Math.round(st.start)}-${Math.round(st.end)} p${st.progress.toFixed(2)}${st.isActive ? " activo" : ""}`
+                  : "-";
+                return [
+                  `modo ${root.dataset.hs ?? "-"}  y ${Math.round(scrollY)}/${Math.round(raiz?.scrollTop ?? -1)}  doc ${raiz?.scrollHeight ?? "-"}`,
+                  `vh ${innerHeight}  vv ${Math.round(visualViewport?.height ?? 0)}  hero ${root.offsetHeight}  spacer ${spacer?.offsetHeight ?? "-"}`,
+                  `pin ${pin}  st ${ScrollTrigger.getAll().length}`,
+                  `servicios ${servicios ? Math.round(servicios.getBoundingClientRect().top) : "-"}  overflow ${desborde(document.documentElement)}/${desborde(document.body)}`,
+                  `error ${error}`,
+                ];
+              };
+              const quitarBase = montarDiag(m, () => valores.cuadro, geometria);
+              quitarDiag = () => {
+                quitarBase();
+                window.removeEventListener("error", anotarError);
+                window.removeEventListener("unhandledrejection", anotarError);
+              };
             });
           }
           restaurarBotones = () => {
