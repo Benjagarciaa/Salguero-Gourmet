@@ -213,7 +213,8 @@ export const hero = {
  * Para cambiar los cuadros se tocan SOLO estos datos:
  *   1. Copiar los WebP a su carpeta en /public (una por versión).
  *   2. En `versiones`: carpeta, patron, cuadros, primero, digitos, ancho y alto
- *      (el tamaño real de los archivos: define la relación de aspecto del marco).
+ *      (el tamaño real de los archivos: define la relación de aspecto del marco)
+ *      y, si la secuencia trae cuadros intermedios, `densidad`.
  *   3. Medir sobre el primer y el último cuadro el `encuadre`, la `tapa` y la
  *      posición de cada producto en `fichas`, y ajustar los tramos si la
  *      secuencia cambia de largo.
@@ -221,12 +222,24 @@ export const hero = {
  * fija (sin JS, con reducir movimiento y mientras cargan los demás).
  * ========================================================================== */
 
+/**
+ * Tramo de la secuencia con cuadros intermedios: cada paso del video que
+ * arranca entre el cuadro `desde` (incluido) y el `hasta` (sin incluir; los
+ * dos en cuadros del video, 0 = el primero) lleva `x` archivos: el cuadro del
+ * video y x - 1 intermedios a tiempos parejos (con x 3, en t + 1/3 y t + 2/3).
+ */
+export interface HeroDensidad {
+  desde: number;
+  hasta: number;
+  x: number;
+}
+
 export interface HeroSecuenciaVersion {
   /** Carpeta dentro de /public, empezando con "/" y sin barra final. */
   carpeta: string;
-  /** Nombre de cada archivo: `{n}` es el número del cuadro con ceros a la izquierda. */
+  /** Nombre de cada archivo: `{n}` es el número del archivo con ceros a la izquierda. */
   patron: string;
-  /** Cantidad de cuadros. */
+  /** Cantidad de archivos (los cuadros del video más los intermedios). */
   cuadros: number;
   /** Número del primer archivo (f001.webp -> 1). */
   primero: number;
@@ -235,6 +248,13 @@ export interface HeroSecuenciaVersion {
   /** Tamaño real de cada cuadro, en px. Da la relación de aspecto del marco. */
   ancho: number;
   alto: number;
+  /**
+   * Tramos con cuadros intermedios, en orden y sin superponerse. Sin
+   * `densidad`, un archivo por cuadro del video. La coreografía sigue en
+   * cuadros del video (el timeline no se entera de los intermedios): el motor
+   * ubica cada archivo en su tiempo (tiemposDe, en HeroSecuenciaPlan).
+   */
+  densidad?: readonly HeroDensidad[];
 }
 
 /** Tramo del recorrido, en progreso (0 a 1). */
@@ -308,9 +328,18 @@ export const heroSecuencia = {
    * nunca se lee como un rectángulo de otro tono. Los cuadros son SOLO el
    * video (el primero es la caja abierta y llena): la tapa es otra capa. El
    * motor decodifica solo los cuadros cercanos al actual, así que la cantidad
-   * no pesa en memoria; sí en datos (desktop ~10MB, mobile ~7MB en total: la
-   * pasada inicial después de `load` y el resto por tramos, a medida que la
-   * persona scrollea; ver HeroSecuencia.tsx).
+   * no pesa en memoria; sí en datos (desktop ~15MB, mobile ~10MB en total: la
+   * pasada inicial después de `load`, los mismos 23 archivos que antes de los
+   * intermedios, y el resto por tramos, a medida que la persona scrollea; ver
+   * HeroSecuencia.tsx).
+   * caja-v8 = los 172 cuadros del video, idénticos byte a byte a los de
+   * caja-v6/desktop y caja-v7/mobile, más cuadros intermedios (`densidad`) en
+   * el tramo donde los productos se mueven más por cuadro (salen de la caja y
+   * gira el vaso de café): con scroll lento cada cambio de cuadro era un
+   * saltito de hasta ~6 px en pantalla y ahora queda debajo de 2.5 px.
+   * Interpolados con RIFE v4.6 sobre video-2.mp4, con un realce suave dentro
+   * de los productos y la misma receta que los originales (fondo
+   * transparente, halo, sombras y huecos de mobile, mismo WebP).
    * caja-v6 = caja-v4 (la fuente, con el vaso corregido en 162 a 172; está en
    * _assets/archivo/media/secuencia) con el borde semitransparente de cada
    * producto llevado a sombra oscura en TODOS los cuadros (traía el color del
@@ -321,29 +350,39 @@ export const heroSecuencia = {
    * de un año (next.config.ts), nunca se pisa un cuadro en el lugar.
    */
   versiones: {
-    // Fuente: _assets/contenido/video-2.mp4 (cuadros 21 a 192).
+    // Fuente: _assets/contenido/video-2.mp4 (cuadros 21 a 192). 291 archivos:
+    // los 172 del video y 119 intermedios (x2 en 4-10, x3 en 10-32 y x2 en
+    // 32-101: ahí los productos se movían de 3 a 6 px por cuadro).
     desktop: {
-      carpeta: "/media/secuencia/caja-v6/desktop",
+      carpeta: "/media/secuencia/caja-v8/desktop",
       patron: "f{n}.webp",
-      cuadros: 172,
+      cuadros: 291,
       primero: 1,
       digitos: 3,
       ancho: 720,
       alto: 1280,
+      densidad: [
+        { desde: 4, hasta: 10, x: 2 },
+        { desde: 10, hasta: 32, x: 3 },
+        { desde: 32, hasta: 101, x: 2 },
+      ],
     } as HeroSecuenciaVersion,
     // Los mismos 172 cuadros que desktop, a 540x960 (con la mitad, cada cambio
-    // de cuadro era el doble de largo mientras suben los productos).
-    // caja-v7/mobile = caja-v6/mobile con la sombra oscura alrededor de los productos
-    // bajada al 15 % (sobre el brillo cálido del fondo en celular se veía como mancha) y
-    // el hueco de la mermelada relleno con el color real (caja-v3). Mismo peso.
+    // de cuadro era el doble de largo mientras suben los productos), más 96
+    // intermedios (x2 en 6-102): 268 archivos.
+    // Los originales son los de caja-v7/mobile = caja-v6/mobile con la sombra
+    // oscura alrededor de los productos bajada al 15 % (sobre el brillo cálido
+    // del fondo en celular se veía como mancha) y el hueco de la mermelada
+    // relleno con el color real (caja-v3).
     mobile: {
-      carpeta: "/media/secuencia/caja-v7/mobile",
+      carpeta: "/media/secuencia/caja-v8/mobile",
       patron: "f{n}.webp",
-      cuadros: 172,
+      cuadros: 268,
       primero: 1,
       digitos: 3,
       ancho: 540,
       alto: 960,
+      densidad: [{ desde: 6, hasta: 102, x: 2 }],
     } as HeroSecuenciaVersion,
   },
   /** Punto del cuadro que se conserva si el marco lo recorta (en %, como object-position). */

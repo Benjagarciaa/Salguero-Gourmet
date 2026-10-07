@@ -8,9 +8,11 @@ import type { MotorSecuencia } from "./HeroSecuenciaMotor";
  * parámetro ni se baja (import dinámico desde HeroSecuencia).
  *   - fps: cuadros de pantalla en el último segundo; >20ms: cuadros de más de
  *     20 ms desde que se montó (con el peor del último segundo);
- *   - cuadro: el de la posición del scroll y el que está en el lienzo;
+ *   - cuadro: el del video en la posición del scroll y el del archivo que
+ *     está en el lienzo (con su número: con intermedios hay más archivos);
  *   - decod: decodificaciones hechas, en vuelo y ms (media móvil y máxima);
- *   - paso (1 de cada cuántos cuadros en movimiento) y bitmaps vivos, MB y
+ *   - paso (1 de cada cuántos cuadros del video en movimiento; "todos": con
+ *     los intermedios) y bitmaps vivos, MB y
  *     capacidad; red: descargas en vuelo y KB/s medidos;
  *   - escena: líneas que arma HeroSecuencia sobre la geometría (modo,
  *     scroll, alto del hero y del pin, progreso del pin, dónde cae
@@ -55,9 +57,9 @@ export function montarDiag(
     const mb = (d.bytes / 1048576).toFixed(0);
     caja.textContent = [
       `fps ${cuadros.length}  >20ms ${largos}  peor ${Math.round(peor)}ms`,
-      `cuadro ${objetivo().toFixed(1)} → ${d.mostrado}`,
+      `cuadro ${objetivo().toFixed(1)} → ${d.tiempo.toFixed(2)} (archivo ${d.mostrado})`,
       `decod ${d.decodificadas} (${d.decodificando} en vuelo) ${ms}ms`,
-      `paso ${d.paso}  bitmaps ${d.bitmaps} (${mb} MB) de ${d.capacidad}`,
+      `paso ${d.paso || "todos"}  bitmaps ${d.bitmaps} (${mb} MB) de ${d.capacidad}`,
       `red ${d.descargas} en vuelo  ${kbs === null ? "-" : Math.round(kbs)} KB/s`,
       `${navigator.vendor || "?"} dpr ${devicePixelRatio}`,
       ...escena(),

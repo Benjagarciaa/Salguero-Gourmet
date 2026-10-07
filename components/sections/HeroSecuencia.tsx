@@ -56,7 +56,8 @@ import {
  *     se desvanece, con su sombra sobre la caja; transformaciones continuas;
  *   - el video (HeroSecuenciaMotor, con el plan de HeroSecuenciaPlan): un
  *     cuadro entero por vez (nunca una mezcla de dos, que se veía como imagen
- *     doble), decodificados solo alrededor del actual.
+ *     doble), decodificados solo alrededor del actual; donde los productos se
+ *     mueven mucho por cuadro, con cuadros intermedios (`densidad`).
  * El marco va centrado y a todo el alto útil; los textos aparecen por
  * momentos, todos en el MISMO timeline (ver heroSecuencia en content/data.ts):
  *   1. inicio (visible al cargar) · 2. horneado (centrado debajo de la caja,
@@ -306,7 +307,6 @@ export function HeroSecuencia({
         const { desktop, bajo, reduce } = ctx.conditions as Condiciones;
         const { versiones, recorrido, foco, encuadre: medidas } = heroSecuencia;
         const version = desktop ? versiones.desktop : versiones.mobile;
-        const ultimo = version.cuadros - 1;
         const limpiar = () => {
           delete root.dataset.hs;
           delete root.dataset.hsLienzo;
@@ -566,7 +566,9 @@ export function HeroSecuencia({
           pinRef.current = linea.scrollTrigger ?? null;
 
           // La tapa, en su tramo; el video, desde `video.desde` hasta el final
-          // (lineal con el scroll: el timeline dura exactamente 1).
+          // (el timeline dura exactamente 1). El timeline lleva el cuadro del
+          // VIDEO (hasta m.ultimo): los cuadros intermedios no cambian la
+          // coreografía, el motor ubica cada archivo en su tiempo.
           const { tapa: datosTapa, video } = heroSecuencia;
           linea.to(
             estado,
@@ -580,7 +582,7 @@ export function HeroSecuencia({
           linea.to(
             estado,
             {
-              cuadro: ultimo,
+              cuadro: m.ultimo,
               duration: 1 - video.desde,
               ease: (q: number) => Math.pow(q, curva),
             },

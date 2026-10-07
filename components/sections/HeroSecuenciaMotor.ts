@@ -3,16 +3,17 @@ import {
   BAJADO,
   BAJANDO,
   crearReloj,
+  crearRitmo,
   DECODIFICAR_INICIAL_MS,
   demanda,
   DPR_MAX,
   elegirCuadro,
   FALLO,
-  indicesPasada,
   LATENCIA_INICIAL_MS,
   LATENCIA_TOPE_MS,
   MAX_PRIMERO,
   REPOSO_MS,
+  tiemposDe,
   urlDeCuadro,
   type Ajustes,
   type Demanda,
@@ -31,16 +32,23 @@ import {
  * HeroSecuenciaPlan con la red, los bitmaps y el lienzo.
  *
  * - Por cada cuadro de pantalla el timeline llama a `irA` con la posición
- *   (cuadro con decimales): dibuja ahí mismo, en el mismo tick que mueve los
- *   textos, a lo sumo UN drawImage y solo si cambia el cuadro o el tamaño. Lo
- *   que llega por su cuenta (un bitmap que cambia lo que se ve) pide un rAF,
- *   que el próximo `irA` cancela.
+ *   (cuadro del VIDEO con decimales, de 0 a `ultimo`): dibuja ahí mismo, en
+ *   el mismo tick que mueve los textos, a lo sumo UN drawImage y solo si
+ *   cambia el archivo o el tamaño. Lo que llega por su cuenta (un bitmap que
+ *   cambia lo que se ve) pide un rAF, que el próximo `irA` cancela.
+ * - Los archivos pueden ser más que los cuadros del video (intermedios, ver
+ *   `densidad` en content/data.ts): `tiemposDe` (HeroSecuenciaPlan) lleva la
+ *   posición del video a archivos y dice qué archivos son de la pasada. Red,
+ *   bitmaps y lienzo trabajan en archivos.
  * - Después de cada cambio (una vez por tick, en una microtarea; y otra vez
  *   REPOSO_MS después del último movimiento) `planificar` calcula la demanda
  *   y la aplica: libera los bitmaps que ya no se conservan (el ÚNICO lugar que
  *   los libera), lanza decodificaciones y descargas hasta los topes de los
- *   ajustes. Las colas no se ordenan de antemano: cada lugar que se libera
- *   toma lo primero de la última demanda.
+ *   ajustes (los intermedios dejan siempre una decodificación libre para los
+ *   cuadros del video). Las colas no se ordenan de antemano: cada lugar que
+ *   se libera toma lo primero de la última demanda. Cada llamada de `irA`
+ *   marca además el ritmo de la pantalla (`crearRitmo`): si no da abasto, la
+ *   demanda deja los intermedios.
  * - Baja cada cuadro una vez, como WebP comprimido (Blob, ~40 KB), y lo
  *   decodifica con createImageBitmap fuera del hilo principal, al tamaño real
  *   del cuadro (sin resizeWidth: el reescalado "high" corría en el hilo
@@ -69,9 +77,20 @@ import {
  * ========================================================================== */
 
 export interface MotorSecuencia {
-  /** Pide mostrar la posición `f` (cuadro con decimales; se acota al rango). */
+  /**
+   * Último cuadro del video: el final del timeline (con intermedios hay más
+   * archivos que cuadros del video).
+   */
+  readonly ultimo: number;
+  /**
+   * Pide mostrar la posición `f` (cuadro del video con decimales; se acota al
+   * rango).
+   */
   irA(f: number): void;
-  /** La pasada (1 de cada 8 y el último). Resuelve al terminar o al destruir. */
+  /**
+   * La pasada (1 de cada 8 cuadros del video y el último). Resuelve al
+   * terminar o al destruir.
+   */
   cargar(): Promise<void>;
   /** Habilita la carga por tramos: lo que falta alrededor de la persona. */
   seguir(): void;
@@ -103,7 +122,9 @@ export interface MotorSecuencia {
   destruir(): void;
   /** Estado para el diagnóstico de ?hsdiag (HeroSecuenciaDiag). */
   diagnostico(): {
+    /** Archivo en el lienzo (-1: ninguno) y su tiempo en el video. */
     mostrado: number;
+    tiempo: number;
     bitmaps: number;
     bytes: number;
     capacidad: number;
@@ -142,13 +163,17 @@ export function crearMotor({
    */
   alLienzo?: (aLaVista: boolean) => void;
 }): MotorSecuencia {
-  const total = version.cuadros;
+  /** Los archivos en el tiempo del video (con intermedios, son más). */
+  const tiempos = tiemposDe(version);
+  const { total, pasada } = tiempos;
   const ctx = canvas.getContext("2d");
   const fx = foco.x / 100;
   const fy = foco.y / 100;
+  /** Posición, velocidad y sentido, en cuadros del video. */
   const reloj = crearReloj();
-  const pasada = indicesPasada(total);
-  /** Estado de red de cada cuadro (NADA, BAJANDO, BAJADO o FALLO) y lo bajado. */
+  /** ¿La pantalla da abasto? (sin intermedios si no; HeroSecuenciaPlan). */
+  const ritmo = crearRitmo();
+  /** Estado de red de cada archivo (NADA, BAJANDO, BAJADO o FALLO) y lo bajado. */
   const red = new Uint8Array(total);
   const blobs: (Blob | undefined)[] = new Array(total);
   const bitmaps = new Map<number, ImageBitmap>();
@@ -159,17 +184,18 @@ export function crearMotor({
     latenciaMs: LATENCIA_INICIAL_MS,
     decodificarMs: DECODIFICAR_INICIAL_MS,
     tramos: false,
+    holgada: true,
   };
   /** Decodificaciones terminadas y la más larga (para el diagnóstico). */
   let decodificadas = 0;
   let decodificarMaxMs = 0;
   /** La pasada se pidió (`cargar`) y le falta algo. */
   let pasadaPendiente = false;
-  /** El cuadro que está en el lienzo (-1: ninguno) y si hay que repintarlo. */
+  /** El archivo que está en el lienzo (-1: ninguno) y si hay que repintarlo. */
   let mostrado = -1;
   let limpio = true;
   const estado: EstadoCuadros = {
-    total,
+    tiempos,
     red,
     decodificado: tiene,
     decodificando: (i) => decodificando.has(i),
@@ -184,9 +210,9 @@ export function crearMotor({
     bajar: [],
     decodificar: [],
     conservar: new Set(),
-    paso: 1,
+    paso: 0,
   };
-  /** Posición para la que se calculó `ultima`. */
+  /** Posición (cuadro del video) para la que se calculó `ultima`. */
   let posPlan = NaN;
   let enVuelo = 0;
   /**
@@ -209,15 +235,15 @@ export function crearMotor({
   /* ---------- Dibujo ---------- */
 
   /**
-   * ¿Puede llegar un cuadro a menos de `d` de `pos`? (bajando, por bajar,
-   * decodificándose o por decodificar según la última demanda). Solo para el
-   * primer dibujo.
+   * ¿Puede llegar un archivo a menos de `d` de `x` (posición en archivos)?
+   * (bajando, por bajar, decodificándose o por decodificar según la última
+   * demanda). Solo para el primer dibujo.
    */
-  const llegaMasCerca = (pos: number, d: number) => {
-    const desde = Math.max(0, Math.ceil(pos - d));
-    const hasta = Math.min(total - 1, Math.floor(pos + d));
+  const llegaMasCerca = (x: number, d: number) => {
+    const desde = Math.max(0, Math.ceil(x - d));
+    const hasta = Math.min(total - 1, Math.floor(x + d));
     for (let j = desde; j <= hasta; j++) {
-      if (Math.abs(j - pos) >= d) continue;
+      if (Math.abs(j - x) >= d) continue;
       if (
         red[j] === BAJANDO ||
         decodificando.has(j) ||
@@ -258,20 +284,21 @@ export function crearMotor({
     raf = 0;
     if (muerto || dormido || !ctx || !tam.w) return;
     const { pos, dir } = reloj.leer(performance.now());
-    const n = elegirCuadro(pos, dir, total, tiene, mostrado);
+    const x = tiempos.posicion(pos);
+    const n = elegirCuadro(x, dir, total, tiene, mostrado);
     // El <img> (el cuadro 0) queda más cerca de la posición: se ve él.
-    if (n < 0 || Math.abs(n - pos) > pos) {
+    if (n < 0 || Math.abs(n - x) > x) {
       mostrar(false);
       return;
     }
     if (alCargar) {
       // El primer dibujo reemplaza al <img> (el cuadro 0) en un solo corte:
-      // con el cuadro de la posición o, si con la demanda de esta misma
+      // con el archivo de la posición o, si con la demanda de esta misma
       // posición no viene ninguno más cerca, con el más cercano. Al
       // despertar no se espera: con el scroll en camino de vuelta, el más
       // cercano está más cerca que el cuadro 0 del <img>.
-      const d = Math.abs(n - pos);
-      if (d > MAX_PRIMERO && (posPlan !== pos || llegaMasCerca(pos, d))) {
+      const d = Math.abs(n - x);
+      if (d > MAX_PRIMERO && (posPlan !== pos || llegaMasCerca(x, d))) {
         return;
       }
     }
@@ -316,7 +343,8 @@ export function crearMotor({
           }
           bitmaps.set(i, bitmap);
           const { pos, dir } = reloj.leer(performance.now());
-          if (elegirCuadro(pos, dir, total, tiene, mostrado) !== mostrado) {
+          const x = tiempos.posicion(pos);
+          if (elegirCuadro(x, dir, total, tiene, mostrado) !== mostrado) {
             pedirDibujo();
           }
         },
@@ -358,6 +386,7 @@ export function crearMotor({
     programado = false;
     if (muerto) return;
     const s = reloj.leer(performance.now());
+    medidas.holgada = ritmo.holgada;
     medidas.latenciaMs = Math.min(
       LATENCIA_TOPE_MS,
       latenciaRed() ?? LATENCIA_INICIAL_MS,
@@ -377,10 +406,20 @@ export function crearMotor({
         bitmap.close();
         bitmaps.delete(i);
       }
+      // Los intermedios dejan siempre una decodificación libre para los
+      // cuadros del video: si la persona acelera, el que pasa a hacer falta no
+      // espera detrás de intermedios que ya no se van a ver.
+      let intermedios = 0;
+      for (const j of decodificando) if (!tiempos.escalon[j]) intermedios++;
       for (const i of ultima.decodificar) {
         if (decodificando.size >= ajustes.decodificaciones) break;
         const blob = blobs[i];
-        if (blob) decodificar(i, blob);
+        if (!blob) continue;
+        if (!tiempos.escalon[i]) {
+          if (intermedios >= Math.max(1, ajustes.decodificaciones - 1)) continue;
+          intermedios++;
+        }
+        decodificar(i, blob);
       }
     }
     for (const i of ultima.bajar) {
@@ -430,11 +469,14 @@ export function crearMotor({
   ro.observe(canvas);
 
   return {
+    ultimo: tiempos.ultimo,
+
     irA(f) {
-      const n = Math.min(total - 1, Math.max(0, f));
+      const n = Math.min(tiempos.ultimo, Math.max(0, f));
       const ahora = performance.now();
       if (n === reloj.leer(ahora).pos) return;
       reloj.marcar(n, ahora);
+      ritmo.marcar(ahora);
       dibujar();
       programar();
       // Al quedar quieto se planifica de nuevo, ya en reposo (sin `paso`).
@@ -507,6 +549,7 @@ export function crearMotor({
       for (const b of bitmaps.values()) bytes += b.width * b.height * 4;
       return {
         mostrado,
+        tiempo: mostrado >= 0 ? tiempos.tiempo[mostrado] : -1,
         bitmaps: bitmaps.size,
         bytes,
         capacidad: ajustes.capacidad,
