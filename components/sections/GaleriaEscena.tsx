@@ -25,7 +25,7 @@ import {
   prepararTransformes,
   ScrollTrigger,
   scrollNativo,
-  useGSAPEnCola,
+  useGSAP,
 } from "@/lib/gsap";
 import { COSTURA, rampa, resorteGsap, SCRUB, TRAMO } from "@/lib/fisica";
 import { ahorroDeDatos, calentarVideo, trasCargaInactivo } from "@/lib/video";
@@ -249,7 +249,7 @@ export function GaleriaEscena({
   const rootRef = useRef<HTMLDivElement>(null);
   const lightboxRef = useRef<GaleriaLightboxHandle>(null);
 
-  useGSAPEnCola(
+  useGSAP(
     () => {
       const root = rootRef.current;
       if (!root) return;
@@ -365,11 +365,6 @@ export function GaleriaEscena({
         const conFunciones: gsap.core.Animation[] = [];
         // Costura sobre el envoltorio (marco + título): el pin se fija
         // COSTURA.d px antes y el escenario frena hasta quedar debajo del nav.
-        const recorridoIntro = () =>
-          Math.round(
-            window.innerHeight *
-              (desktop ? RECORRIDO.desktop : RECORRIDO.mobile),
-          );
         const costuraDeIntro = conCostura(
           {
             trigger: intro,
@@ -386,7 +381,11 @@ export function GaleriaEscena({
             // posición en la página (hay secciones que arman sus pins tarde).
             refreshPriority: 0,
             start: () => `top ${altoNav() + d}px`,
-            end: () => `+=${recorridoIntro()}`,
+            end: () =>
+              `+=${Math.round(
+                window.innerHeight *
+                  (desktop ? RECORRIDO.desktop : RECORRIDO.mobile),
+              )}`,
             scrub: SCRUB,
             onRefreshInit: () => {
               conFunciones.forEach((t) => t.invalidate());
@@ -408,7 +407,7 @@ export function GaleriaEscena({
               : undefined,
           },
           costuraIntro,
-          { d, recorrido: recorridoIntro },
+          { d },
         );
         limpiezas.push(costuraDeIntro.limpiar);
         const introTl = gsap.timeline({

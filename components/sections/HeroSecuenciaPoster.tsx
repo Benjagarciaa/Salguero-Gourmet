@@ -141,18 +141,7 @@ export function HeroSecuenciaPoster() {
         <source media={MQ_BAJO_MOBILE} srcSet={ultimoMobileDensidad} />
         <source media={MQ_BAJO_DESKTOP} srcSet={ultimoDesktop} />
         <source media={MQ_MOBILE} srcSet={primeroMobile} />
-        {/* decoding sync (getImageProps pone async): la caja entra en el
-            mismo cuadro que los textos del hero. Con async, a veces se pintaba
-            uno o dos cuadros después que el texto (el LCP quedaba detrás del
-            JS que se evaluaba en ese hueco). Es un WebP chico: decodificarlo
-            con la pintura no se nota. Lo mismo la tapa (HeroTapaFija). */}
-        <img
-          {...img}
-          decoding="sync"
-          fetchPriority="high"
-          alt=""
-          draggable={false}
-        />
+        <img {...img} fetchPriority="high" alt="" draggable={false} />
       </picture>
       {/* Justo después del <picture> y no adentro: un <script> entre las
           fuentes desarmaba el <picture> para el escáner de precarga de Chrome,
@@ -187,7 +176,6 @@ export function HeroTapaFija() {
     // eslint-disable-next-line @next/next/no-img-element -- ya es un WebP chico y el lienzo lo adopta tal cual
     <img
       {...props}
-      decoding="sync"
       alt=""
       draggable={false}
       fetchPriority="high"

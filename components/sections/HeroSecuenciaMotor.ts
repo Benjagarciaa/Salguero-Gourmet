@@ -1,6 +1,5 @@
 import type { HeroSecuenciaVersion } from "@/content/data";
 import { resorteGsap } from "@/lib/fisica";
-import { despuesDelPintado } from "@/lib/pintado";
 
 /* ==========================================================================
  * Motor de la secuencia de cuadros (sin React y sin GSAP).
@@ -14,11 +13,7 @@ import { despuesDelPintado } from "@/lib/pintado";
  *   Una sola cola reparte las descargas (ver `siguiente`): con los tramos ya
  *   habilitados, los cuadros que la caja tiene que mostrar AHORA pasan antes
  *   que el resto de la pasada (con deslizadas tempranas, el cuadro exacto no
- *   espera a que termine la pasada). Con el scroll en movimiento rápido se
- *   pide lo que la caja va a mostrar CUANDO LLEGUE el cuadro (la posición
- *   adelantada lo que tarda una descarga), de lo grueso a lo fino: pedir lo
- *   cercano a la posición actual traía cuadros que ya habían quedado atrás y
- *   la caja iba "de a cuotas" (1 de cada 8, los de la pasada).
+ *   espera a que termine la pasada).
  * - Las descargas se comparten entre motores (`descargas`): si la escena se
  *   rearma (el doble montaje de React en desarrollo, un corte de matchMedia que
  *   vuelve a la misma versión) el motor nuevo toma lo que el anterior ya bajó
@@ -49,12 +44,6 @@ import { despuesDelPintado } from "@/lib/pintado";
  *   cercano (con el resorte `tacto`, ~300 ms), sin mover el scroll.
  * - Mientras falta alguno de los dos, dibuja el decodificado más cercano (el
  *   scrub nunca queda en blanco) y redibuja apenas llega el que corresponde.
- *   El cuadro que está en el lienzo no se libera (`mostrado`): si no, con el
- *   siguiente todavía sin decodificar, el más cercano podía ser el 0 (fijo) y
- *   la caja se volvía a cerrar en pleno recorrido. Si en la ventana no hay
- *   nada bajado, se decodifica lo bajado más cercano aunque quede afuera (red
- *   de seguridad de `planificar`). Antes del primer dibujo, el lienzo no tapa
- *   al <img> de respaldo (el cuadro 0) con un cuadro más lejano.
  * - Dibuja en el momento (irA) si puede: el timeline lo llama una vez por
  *   cuadro de pantalla, en el mismo tick que mueve los textos. Lo que llega
  *   por su cuenta (decodificaciones, cambio de tamaño) pide un rAF.
@@ -67,10 +56,7 @@ import { despuesDelPintado } from "@/lib/pintado";
  *   en 1 px hasta que se vuelve (despertar).
  * ========================================================================== */
 
-/**
- * Descargas a la vez (por defecto: el tope de conexiones de HTTP/1.1; con
- * h2/h3 quien llama puede pedir más, opción `concurrencia`).
- */
+/** Descargas a la vez. */
 const CONCURRENCIA = 6;
 /** Decodificaciones a la vez (corren fuera del hilo principal). */
 const DECODIFICACIONES = 3;
@@ -133,42 +119,6 @@ const INMEDIATO = { adelante: 3, atras: 1 };
  * entera, que llega casi junta.
  */
 const MUESTRA_RED = CONCURRENCIA;
-/**
- * Scroll en movimiento (`siguiente` y `planificar`): desde esta velocidad
- * (cuadros por segundo; a 3000 px/s en desktop pasan ~240) lo que se pide y lo
- * que se decodifica primero es lo que la caja va a mostrar cuando esté listo,
- * no lo más cercano a la posición actual.
- */
-const VEL_MOVIMIENTO = 20;
-/**
- * Lo que tarda en decodificarse un cuadro (ms) mientras no hay una medida
- * (después, la media móvil del motor): se suma al adelanto.
- */
-const DECODIFICAR_MS = 25;
-/**
- * Con el scroll en movimiento rápido no se decodifican todos los cuadros: uno
- * de cada `paso` (1, 2, 4 u 8), lo justo para que la caja muestre hasta
- * IMAGENES_EN_MOVIMIENTO por segundo sin pasar de FRACCION_DECODIFICACION de
- * lo que dan las decodificaciones a la vez (medido). Decodificar todos a 3000
- * px/s (~240 por segundo) dejaba las decodificaciones siempre llenas: lo que
- * salía ya había quedado atrás (la caja iba detrás del scroll) y el trabajo
- * le quitaba cuadros de pantalla al scroll. En reposo, todos. Con 120, en la
- * PC del dueño a 3000 px/s va 1 de cada 2 (con la CPU cargada, de cada 4).
- */
-const IMAGENES_EN_MOVIMIENTO = 120;
-const FRACCION_DECODIFICACION = 0.66;
-/** Latencia de una descarga (ms) mientras no hay una medida. */
-const LATENCIA_INICIAL = 120;
-/**
- * En movimiento, lo que se pide va en bandas de lo que se recorre en este
- * tiempo (s), cada una de lo grueso a lo fino (1 de cada 8, de cada 4, de
- * cada 2, todos): la primera banda queda cubierta entera antes de seguir con
- * la próxima, y las de más adelante arrancan por los múltiplos de 8, que ya
- * dan un cuadro cada pocos. Ancho mínimo, `BANDA_MIN` cuadros.
- */
-const BANDA_SEGUNDOS = 0.2;
-const BANDA_MIN = 8;
-const PASOS_BANDA = [8, 4, 2, 1];
 
 /* ---------- Descargas compartidas entre motores ---------- */
 
@@ -191,11 +141,9 @@ const SOLTAR_MS = 4000;
 /**
  * La velocidad de la red se mide acá, con todas las descargas de cuadros de la
  * página: bytes y cuadros bajados y el tiempo con alguna en vuelo. Es de la
- * red, no de un motor (si la escena se rearma, la medida sigue). `latencia`:
- * media móvil de lo que tarda un cuadro desde que se pide hasta tenerlo (ms;
- * 0 = sin medida), para el adelanto de lo que se pide en movimiento.
+ * red, no de un motor (si la escena se rearma, la medida sigue).
  */
-const red = { bytes: 0, cuadros: 0, ms: 0, desde: 0, enVuelo: 0, latencia: 0 };
+const red = { bytes: 0, cuadros: 0, ms: 0, desde: 0, enVuelo: 0 };
 
 /** KB/s medidos hasta ahora, o null si todavía no bajó nada. */
 function kbsRed(): number | null {
@@ -208,19 +156,15 @@ function descargar(url: string): Promise<Blob | null> {
   const previa = descargas.get(url);
   if (previa) return previa.promesa;
   const corte = new AbortController();
-  const t0 = performance.now();
-  if (red.enVuelo++ === 0) red.desde = t0;
+  if (red.enVuelo++ === 0) red.desde = performance.now();
   const promesa = fetch(url, { signal: corte.signal })
     .then((res) => (res.ok ? res.blob() : null))
     .catch(() => null)
     .then((blob) => {
-      const ahora = performance.now();
-      if (--red.enVuelo === 0) red.ms += ahora - red.desde;
+      if (--red.enVuelo === 0) red.ms += performance.now() - red.desde;
       if (blob) {
         red.bytes += blob.size;
         red.cuadros++;
-        const ms = ahora - t0;
-        red.latencia = red.latencia ? red.latencia * 0.7 + ms * 0.3 : ms;
       } else if (descargas.get(url)?.corte === corte) {
         // Lo que falla no queda: otro motor (o este, más tarde) puede reintentar.
         descargas.delete(url);
@@ -302,7 +246,6 @@ export interface MotorSecuencia {
   /**
    * Usa un <img> que ya está en la página como cuadro `i`, si muestra ese
    * cuadro (su currentSrc incluye la URL del cuadro, también vía next/image).
-   * Mientras tanto ese cuadro no se pide (la pasada y los tramos no esperan).
    */
   adoptar(i: number, img: HTMLImageElement): void;
   /**
@@ -327,11 +270,9 @@ export interface MotorSecuencia {
    * sigue a la posición actual, de `TRAMO_ATRAS` cuadros hacia atrás a
    * `horizonte` hacia adelante (o lo que se recorre en `TRAMO_SEGUNDOS` a la
    * velocidad del scroll, si es más), lo más cercano primero y lo de adelante
-   * antes. Con el scroll en movimiento rápido, en cambio, lo que la caja va a
-   * mostrar cuando llegue (ver `siguiente`). Puede arrancar con la pasada en
-   * curso: comparten la cola (lo de los tramos que la caja necesita primero,
-   * después la pasada, después el resto del tramo). Sin nada que bajar en la
-   * ventana, espera a que se mueva; dormido, a despertar.
+   * antes. Puede arrancar con la pasada en curso: comparten la cola (los
+   * cuadros INMEDIATO primero, después la pasada, después el tramo). Sin nada
+   * que bajar en la ventana, espera a que se mueva; dormido, a despertar.
    * Resuelve cuando no falta ninguno, al soltar los tramos o al destruir.
    */
   seguir(opciones: { horizonte: number }): Promise<void>;
@@ -359,8 +300,6 @@ export function crearMotor({
   escalaMax = () => 1,
   ventana,
   alDibujar,
-  concurrencia = CONCURRENCIA,
-  segundosEnMovimiento = TRAMO_SEGUNDOS,
 }: {
   canvas: HTMLCanvasElement;
   version: HeroSecuenciaVersion;
@@ -375,13 +314,6 @@ export function crearMotor({
   ventana: { atras: number; adelante: number };
   /** Se llama una vez, después del primer dibujo. */
   alDibujar?: () => void;
-  /** Descargas a la vez (CONCURRENCIA si no se pasa). */
-  concurrencia?: number;
-  /**
-   * Con el scroll en movimiento rápido, cuántos segundos de recorrido hacia
-   * adelante se piden (o `horizonte` cuadros, si es más).
-   */
-  segundosEnMovimiento?: number;
 }): MotorSecuencia {
   const total = version.cuadros;
   const blobs: (Blob | undefined)[] = new Array(total);
@@ -412,29 +344,8 @@ export function crearMotor({
   /** Último tamaño CSS del lienzo (el ResizeObserver avisa también dormido). */
   let tamCss = { w: 0, h: 0 };
   let avisado = false;
-  /**
-   * Cuadro dominante del último dibujo (el que está en el lienzo): no se
-   * libera, así el respaldo de `dibujar` (masCercano) siempre tiene algo tan
-   * cercano como lo que ya se ve. -1 = ninguno.
-   */
-  let mostrado = -1;
-  /**
-   * Cuadros que se están adoptando (adoptar): no se piden mientras tanto (no
-   * se bajan dos veces), pero la cola no los espera para pedir el resto.
-   */
-  const adoptando = new Set<number>();
-  /**
-   * El hero ya se ve (despuesDelPintado, lib/pintado.ts): la adopción pide su
-   * archivo recién entonces. En una página visible ya pasó al armar (no espera
-   * nada); en una pestaña que todavía no se muestra, el pedido no le compite
-   * a la primera pintura. Mientras tanto se ve el <img>, el mismo cuadro.
-   */
-  let pintado: Promise<void> | null = null;
-  let cancelarPintado = () => {};
-  const esperarPintado = () =>
-    (pintado ??= new Promise<void>((resolve) => {
-      cancelarPintado = despuesDelPintado(resolve);
-    }));
+  /** Adopciones en curso: `cargar` las espera para no pedir dos veces un cuadro. */
+  let adopciones: Promise<void> = Promise.resolve();
   /** Pedidos en vuelo y los que fallaron (no se piden de nuevo). */
   const enVuelo = new Set<number>();
   const fallidos = new Set<number>();
@@ -451,10 +362,6 @@ export function crearMotor({
   /** Velocidad del scroll en cuadros por segundo (media móvil) y su última muestra. */
   let velocidad = 0;
   let tVelocidad = 0;
-  /** Duración de una decodificación (ms, media móvil). */
-  let msDecodificar = DECODIFICAR_MS;
-  /** El asentado espera a que se decodifique el cuadro de destino. */
-  let asentarPendiente = false;
 
   /* ---------- Dibujo ---------- */
 
@@ -470,17 +377,6 @@ export function crearMotor({
       if (b < total && listos[b]) return b;
     }
     return -1;
-  };
-
-  /**
-   * Qué tan lejos de la posición dibujada queda lo mejor que hay para mostrar
-   * (en cuadros): el cuadro listo más cercano o, antes del primer dibujo, el
-   * <img> de respaldo, que es el cuadro 0.
-   */
-  const distanciaVisible = () => {
-    const n = masCercano(vista);
-    const d = n < 0 ? Infinity : Math.abs(n - vista);
-    return avisado ? d : Math.min(d, vista);
   };
 
   const pintar = (img: Fuente, alpha: number) => {
@@ -520,17 +416,14 @@ export function crearMotor({
     const b = listos[i1];
     let clave: string;
     let pasos: [Fuente, number][];
-    let dominante: number;
     if (a && (w < EPSILON || i1 === i0)) {
       clave = `${i0}`;
       pasos = [[a, 1]];
       exacto = true;
-      dominante = i0;
     } else if (b && w > 1 - EPSILON) {
       clave = `${i1}`;
       pasos = [[b, 1]];
       exacto = true;
-      dominante = i1;
     } else if (a && b) {
       // Fundido corto: (1 - w) del de abajo + w del de arriba.
       const wq = Math.round(w * 500) / 500;
@@ -540,20 +433,12 @@ export function crearMotor({
         [b, wq],
       ];
       exacto = true;
-      dominante = wq >= 0.5 ? i1 : i0;
     } else {
       const n = masCercano(vista);
-      // Antes del primer dibujo se ve el <img> de respaldo, que es el cuadro
-      // 0: el lienzo lo tapa solo con un cuadro más cercano a la posición. Si
-      // no, en reposo la pasada podía traer el 8 antes que el bitmap del 0
-      // adoptado y los productos aparecían corridos un instante.
-      if (n < 0 || (!avisado && n !== 0 && Math.abs(n - vista) >= vista)) {
-        return;
-      }
+      if (n < 0) return;
       clave = `${n}`;
       pasos = [[listos[n]!, 1]];
       exacto = false;
-      dominante = n;
     }
     clave += `|${canvas.width}x${canvas.height}`;
     if (clave === dibujadoClave) return;
@@ -561,7 +446,6 @@ export function crearMotor({
     ctx.imageSmoothingQuality = "high";
     componer(pasos);
     dibujadoClave = clave;
-    mostrado = dominante;
     if (!avisado) {
       avisado = true;
       alDibujar?.();
@@ -579,7 +463,6 @@ export function crearMotor({
     if (asentando) cancelAnimationFrame(asentando);
     quieto = 0;
     asentando = 0;
-    asentarPendiente = false;
   };
 
   /**
@@ -588,21 +471,13 @@ export function crearMotor({
    */
   const asentar = () => {
     quieto = 0;
-    asentarPendiente = false;
     if (muerto || dormido) return;
-    // Ya no está en movimiento: se decodifica la ventana entera, lo más
-    // cercano primero (en movimiento iba uno de cada `paso`).
-    planificar();
     const i0 = Math.floor(vista);
     const w = pesoFundido(vista - i0);
     if (w < EPSILON || w > 1 - EPSILON) return;
     const desde = vista;
     const hasta = Math.min(total - 1, Math.round(vista));
-    if (!listos[hasta]) {
-      // Se asienta apenas llegue (decodificar).
-      asentarPendiente = true;
-      return;
-    }
+    if (!listos[hasta]) return;
     const t0 = performance.now();
     // Resorte `tacto` (lib/fisica): sin sobrepaso visible y sin golpe al
     // llegar. Se acota a 1: pasarse dibujaría un fundido con el vecino.
@@ -629,34 +504,13 @@ export function crearMotor({
 
   const liberar = (i: number) => {
     const img = listos[i];
-    if (!img || fijos.has(i) || i === mostrado) return;
+    if (!img || fijos.has(i)) return;
     if (!(img instanceof HTMLImageElement)) img.close();
     listos[i] = undefined;
   };
 
-  /** Velocidad vigente del scroll (cuadros/s; 0 después de una pausa). */
-  const velocidadActual = () =>
-    performance.now() - tVelocidad > VELOCIDAD_PAUSA_MS ? 0 : velocidad;
-
-  /**
-   * En movimiento (para decodificar y para pedir): uno de cada cuántos
-   * cuadros (potencia de 2, hasta 8) a `v` cuadros/s, según lo que dan las
-   * decodificaciones medidas (ver IMAGENES_EN_MOVIMIENTO).
-   */
-  const pasoEnMovimiento = (v: number) => {
-    const capacidad = (DECODIFICACIONES * 1000) / msDecodificar;
-    const tope = Math.min(
-      IMAGENES_EN_MOVIMIENTO,
-      capacidad * FRACCION_DECODIFICACION,
-    );
-    let paso = 1;
-    while (paso < 8 && v / paso > tope) paso *= 2;
-    return paso;
-  };
-
   const decodificar = async (i: number, blob: Blob) => {
     decodificando.add(i);
-    const t0 = performance.now();
     let img: Fuente | null = null;
     try {
       // Al tamaño real: sin resize, todo el trabajo queda fuera del hilo
@@ -669,99 +523,46 @@ export function crearMotor({
     }
     decodificando.delete(i);
     if (!img) return;
-    msDecodificar = msDecodificar * 0.7 + (performance.now() - t0) * 0.3;
     const { lo, hi } = rango();
-    // Fuera de la ventana se queda igual si acerca la caja a la posición más
-    // que lo que hay para mostrar (red de seguridad, ver planificar).
-    const fuera = i < lo - MARGEN_LIBERAR || i > hi + MARGEN_LIBERAR;
     if (
       muerto ||
       dormido ||
       fijos.has(i) ||
-      // Nunca debería haber otro (decodificando lo evita): por las dudas, se
-      // queda el que ya estaba (puede ser el que está en el lienzo).
-      listos[i] ||
-      (fuera && Math.abs(i - vista) >= distanciaVisible())
+      i < lo - MARGEN_LIBERAR ||
+      i > hi + MARGEN_LIBERAR
     ) {
       if (!(img instanceof HTMLImageElement)) img.close();
     } else {
+      // Nunca debería haber otro (decodificando lo evita): por las dudas, se
+      // libera antes de reemplazarlo.
+      liberar(i);
       listos[i] = img;
       const f0 = Math.floor(vista);
       if (i === f0 || i === f0 + 1 || !exacto) {
         dibujadoClave = "";
         pedirDibujo();
       }
-      if (asentarPendiente && i === Math.min(total - 1, Math.round(vista))) {
-        asentar();
-      }
     }
     planificar();
   };
 
-  /**
-   * Libera lo lejano y decodifica lo que falta, lo más cercano primero.
-   * Red de seguridad: si en la ventana no hay nada bajado, decodifica el
-   * cuadro bajado más cercano a la posición aunque quede afuera, si acerca la
-   * caja más que lo que hay para mostrar (y no lo libera mientras sea el más
-   * cercano). Con el scroll arrancando junto con `load`, la pasada (pedida con
-   * la caja en el 0) llegaba con el scroll ya lejos: quedaba fuera de la
-   * ventana sin decodificarse y la caja seguía cerrada en el 0 hasta que
-   * llegaban los de la posición (hasta ~1.2 s) y después saltaba al final.
-   */
+  /** Libera lo lejano y decodifica lo que falta, lo más cercano primero. */
   function planificar() {
     if (muerto || dormido) return;
     const { lo, hi } = rango();
-    const respaldo = masCercano(vista);
     for (let i = 0; i < total; i++) {
-      if (
-        listos[i] &&
-        i !== respaldo &&
-        (i < lo - MARGEN_LIBERAR || i > hi + MARGEN_LIBERAR)
-      ) {
-        liberar(i);
-      }
+      if (listos[i] && (i < lo - MARGEN_LIBERAR || i > hi + MARGEN_LIBERAR)) liberar(i);
     }
     if (decodificando.size >= DECODIFICACIONES) return;
-    // En movimiento rápido (scroll en los últimos QUIETO_MS), uno de cada
-    // `paso` cuadros (pasoEnMovimiento) y el último (donde termina la
-    // secuencia: si no, la caja llegaba al final un instante después del
-    // scroll); quieto o lento, todos.
-    const v = velocidadActual();
-    const moviendo =
-      v > VEL_MOVIMIENTO && performance.now() - tVelocidad < QUIETO_MS;
-    const paso = moviendo ? pasoEnMovimiento(v) : 1;
+    const c = pos;
     const candidatos: number[] = [];
-    let bajadosEnVentana = 0;
     for (let i = Math.max(0, lo); i <= Math.min(total - 1, hi); i++) {
-      if (fijos.has(i) || !blobs[i]) continue;
-      bajadosEnVentana++;
-      if (decodificando.has(i)) continue;
-      if (paso > 1 && i % paso !== 0 && i !== total - 1) continue;
+      if (fijos.has(i) || !blobs[i] || decodificando.has(i)) continue;
       if (!listos[i]) candidatos.push(i);
     }
-    if (!bajadosEnVentana && !decodificando.size) {
-      // Red de seguridad (ver arriba): uno solo a la vez.
-      let mejor = -1;
-      let dMejor = distanciaVisible();
-      for (let i = 0; i < total; i++) {
-        if (fijos.has(i) || !blobs[i] || listos[i]) continue;
-        const d = Math.abs(i - vista);
-        if (d < dMejor) {
-          dMejor = d;
-          mejor = i;
-        }
-      }
-      if (mejor >= 0) void decodificar(mejor, blobs[mejor]!);
-      return;
-    }
-    // Quieto o lento: lo más cercano primero, los de adelante pesan menos (se
-    // llega antes a ellos). En movimiento, la distancia se mide desde donde
-    // va a estar la posición cuando termine de decodificarse (`meta`): lo que
-    // para entonces ya quedó atrás casi no se llega a ver (pesa el triple).
-    const meta = moviendo ? pos + (dir * v * msDecodificar) / 1000 : pos;
+    // Los de adelante pesan menos (se llega antes a ellos).
     const peso = (i: number) => {
-      const d = i - meta;
-      if (moviendo) return d * dir >= 0 ? Math.abs(d) : Math.abs(d) * 3;
+      const d = i - c;
       return Math.sign(d) === Math.sign(dir) ? Math.abs(d) * 0.6 : Math.abs(d);
     };
     candidatos.sort((a, b) => peso(a) - peso(b));
@@ -777,11 +578,7 @@ export function crearMotor({
   const resuelto = (i: number) => !!blobs[i] || fallidos.has(i);
   /** Se puede pedir: en rango, sin bajar, sin pedido en vuelo y sin fallar. */
   const libre = (i: number) =>
-    i >= 0 &&
-    i < total &&
-    !resuelto(i) &&
-    !enVuelo.has(i) &&
-    !adoptando.has(i);
+    i >= 0 && i < total && !resuelto(i) && !enVuelo.has(i);
   /** Mismo criterio que planificar(): distancia a `pos`, lo de adelante x0.6. */
   const peso = (i: number) => {
     const d = i - pos;
@@ -803,56 +600,10 @@ export function crearMotor({
   };
 
   /**
-   * El primer cuadro libre múltiplo de `paso` desde `desde` (redondeado) hacia
-   * donde se scrollea, dentro de `largo` cuadros (o -1).
-   */
-  const primeroHacia = (desde: number, largo: number, paso: number) => {
-    const a = Math.round(desde);
-    const s = dir >= 0 ? 1 : -1;
-    for (let k = 0; k <= largo; k++) {
-      const i = a + s * k;
-      if (i < 0 || i >= total) break;
-      if (i % paso === 0 && libre(i)) return i;
-    }
-    return -1;
-  };
-
-  /**
-   * Con el scroll en movimiento (`v` cuadros/s): lo que la caja va a mostrar
-   * cuando el pedido llegue y se decodifique. Arranca adelantado lo que la
-   * posición avanza en ese tiempo (latencia medida de la red más
-   * DECODIFICAR_MS) y sigue por bandas (BANDA_SEGUNDOS) hasta
-   * `segundosEnMovimiento` de recorrido (o `horizonte` cuadros, si es más);
-   * cada banda, de lo grueso a lo fino (PASOS_BANDA). -1 si no falta nada.
-   */
-  const enMovimiento = (v: number, horizonte: number) => {
-    const latencia = red.latencia || LATENCIA_INICIAL;
-    const adelanto = (v * (latencia + msDecodificar)) / 1000;
-    const largo = Math.max(horizonte, Math.ceil(v * segundosEnMovimiento));
-    const banda = Math.max(BANDA_MIN, Math.ceil(v * BANDA_SEGUNDOS));
-    // Lo que no se va a decodificar en movimiento tampoco se pide (lo de
-    // entre medio llega cuando el scroll se frena: INMEDIATO y el tramo).
-    const pasoMin = pasoEnMovimiento(v);
-    const s = dir >= 0 ? 1 : -1;
-    for (let b = 0; b * banda <= largo; b++) {
-      const desde = pos + s * (adelanto + b * banda);
-      if (desde < -0.5 || desde > total - 0.5) break;
-      for (const paso of PASOS_BANDA) {
-        if (paso < pasoMin) break;
-        const i = primeroHacia(desde, banda - 1, paso);
-        if (i >= 0) return i;
-      }
-    }
-    return -1;
-  };
-
-  /**
    * El próximo cuadro a bajar, por orden:
-   *   1. con tramos (y despierto) y el scroll en movimiento rápido, lo que la
-   *      caja va a mostrar cuando llegue (enMovimiento); quieto o lento, lo
-   *      INMEDIATO: el cuadro actual y los que siguen hacia donde se
-   *      scrollea, lo que la caja tiene que mostrar ya (con la pasada en
-   *      curso, solo con el scroll en reposo);
+   *   1. con tramos (y despierto), lo INMEDIATO: el cuadro actual y los que
+   *      siguen hacia donde se scrollea, lo que la caja tiene que mostrar ya
+   *      (con la pasada en curso, solo con el scroll en reposo);
    *   2. la pasada (repartida por todo el recorrido), lo más cercano primero;
    *   3. con tramos y la pasada terminada, el resto de la ventana: de
    *      `TRAMO_ATRAS` hacia atrás a `horizonte` hacia adelante (o lo que la
@@ -863,11 +614,7 @@ export function crearMotor({
     const c = Math.round(pos);
     const conTramo = tramo !== null && !dormido;
     const enPasada = pasada.size > 0;
-    const vel = velocidadActual();
-    if (conTramo && tramo && vel > VEL_MOVIMIENTO) {
-      const i = enMovimiento(vel, tramo.horizonte);
-      if (i >= 0) return i;
-    } else if (conTramo && (reposo || !enPasada)) {
+    if (conTramo && (reposo || !enPasada)) {
       const { adelante, atras } = INMEDIATO;
       const i =
         dir >= 0
@@ -886,6 +633,8 @@ export function crearMotor({
       }
     }
     if (mejor >= 0 || !conTramo || !tramo || enPasada) return mejor;
+    const vel =
+      performance.now() - tVelocidad > VELOCIDAD_PAUSA_MS ? 0 : velocidad;
     const h = Math.max(tramo.horizonte, Math.ceil(vel * TRAMO_SEGUNDOS));
     return dir >= 0
       ? mejorEntre(c - TRAMO_ATRAS, c + h)
@@ -927,9 +676,9 @@ export function crearMotor({
     bombear();
   };
 
-  /** Llena los lugares libres de la cola (hasta `concurrencia` en vuelo). */
+  /** Llena los lugares libres de la cola (hasta CONCURRENCIA en vuelo). */
   function bombear() {
-    while (!muerto && enVuelo.size < concurrencia) {
+    while (!muerto && enVuelo.size < CONCURRENCIA) {
       const i = siguiente();
       if (i < 0) return;
       void bajar(i);
@@ -1023,17 +772,10 @@ export function crearMotor({
     },
 
     adoptar(i, img) {
-      if (i < 0 || i >= total || listos[i] || adoptando.has(i)) return;
+      if (i < 0 || i >= total || listos[i]) return;
       const url = urlDeCuadro(version, i);
-      // Mientras se adopta no se pide (no se baja dos veces); si al final no
-      // se puede adoptar, se suelta y la cola lo pide como a cualquier otro.
-      adoptando.add(i);
-      const soltar = () => {
-        if (adoptando.delete(i) && !muerto) bombear();
-      };
-      img
+      const adopcion = img
         .decode()
-        .then(esperarPintado)
         .then(() => {
           if (muerto || listos[i] || !img.naturalWidth) return;
           let actual = img.currentSrc;
@@ -1046,9 +788,6 @@ export function crearMotor({
           // Marca de bajado (no se vuelve a pedir).
           fijos.add(i);
           blobs[i] = blobs[i] ?? new Blob();
-          adoptando.delete(i);
-          pasada.delete(i);
-          revisarEsperas();
           // El mismo archivo, de la caché, a un bitmap decodificado fuera del
           // hilo principal (como los demás cuadros). Si no se puede, el <img>.
           return fetch(img.currentSrc, { cache: "force-cache" })
@@ -1064,17 +803,17 @@ export function crearMotor({
               pedirDibujo();
             });
         })
-        .catch(() => {})
-        .finally(soltar);
+        .catch(() => {});
+      adopciones = adopciones.then(() => adopcion);
     },
 
     async cargar(indices) {
-      // A la cola (sin esperar a las adopciones: lo que se está adoptando no
-      // se pide mientras tanto): cada lugar libre toma el cuadro pendiente
-      // más cercano a donde está la persona AHORA (lo de adelante x0.6). Sin
-      // scroll es el orden de siempre (0, 8, 16...); si ya bajó antes de que
-      // termine `load` (red lenta), el cuadro que toca llega primero y la caja
-      // no se queda cerrada esperando toda la pasada.
+      await adopciones;
+      // A la cola: cada lugar libre toma el cuadro pendiente más cercano a
+      // donde está la persona AHORA (lo de adelante x0.6). Sin scroll es el
+      // orden de siempre (0, 8, 16...); si ya bajó antes de que termine
+      // `load` (red lenta), el cuadro que toca llega primero y la caja no se
+      // queda cerrada esperando toda la pasada.
       const lista = indices.filter((i) => i >= 0 && i < total && !resuelto(i));
       lista.forEach((i) => pasada.add(i));
       bombear();
@@ -1086,6 +825,7 @@ export function crearMotor({
     },
 
     async medirRed() {
+      await adopciones;
       await esperar(
         () => red.cuadros >= MUESTRA_RED || [...pasada].every(resuelto),
       );
@@ -1093,6 +833,7 @@ export function crearMotor({
     },
 
     async seguir({ horizonte }) {
+      await adopciones;
       tramo = { horizonte };
       bombear();
       await esperar(() => !tramo || completo());
@@ -1109,7 +850,6 @@ export function crearMotor({
       cortarAsentado();
       if (raf) cancelAnimationFrame(raf);
       raf = 0;
-      mostrado = -1;
       for (let i = 0; i < total; i++) liberar(i);
       canvas.width = 1;
       canvas.height = 1;
@@ -1131,7 +871,6 @@ export function crearMotor({
     destruir() {
       if (muerto) return;
       muerto = true;
-      cancelarPintado();
       cortarAsentado();
       window.clearTimeout(esperaReposo);
       // Las esperas terminan; las descargas en vuelo quedan para otro motor
@@ -1141,7 +880,6 @@ export function crearMotor({
       if (raf) cancelAnimationFrame(raf);
       raf = 0;
       ro.disconnect();
-      mostrado = -1;
       for (let i = 0; i < total; i++) liberar(i);
     },
   };

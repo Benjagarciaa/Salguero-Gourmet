@@ -12,10 +12,9 @@ import {
   capaActiva,
   conCostura,
   gsap,
-  prepararTransformes,
   ScrollTrigger,
   scrollNativo,
-  useGSAPEnCola,
+  useGSAP,
 } from "@/lib/gsap";
 import { COSTURA, OPACIDAD_GSAP, SCRUB, TRAMO } from "@/lib/fisica";
 import { flor } from "@/content/data";
@@ -156,7 +155,7 @@ export function Flor() {
   const cuerpoRef = useRef<HTMLParagraphElement>(null);
   const emRef = useRef<HTMLElement>(null);
 
-  useGSAPEnCola(
+  useGSAP(
     () => {
       const root = rootRef.current;
       const escena = escenaRef.current;
@@ -189,7 +188,6 @@ export function Flor() {
         const quitarDetener: Array<() => void> = [];
         let quitarCostura = () => {};
         let quitarCapa = () => {};
-        let quitarPalabras = () => {};
 
         // Apertura: r (0 a 1) abre el recorte desde la cara de Flor hasta el
         // marco; z (0 a 1) saca el acercamiento, anclado en la cara (la cara
@@ -374,7 +372,6 @@ export function Flor() {
           // 7 cuadros de 4 a 22 px fuera de lugar, contra un solo salto de 16 a
           // 20 px sin costura).
           const d = scrollNativo() ? 0 : COSTURA.d;
-          const recorrido = () => Math.round(window.innerHeight * RECORRIDO);
           const costura = conCostura(
             {
               trigger: escena,
@@ -383,7 +380,7 @@ export function Flor() {
               // sin anticipar, el pin tiembla al fijarse.
               anticipatePin: anticiparPin(),
               start: () => `top ${altoNav() + d}px`,
-              end: () => `+=${recorrido()}`,
+              end: () => `+=${Math.round(window.innerHeight * RECORRIDO)}`,
               // Con refreshPriority presente, ScrollTrigger ordena los refresh
               // por posición en la página: si una sección de arriba arma su
               // pin después que esta, igual se calcula antes (el pin de acá
@@ -394,7 +391,7 @@ export function Flor() {
               onRefresh: medir,
             },
             grid,
-            { d, recorrido },
+            { d },
           );
           quitarCostura = costura.limpiar;
           armarColumnas(costura.vars);
@@ -465,21 +462,16 @@ export function Flor() {
             // muy grande el texto la estira: ahí va sin pin).
             const cabe =
               escena.offsetHeight <= window.innerHeight - altoNav() + 2;
-            const modo =
-              conEscena && cabe ? "escena" : ancho ? "columnas" : "apilado";
-            root.dataset.flor = modo;
-            // Rendimiento: las opacidades de las palabras se leen en una sola
-            // tanda y quedan en línea (prepararTransformes, lib/gsap.ts), con
-            // el modo ya puesto. Si no, cada palabra del encendido se leía
-            // intercalada con la escritura de la anterior (un recálculo de
-            // estilos forzado por palabra). Mismo resultado en pantalla.
-            quitarPalabras = prepararTransformes(
-              [],
-              [...palabrasTitulo, ...palabrasCuerpo],
-            );
-            if (modo === "escena") armarEscena();
-            else if (modo === "columnas") armarColumnasSinPin();
-            else armarApilado();
+            if (conEscena && cabe) {
+              root.dataset.flor = "escena";
+              armarEscena();
+            } else if (ancho) {
+              root.dataset.flor = "columnas";
+              armarColumnasSinPin();
+            } else {
+              root.dataset.flor = "apilado";
+              armarApilado();
+            }
             medir();
             quitarCapa = capaActiva(root, { antes: 2 });
           } catch (error) {
@@ -492,7 +484,6 @@ export function Flor() {
             gsap.set([...palabrasTitulo, ...palabrasCuerpo], {
               clearProps: "opacity",
             });
-            quitarPalabras();
             quitarTransforms();
             quitarCostura();
             quitarCapa();
@@ -520,7 +511,6 @@ export function Flor() {
           quitarTransforms();
           quitarCostura();
           quitarCapa();
-          quitarPalabras();
           delete root.dataset.flor;
         };
       });

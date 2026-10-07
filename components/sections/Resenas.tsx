@@ -19,7 +19,7 @@ import {
   prepararTransformes,
   scrollNativo,
   ScrollTrigger,
-  useGSAPEnCola,
+  useGSAP,
 } from "@/lib/gsap";
 import styles from "./Resenas.module.css";
 
@@ -296,7 +296,7 @@ export function Resenas() {
   const rootRef = useRef<HTMLElement>(null);
   const showProfile = !isPlaceholder(resenas.profileUrl);
 
-  useGSAPEnCola(
+  useGSAP(
     () => {
       const root = rootRef.current;
       if (!root) return;
@@ -575,8 +575,6 @@ export function Resenas() {
 
         // Costura apagada con scroll nativo (tablets táctiles en horizontal).
         const d = scrollNativo() ? 0 : COSTURA.d;
-        const recorrido = () =>
-          Math.round(window.innerHeight * RECORRIDO.escena);
         const { vars, limpiar } = conCostura(
           {
             trigger: escenario,
@@ -584,7 +582,7 @@ export function Resenas() {
             // 1 solo con scroll nativo: sin anticipar, el pin tiembla al fijarse.
             anticipatePin: anticiparPin(),
             start: () => `top ${altoNav() + d}px`,
-            end: () => `+=${recorrido()}`,
+            end: () => `+=${Math.round(window.innerHeight * RECORRIDO.escena)}`,
             scrub: SCRUB,
             invalidateOnRefresh: true,
             // Con refreshPriority presente, ScrollTrigger ordena los refresh
@@ -595,7 +593,7 @@ export function Resenas() {
             onRefresh: (self) => aterrizar(antesDeLaSalida(self, d)),
           },
           costura,
-          { d, recorrido },
+          { d },
         );
         const tl = gsap.timeline({
           defaults: { ease: "none" },
@@ -844,8 +842,6 @@ export function Resenas() {
 
         const zona = (): Zona => ({ arriba: 0, abajo: geo.linea - PILA.aire });
 
-        const recorrido = () =>
-          Math.round(window.innerHeight * RECORRIDO.mazo);
         const { vars, limpiar: limpiarCostura } = conCostura(
           {
             trigger: escenario,
@@ -853,7 +849,7 @@ export function Resenas() {
             // Solo con scroll nativo (táctiles): con Lenis fijaba el pin antes.
             anticipatePin: anticiparPin(),
             start: () => `top ${altoNav() + PILA.arriba + d}px`,
-            end: () => `+=${recorrido()}`,
+            end: () => `+=${Math.round(window.innerHeight * RECORRIDO.mazo)}`,
             scrub: SCRUB,
             invalidateOnRefresh: true,
             refreshPriority: 0,
@@ -866,7 +862,7 @@ export function Resenas() {
             },
           },
           costura,
-          { d, recorrido },
+          { d },
         );
         const tl = gsap.timeline({
           defaults: { ease: "none" },

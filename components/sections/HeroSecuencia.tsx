@@ -8,7 +8,7 @@ import {
   medidaPorTarea,
   prepararTransformes,
   ScrollTrigger,
-  useGSAPEnCola,
+  useGSAP,
 } from "@/lib/gsap";
 import {
   despegue,
@@ -18,7 +18,6 @@ import {
   TRAMO,
 } from "@/lib/fisica";
 import { ahorroDeDatos } from "@/lib/video";
-import { despuesDeLoad } from "@/lib/pintado";
 import {
   crearMotor,
   pasadasDeCarga,
@@ -113,10 +112,8 @@ import {
  * Los tramos no esperan a que termine la pasada: arrancan apenas hay scroll en
  * una red que da (el tipo de red que dice el navegador o, si no lo dice, una
  * tanda medida) y, con el scroll en reposo, lo que la caja tiene que mostrar
- * ya pasa antes que el resto de la pasada (ver `siguiente` en el motor); con
- * el scroll en movimiento rápido, lo que la caja va a mostrar cuando llegue
- * cada cuadro (DESCARGAS, SEGUNDOS_EN_MOVIMIENTO). Con ahorro de datos no se
- * baja nada: versión quieta.
+ * ya pasa antes que el resto de la pasada (ver `siguiente` en el motor). Con
+ * ahorro de datos no se baja nada: versión quieta.
  */
 const PASADA_INICIAL = 8;
 const HORIZONTE = { desktop: 40, mobile: 48 };
@@ -139,16 +136,6 @@ const VENTANA = {
   desktop: { atras: 8, adelante: 20 },
   mobile: { atras: 4, adelante: 12 },
 };
-/**
- * Scroll rápido apenas entrar (PC): con solo la pasada bajada (1 de cada 8),
- * la caja iba "de a cuotas". En desktop, con h2/h3 (`multiplexa`), más
- * descargas a la vez y, con el scroll en movimiento, 1 s de recorrido pedido
- * hacia adelante. En mobile, 6 a la vez (lo de siempre) y 0.5 s: ahí manda
- * la red y los datos. (Más decodificaciones a la vez, en cambio, le quitaban
- * cuadros de pantalla al scroll en una PC de 6 núcleos: quedan en 3.)
- */
-const DESCARGAS = { desktop: 12, mobile: 6 };
-const SEGUNDOS_EN_MOVIMIENTO = { desktop: 1, mobile: 0.5 };
 /** Entrada o salida de un momento (horneado, cifras), en progreso. */
 const FUNDIDO = 0.05;
 /** Entrada de una ficha, en progreso. */
@@ -236,17 +223,6 @@ function redLenta(): boolean {
 }
 
 /**
- * ¿La página llegó por h2 o h3? Sin el tope de 6 conexiones de HTTP/1.1, en
- * desktop la secuencia se baja con más pedidos a la vez (DESCARGAS).
- */
-function multiplexa(): boolean {
-  const nav = performance.getEntriesByType("navigation")[0] as
-    | PerformanceNavigationTiming
-    | undefined;
-  return ["h2", "h3"].includes(nav?.nextHopProtocol ?? "");
-}
-
-/**
  * ¿La red de seguridad CSS (hs-failsafe) ya mostró las capas antes de
  * hidratar? Pasa en celulares lentos: esconderlas de nuevo para arrancar la
  * escena sería un salto visible, así que el hero se queda en "final".
@@ -260,6 +236,16 @@ function failsafeCorrio(): boolean {
         (a as CSSAnimation).animationName === "hs-failsafe" &&
         Number(a.currentTime) >= 4000,
     );
+}
+
+/** Corre `fn` después del evento load (o ya, si la página terminó de cargar). */
+function despuesDeLoad(fn: () => void): () => void {
+  if (document.readyState === "complete") {
+    fn();
+    return () => {};
+  }
+  window.addEventListener("load", fn, { once: true });
+  return () => window.removeEventListener("load", fn);
 }
 
 /** Posición en el timeline acotada para que ningún tramo lo alargue más de 1. */
@@ -281,7 +267,7 @@ export function HeroSecuencia({
   // El ScrollTrigger del pin vigente (para el ancla al cruzar un corte).
   const pinRef = useRef<ScrollTrigger | null>(null);
 
-  useGSAPEnCola(
+  useGSAP(
     () => {
       const root = rootRef.current;
       if (!root) return;
@@ -531,21 +517,11 @@ export function HeroSecuencia({
           // tapaba el cierre). El servidor no les pone transform ni opacidad
           // en línea: el modo nuevo arranca de cero. Fuera del registro del
           // contexto (ignore): al revertir este modo no hay nada que restaurar.
-          // Solo lo que GSAP ya tocó (tiene su caché, _gsap): con los demás no
-          // hay nada que limpiar, y el set les creaba la caché leyendo el
-          // transform de cada uno intercalado con las escrituras (un recálculo
-          // de estilos forzado por elemento al hidratar; rendimiento, el
-          // resultado en pantalla es el mismo).
-          const tocados = animados.filter(
-            (el) => (el as HTMLElement & { _gsap?: unknown })._gsap,
+          ctx.ignore(() =>
+            gsap.set(animados, {
+              clearProps: "transform,translate,rotate,scale,opacity",
+            }),
           );
-          if (tocados.length) {
-            ctx.ignore(() =>
-              gsap.set(tocados, {
-                clearProps: "transform,translate,rotate,scale,opacity",
-              }),
-            );
-          }
           quitarPreparacion = prepararTransformes(
             animados.filter((el) => el !== capaFichas),
             animados,
@@ -1440,13 +1416,6 @@ export function HeroSecuencia({
                 foco,
                 escalaMax: desktop ? zoom : undefined,
                 ventana: desktop ? VENTANA.desktop : VENTANA.mobile,
-                concurrencia:
-                  desktop && multiplexa()
-                    ? DESCARGAS.desktop
-                    : DESCARGAS.mobile,
-                segundosEnMovimiento: desktop
-                  ? SEGUNDOS_EN_MOVIMIENTO.desktop
-                  : SEGUNDOS_EN_MOVIMIENTO.mobile,
                 // Desde el primer dibujo, el canvas tapa al <img> de respaldo.
                 alDibujar: () => {
                   root.dataset.hsLienzo = "";

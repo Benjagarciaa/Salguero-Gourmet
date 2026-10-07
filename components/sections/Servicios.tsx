@@ -16,7 +16,7 @@ import {
   refrescarSiNadieLoHace,
   ScrollTrigger,
   scrollNativo,
-  useGSAPEnCola,
+  useGSAP,
 } from "@/lib/gsap";
 import { COSTURA, SCRUB, TRAMO } from "@/lib/fisica";
 import { cn } from "@/lib/cn";
@@ -108,7 +108,7 @@ function oscuro(nivel: number): number {
 export function Servicios() {
   const rootRef = useRef<HTMLElement>(null);
 
-  useGSAPEnCola(
+  useGSAP(
     () => {
       const root = rootRef.current;
       if (!root) return;
@@ -229,13 +229,12 @@ export function Servicios() {
 
           // Costura: el encabezado y el escenario son los hijos del pin y
           // nada más los mueve en `y` (las placas se mueven adentro).
-          const recorrido = () => Math.round(window.innerHeight * RECORRIDO);
           const costura = conCostura(
             {
               trigger: pin,
               pin: true,
               start: () => `top ${altoNav() + d}px`,
-              end: () => `+=${recorrido()}`,
+              end: () => `+=${Math.round(window.innerHeight * RECORRIDO)}`,
               scrub: SCRUB,
               // anticiparPin: 1 solo con scroll nativo (tablets táctiles en
               // modo mazo), donde evita que el pin tiemble al fijarse; con
@@ -246,7 +245,7 @@ export function Servicios() {
               invalidateOnRefresh: true,
             },
             [cabecera, escenario],
-            { d, recorrido },
+            { d },
           );
           quitarCostura = costura.limpiar;
           const linea = gsap.timeline({

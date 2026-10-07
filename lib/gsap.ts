@@ -222,16 +222,9 @@ export function alAcercarse(
     },
     { rootMargin: `${margen} 0px ${margen} 0px` },
   );
-  // Empieza a mirar desde la cola de armado (encolarArmado, abajo): después
-  // del hero y de las escenas que se arman al hidratar, cuyos pins llevan lo
-  // de abajo a su lugar. Si mirara antes, con la página todavía sin pins, lo
-  // que queda cerca del hero se armaba al cargar.
-  const cancelarCola = encolarArmado(() => {
-    if (!hecho) io.observe(el);
-  });
+  io.observe(el);
   return () => {
     hecho = true;
-    cancelarCola();
     io.disconnect();
   };
 }
@@ -285,92 +278,6 @@ export function useGSAPAlAcercarse(
       const el = scope.current;
       if (!el || !contextSafe) return;
       return alAcercarse(el, contextSafe(armar), margen);
-    },
-    { scope, dependencies },
-  );
-}
-
-/**
- * Cola de armado al hidratar (rendimiento: mismo resultado en pantalla).
- *
- * Las escenas que se arman al hidratar porque fijan o cambian el alto de la
- * página (hero, Servicios, Galería, Flor y Reseñas) no se arman dentro del
- * commit de React (useGSAP corre en un layout effect: todas juntas eran UNA
- * tarea de ~150 ms con la CPU de un celular de gama media), sino cada una en
- * su propia tarea, en el orden en que se encolan (el de la página, de arriba
- * hacia abajo), apenas termina el commit. El hero va primero: es lo que está
- * en pantalla, y su pin lleva todo lo demás varias pantallas más abajo.
- *
- * - La página termina medida igual que antes: cada pin encola un refresh
- *   completo para el cuadro siguiente (ScrollTrigger) y el último corre con
- *   todas las escenas armadas.
- * - Hasta armarse (unos milisegundos después del commit), cada escena es la
- *   del servidor, la misma que se veía antes de hidratar (fail-open).
- * - Lo que mira la pantalla no se adelanta: alAcercarse empieza a mirar desde
- *   esta cola (después de los pins) y los IntersectionObserver de motion
- *   (Reveal, Counter, TitleEm) se crean en efectos pasivos, después del hero,
- *   y solo disparan con el elemento ya dentro de la pantalla.
- * - Sin JS o con reducir movimiento, nada cambia: es la misma función de armado.
- *
- * Tareas con MessageChannel (sin el mínimo de 4 ms de setTimeout anidado).
- * Devuelve la cancelación (si la escena se desmonta antes de armarse).
- */
-type ArmadoPendiente = { armar: () => void; vivo: boolean };
-const colaDeArmado: ArmadoPendiente[] = [];
-let canalDeArmado: MessageChannel | null = null;
-let armadoProgramado = false;
-
-function programarArmado() {
-  if (armadoProgramado) return;
-  armadoProgramado = true;
-  if (!canalDeArmado) {
-    canalDeArmado = new MessageChannel();
-    canalDeArmado.port1.onmessage = siguienteArmado;
-  }
-  canalDeArmado.port2.postMessage(null);
-}
-
-function siguienteArmado() {
-  armadoProgramado = false;
-  let pendiente = colaDeArmado.shift();
-  while (pendiente && !pendiente.vivo) pendiente = colaDeArmado.shift();
-  try {
-    pendiente?.armar();
-  } finally {
-    if (colaDeArmado.length) programarArmado();
-  }
-}
-
-export function encolarArmado(armar: () => void): () => void {
-  const pendiente: ArmadoPendiente = { armar, vivo: true };
-  colaDeArmado.push(pendiente);
-  programarArmado();
-  return () => {
-    pendiente.vivo = false;
-  };
-}
-
-/**
- * useGSAP que arma la escena en la cola de armado (ver encolarArmado): mismo
- * `scope`, mismas `dependencies` y la misma limpieza. Lo que `armar` crea
- * (tweens, triggers, matchMedia) y la función que devuelve quedan en el
- * contexto de useGSAP (contextSafe), así que se revierten al desmontar como
- * siempre.
- */
-export function useGSAPEnCola(
-  armar: () => void | (() => void),
-  {
-    scope,
-    dependencies = [],
-  }: {
-    scope: { current: Element | null };
-    dependencies?: unknown[];
-  },
-) {
-  return useGSAP(
-    (_contexto, contextSafe) => {
-      if (!contextSafe) return;
-      return encolarArmado(contextSafe(armar));
     },
     { scope, dependencies },
   );
@@ -520,18 +427,7 @@ export function conCostura(
     d = COSTURA.d,
     entrada = true,
     salida = true,
-    recorrido,
-  }: {
-    d?: number;
-    entrada?: boolean;
-    salida?: boolean;
-    /**
-     * El recorrido del pin en px (lo mismo que suma el `end` "+=..."). Con
-     * él, el margen inicial ya es el real y el primer refresh no tiene que
-     * corregirlo (sin él se supone un pin largo, D >= 8d).
-     */
-    recorrido?: () => number;
-  } = {},
+  }: { d?: number; entrada?: boolean; salida?: boolean } = {},
 ): { vars: ScrollTrigger.Vars; limpiar: () => void } {
   const els = Array.isArray(contenido) ? contenido : [contenido];
   const objetivo = vars.pin === true ? vars.trigger : vars.pin;
@@ -554,13 +450,10 @@ export function conCostura(
   const margenPara = (dd: number) =>
     (entrada ? dd : 0) + (salida ? dd : 0);
 
-  // Margen inicial: el del recorrido real si quien llama lo pasa; si no, el
-  // de un pin largo (D >= 8d). Se fija ANTES de crear el ScrollTrigger: el
-  // estado "original" del pin que ScrollTrigger restaura en cada refresh lo
-  // incluye, y la variable se puede cambiar después. Con un pin corto y el
-  // margen supuesto, el primer refresh lo corregía y pedía otro refresh
-  // completo de la página (rendimiento: uno de más en cada carga).
-  let margen = margenPara(recorrido ? tramo(recorrido()).dd : d);
+  // Margen inicial: el de un pin largo (D >= 8d). Se fija ANTES de crear el
+  // ScrollTrigger: el estado "original" del pin que ScrollTrigger restaura en
+  // cada refresh lo incluye, y la variable se puede cambiar después.
+  let margen = margenPara(d);
   let margenPrevio = "";
   if (fijado) {
     margenPrevio = fijado.style.marginBottom;
