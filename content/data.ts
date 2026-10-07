@@ -332,6 +332,11 @@ export const heroSecuencia = {
    * pasada inicial después de `load`, los mismos 23 archivos que antes de los
    * intermedios, y el resto por tramos, a medida que la persona scrollea; ver
    * HeroSecuencia.tsx).
+   * caja-v9 = caja-v8 con 110 intermedios retocados: los huecos de alfa que
+   * dejaba RIFE dentro de los productos (muescas en la corteza del budín y en
+   * el borde del yogur, la ranura bajo la tapa del frasco) se rellenaron con
+   * la mezcla de los dos cuadros del video vecinos, solo donde esos dos
+   * coinciden entre sí (nunca en un borde en movimiento). Mismo WebP (q86).
    * caja-v8 = los 172 cuadros del video, idénticos byte a byte a los de
    * caja-v6/desktop y caja-v7/mobile, más cuadros intermedios (`densidad`) en
    * el tramo donde los productos se mueven más por cuadro (salen de la caja y
@@ -354,7 +359,7 @@ export const heroSecuencia = {
     // los 172 del video y 119 intermedios (x2 en 4-10, x3 en 10-32 y x2 en
     // 32-101: ahí los productos se movían de 3 a 6 px por cuadro).
     desktop: {
-      carpeta: "/media/secuencia/caja-v8/desktop",
+      carpeta: "/media/secuencia/caja-v9/desktop",
       patron: "f{n}.webp",
       cuadros: 291,
       primero: 1,
@@ -375,7 +380,7 @@ export const heroSecuencia = {
     // del fondo en celular se veía como mancha) y el hueco de la mermelada
     // relleno con el color real (caja-v3).
     mobile: {
-      carpeta: "/media/secuencia/caja-v8/mobile",
+      carpeta: "/media/secuencia/caja-v9/mobile",
       patron: "f{n}.webp",
       cuadros: 268,
       primero: 1,
