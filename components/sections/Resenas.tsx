@@ -162,8 +162,6 @@ const PILA = {
   columna: 44,
   /** Suavizado (px) del momento en que la carta deja el mazo y sigue a la página. */
   suave: 64,
-  /** Cuánto se levanta (escala) una carta en el aire. */
-  levanta: 0.03,
   /** Saltito (px) de la carta al dejar el mazo (después del pin). */
   salto: 14,
   /** En una columna, los giros del mazo más suaves (la carta ocupa el ancho). */
@@ -316,7 +314,6 @@ export function Resenas() {
       const cartas = qa("[data-rs-carta]");
       const sombras = qa("[data-rs-sombra]");
       const velos = qa("[data-rs-velo]");
-      const unas = qa("[data-estrella]");
       const rellenos = qa("[data-estrella-relleno]");
       if (
         !escenario ||
@@ -346,12 +343,10 @@ export function Resenas() {
        * cuando el número marca k.0 (décima más cercana), y el 5.0 llega con
        * las cinco llenas. El número nunca se oculta: solo cambia su texto.
        */
-      const popEstrella = resorteGsap("pop").ease;
       // Rendimiento: los transforms de las estrellas se leen en una sola tanda
       // antes de crear sus quickSetter (prepararTransformes, lib/gsap.ts).
-      const quitarPrepEstrellas = prepararTransformes([...rellenos, ...unas]);
+      const quitarPrepEstrellas = prepararTransformes(rellenos);
       const llenar = rellenos.map((r) => gsap.quickSetter(r, "scaleX"));
-      const asentar = unas.map((u) => gsap.quickSetter(u, "scale"));
       // El texto del número (el valor, encima de la copia que fija la caja):
       // se cambia el dato del nodo que trajo el servidor (no se reemplaza el
       // nodo, que es de React) y solo cuando cambia la décima (51 valores en
@@ -371,7 +366,6 @@ export function Resenas() {
         for (let i = 0; i < n; i++) {
           const e = Math.min(1, Math.max(0, p * n - i));
           llenar[i]?.(e);
-          asentar[i]?.(0.78 + 0.22 * popEstrella(e));
         }
         const decimas = Math.round(NOTA * 10 * acotar(p, 0, 1));
         escribir((decimas / 10).toFixed(1));
@@ -380,7 +374,7 @@ export function Resenas() {
       const restaurar = () => {
         pintar(1);
         escribir(NOTA_TEXTO);
-        gsap.set([...rellenos, ...unas], { clearProps: "transform" });
+        gsap.set(rellenos, { clearProps: "transform" });
       };
 
       /**
@@ -706,7 +700,6 @@ export function Resenas() {
         // sería una recta (power2.inOut también arranca y llega en 0).
         const cfVueloY = gsap.parseEase("power2.inOut");
         const cfGiro = resorteGsap("pop").ease;
-        const cfEscala = gsap.parseEase(TRAMO);
 
         /**
          * Geometría en coordenadas del escenario (medida con offset*, sin
@@ -768,8 +761,10 @@ export function Resenas() {
           x: gsap.quickSetter(c, "x", "px"),
           y: gsap.quickSetter(c, "y", "px"),
           r: gsap.quickSetter(c, "rotation", "deg"),
-          s: gsap.quickSetter(c, "scale"),
         }));
+        // Sin escala: quickSetter no acepta el atajo "scale" (lo escribe como el
+        // atributo "scaleX,scaleY", que el WebKit de iPhone rechaza con un error
+        // que frenaba todas las escenas) y el mazo aprobado es sin escalar.
         const sombra = sombras.map((s) => gsap.quickSetter(s, "opacity"));
         const tapa = velos.map((s) => gsap.quickSetter(s, "opacity"));
         const salio = new Array<number>(N).fill(0);
@@ -833,7 +828,6 @@ export function Resenas() {
             pone[i].x(geo.dx[i] * (1 - (geo.fila[i] ? cfVueloX : cfX)(e)));
             pone[i].y(y);
             pone[i].r(geo.r[i] * (1 - cfGiro(e)));
-            pone[i].s(lerp(s0, 1, cfEscala(e)) * (1 + PILA.levanta * aire));
             sombra[i]?.(
               (d > 0 ? PILA.sombraFondo : 1) * (1 - Math.pow(e, 2.4)),
             );

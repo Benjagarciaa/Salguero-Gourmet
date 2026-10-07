@@ -82,8 +82,10 @@ export function resorteGsap(nombre: NombreResorte) {
 
 /* -------------------------------- Scroll -------------------------------- */
 
-/** Lenis, solo con puntero fino. lerp 0.1 = constante de ~167 ms (antes 0.075, ~220 ms). Anclas: 1.9 s con easeInOutCubic. */
-export const SCROLL = { lerp: 0.1, anclas: 1.9 } as const;
+/** Lenis, solo con puntero fino. lerp 0.15 = constante de ~100 ms (antes 0.1, ~167 ms):
+ *  al soltar la rueda el scroll frena enseguida, sin el "movimiento de más" que
+ *  notaba Benjamin (7/10/2026). Anclas: 1.9 s con easeInOutCubic. */
+export const SCROLL = { lerp: 0.15, anclas: 1.9 } as const;
 
 /** Scrub de TODAS las escenas: directo. Un scrub numérico encima de Lenis era doble suavizado. */
 export const SCRUB = true as const;
