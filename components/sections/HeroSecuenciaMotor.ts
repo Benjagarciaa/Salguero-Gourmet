@@ -285,9 +285,9 @@ export function crearMotor({
     if (muerto || dormido || !ctx || !tam.w) return;
     const { pos, dir } = reloj.leer(performance.now());
     const x = tiempos.posicion(pos);
-    const n = elegirCuadro(x, dir, total, tiene, mostrado);
+    const n = elegirCuadro(pos, dir, tiempos, tiene, mostrado);
     // El <img> (el cuadro 0) queda más cerca de la posición: se ve él.
-    if (n < 0 || Math.abs(n - x) > x) {
+    if (n < 0 || Math.abs(tiempos.tiempo[n] - pos) > pos) {
       mostrar(false);
       return;
     }
@@ -343,8 +343,7 @@ export function crearMotor({
           }
           bitmaps.set(i, bitmap);
           const { pos, dir } = reloj.leer(performance.now());
-          const x = tiempos.posicion(pos);
-          if (elegirCuadro(x, dir, total, tiene, mostrado) !== mostrado) {
+          if (elegirCuadro(pos, dir, tiempos, tiene, mostrado) !== mostrado) {
             pedirDibujo();
           }
         },

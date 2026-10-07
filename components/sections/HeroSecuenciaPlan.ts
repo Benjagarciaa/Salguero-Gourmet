@@ -51,11 +51,13 @@ import type { HeroSecuenciaVersion } from "@/content/data";
  *   todos los archivos (0) o 1 de cada 1, 2, 4 u 8 cuadros del video, lo
  *   justo para mostrar hasta IMAGENES_EN_MOVIMIENTO distintas por segundo sin
  *   pasar de FRACCION_DECODIFICACION de lo que dan las decodificaciones
- *   medidas. Los intermedios son lo primero que se deja (también con la caja
- *   atrasada, ATRASO_INTERMEDIOS, y con la pantalla apurada, `crearRitmo`):
- *   sirven con scroll lento, donde cada cambio
- *   de cuadro se ve; rápido, la caja ya avanza varios por cuadro de
- *   pantalla. Decodificar todos a 3000 px/s (~240
+ *   medidas. Los intermedios son lo primero que se deja: van solo con la
+ *   velocidad corta (`Scroll.velCorta`, que sube antes que la media) por
+ *   debajo de su propio tope (FRACCION_INTERMEDIOS e IMAGENES_INTERMEDIOS,
+ *   más bajo que el de los cuadros del video), con la caja al día
+ *   (ATRASO_INTERMEDIOS) y con la pantalla holgada (`crearRitmo`): sirven con
+ *   scroll lento, donde cada cambio de cuadro se ve; rápido, la caja ya
+ *   avanza varios por cuadro de pantalla. Decodificar todos a 3000 px/s (~240
  *   cuadros por segundo) dejaba la cola siempre llena: lo que salía ya había
  *   quedado atrás y el trabajo le quitaba cuadros de pantalla al scroll. Lo
  *   de entre medio se pide y se decodifica cuando el scroll se frena. En
@@ -70,9 +72,11 @@ import type { HeroSecuenciaVersion } from "@/content/data";
  *       con la caja ya pasada (la velocidad medida va por detrás de la real
  *       al arrancar una deslizada).
  * - Prioridad para la decodificación y, en reposo, para la red: la distancia
- *   (en archivos) a donde va a estar la caja, con lo de adelante más barato
- *   en reposo (PESO_ADELANTE_REPOSO) y lo que quedó atrás más caro en
- *   movimiento (PESO_ATRAS_MOVIMIENTO).
+ *   (en cuadros del video: en archivos, el tramo x3 quedaba tres veces más
+ *   lejos de lo que está) a donde va a estar la caja, con lo de adelante más
+ *   barato en reposo (PESO_ADELANTE_REPOSO), lo que quedó atrás más caro en
+ *   movimiento (PESO_ATRAS_MOVIMIENTO) y los intermedios PENAL_INTERMEDIOS
+ *   cuadros más lejos de lo que están.
  * ========================================================================== */
 
 /** Pasada inicial: 1 de cada PASADA cuadros del video, más el último. */
@@ -85,6 +89,16 @@ export const REPOSO_MS = 150;
 /** Constante de tiempo (s) de la media móvil de la velocidad del scroll. */
 const VEL_TAU_S = 0.25;
 /**
+ * Constante de tiempo (s) de la velocidad corta (`Scroll.velCorta`): la de
+ * los últimos cuadros de pantalla, que sube en unos 3 cuadros de pantalla a
+ * 60 Hz donde la media de VEL_TAU_S tarda un cuarto de segundo. Decide si van
+ * los intermedios: al arrancar una rueda rápida o un fling, la media venía de
+ * 0 y se pedían y decodificaban intermedios de un tramo que la caja iba a
+ * pasar de largo (el tramo x3 de desktop arranca en el cuadro 10: con rueda
+ * rápida la caja se atrasaba ahí y recuperaba de golpe).
+ */
+const VEL_CORTA_TAU_S = 0.06;
+/**
  * Un cambio de más cuadros del video que esto en un solo paso es un salto (la
  * página ya scrolleada al primer dibujo, un ancla), no velocidad de scroll (a
  * 1000 px/s son ~1 cuadro por paso en desktop y ~2 en mobile).
@@ -96,6 +110,19 @@ const V_MOVIMIENTO = 20;
 const IMAGENES_EN_MOVIMIENTO = 120;
 /** Parte de la capacidad de decodificación medida que se usa en movimiento. */
 const FRACCION_DECODIFICACION = 0.66;
+/**
+ * Los intermedios van solo mientras todos los archivos (cuadros del video más
+ * intermedios) a la velocidad corta del scroll no pasan de esta parte de las
+ * decodificaciones medidas ni de IMAGENES_INTERMEDIOS por segundo (la red:
+ * cada archivo pesa ~45 KB). Con 25 ms por decodificación son 40 imágenes por
+ * segundo: unos 13 cuadros del video por segundo en el tramo x3 y 20 en los
+ * x2, el scroll lento donde cada cambio de cuadro se ve. Más rápido, la caja
+ * ya avanza varios archivos por cuadro de pantalla y los intermedios solo le
+ * quitaban decodificaciones a los cuadros del video (con scroll medio la caja
+ * iba un poco más atrasada que sin intermedios).
+ */
+const FRACCION_INTERMEDIOS = 0.33;
+const IMAGENES_INTERMEDIOS = 60;
 /**
  * En movimiento, con lo que está en el lienzo a estos archivos o más detrás de
  * la posición (la caja va atrasada), no se piden ni se decodifican
@@ -143,6 +170,17 @@ const BANDA = { min: PASADA, s: 0.2 };
 /** Pesos de la distancia en la prioridad (ver arriba). */
 const PESO_ADELANTE_REPOSO = 0.6;
 const PESO_ATRAS_MOVIMIENTO = 3;
+/**
+ * Cuadros del video que se suman a la prioridad de un intermedio: a igual
+ * distancia, los cuadros del video se decodifican y se conservan antes, y un
+ * intermedio lejano le deja el lugar a un cuadro del video más lejano todavía
+ * (los cercanos siguen saliendo temprano). Sin esto, en reposo los intermedios
+ * de alrededor llenaban la capacidad y lo decodificado cubría la mitad del
+ * recorrido (en un celular, 19 bitmaps son 9 cuadros del video con intermedios
+ * en vez de 19): al arrancar una deslizada faltaban los cuadros del video de
+ * adelante y la caja iba más atrasada que sin intermedios.
+ */
+const PENAL_INTERMEDIOS = 6;
 /** Tope de densidad de píxeles de los lienzos (cuadros y tapa). */
 export const DPR_MAX = 2;
 
@@ -254,18 +292,25 @@ export interface Scroll {
   pos: number;
   /** Cuadros del video por segundo, con signo (0 en reposo). */
   vel: number;
+  /**
+   * Cuadros del video por segundo de los últimos cuadros de pantalla (media
+   * de VEL_CORTA_TAU_S, con signo; 0 en reposo): reacciona antes que `vel`
+   * al arrancar y al frenar.
+   */
+  velCorta: number;
   /** Sentido del último cambio. */
   dir: 1 | -1;
 }
 
 /**
- * Lleva la posición (cuadros del video), la velocidad (media móvil de
- * VEL_TAU_S, que arranca de 0 después de un reposo y no cuenta los saltos) y
- * el sentido.
+ * Lleva la posición (cuadros del video), las velocidades (medias móviles de
+ * VEL_TAU_S y VEL_CORTA_TAU_S, que arrancan de 0 después de un reposo y no
+ * cuentan los saltos) y el sentido.
  */
 export function crearReloj() {
   let pos = 0;
   let vel = 0;
+  let velCorta = 0;
   let dir: 1 | -1 = 1;
   let t = -Infinity;
   return {
@@ -274,15 +319,24 @@ export function crearReloj() {
       const df = f - pos;
       if (dt * 1000 >= REPOSO_MS) {
         vel = 0;
+        velCorta = 0;
       } else if (dt > 0.002 && Math.abs(df) <= SALTO) {
-        vel += (df / dt - vel) * (1 - Math.exp(-dt / VEL_TAU_S));
+        const v = df / dt;
+        vel += (v - vel) * (1 - Math.exp(-dt / VEL_TAU_S));
+        velCorta += (v - velCorta) * (1 - Math.exp(-dt / VEL_CORTA_TAU_S));
       }
       if (df !== 0) dir = df > 0 ? 1 : -1;
       pos = f;
       t = ahora;
     },
     leer(ahora: number): Scroll {
-      return { pos, vel: ahora - t >= REPOSO_MS ? 0 : vel, dir };
+      const reposo = ahora - t >= REPOSO_MS;
+      return {
+        pos,
+        vel: reposo ? 0 : vel,
+        velCorta: reposo ? 0 : velCorta,
+        dir,
+      };
     },
   };
 }
@@ -473,40 +527,54 @@ export function demanda(
   const t = e.tiempos;
   const { total } = t;
   const v = Math.abs(s.vel);
+  /** La velocidad que manda para los intermedios: la que suba antes. */
+  const vCorta = Math.max(v, Math.abs(s.velCorta));
   const moviendo = v > V_MOVIMIENTO;
-  /** Posición (archivos) donde va a estar la caja dentro de `ms`. */
-  const posEn = (ms: number) => t.posicion(s.pos + (s.vel * ms) / 1000);
   const x = t.posicion(s.pos);
+  /** Decodificaciones medidas por segundo. */
+  const decodifica = (a.decodificaciones * 1000) / m.decodificarMs;
   const tope = Math.min(
     IMAGENES_EN_MOVIMIENTO,
-    ((a.decodificaciones * 1000) / m.decodificarMs) * FRACCION_DECODIFICACION,
+    decodifica * FRACCION_DECODIFICACION,
   );
-  // `paso`: lo justo para no pasar de `tope` imágenes por segundo. Todos los
-  // archivos son más imágenes por segundo que los cuadros del video donde hay
-  // intermedios: ahí la velocidad se cuenta en archivos. Tampoco van los
-  // intermedios con la pantalla apurada (`Medidas.holgada`) ni mientras la
-  // caja va atrasada (ATRASO_INTERMEDIOS): al arrancar o al dar la vuelta, la
-  // velocidad medida va por detrás de la real y decodificar todos los
-  // archivos dejaba la caja más atrás todavía.
+  const topeIntermedios = Math.min(
+    IMAGENES_INTERMEDIOS,
+    decodifica * FRACCION_INTERMEDIOS,
+  );
+  // `paso`: lo justo para no pasar de `tope` imágenes por segundo. Los
+  // intermedios (paso 0) van solo si todos los archivos, a la velocidad
+  // corta (la que ya subió al arrancar o al dar la vuelta, cuando la media
+  // todavía viene de 0), no pasan de su propio tope, con la pantalla holgada
+  // (`Medidas.holgada`) y con la caja al día (ATRASO_INTERMEDIOS): atrasada,
+  // decodificar todos los archivos la dejaba más atrás todavía.
   const atrasada =
     e.mostrado >= 0 && (x - e.mostrado) * s.dir >= ATRASO_INTERMEDIOS;
-  let paso = m.holgada ? 0 : 1;
-  if (moviendo && (atrasada || v * t.densidad(s.pos) > tope)) {
-    paso = 1;
+  let paso =
+    m.holgada && !atrasada && vCorta * t.densidad(s.pos) <= topeIntermedios
+      ? 0
+      : 1;
+  if (moviendo && v > tope) {
     while (paso < PASADA && v / paso > tope) paso *= 2;
   }
   // El último siempre (escalón PASADA): si no, la caja llegaba al final un
   // instante después que el scroll.
   const enGrilla = (i: number) => t.escalon[i] >= paso;
-  /** Prioridad de `i` con la caja en `ref` (archivos): menos, antes. */
+  /** Prioridad de `i` con la caja en `ref` (cuadro del video): menos, antes. */
   const prioridad = (i: number, ref: number) => {
-    const d = (i - ref) * s.dir;
-    if (d >= 0) return moviendo ? d : d * PESO_ADELANTE_REPOSO;
-    return moviendo ? -d * PESO_ATRAS_MOVIMIENTO : -d;
+    const d = (t.tiempo[i] - ref) * s.dir;
+    const base =
+      d >= 0
+        ? moviendo
+          ? d
+          : d * PESO_ADELANTE_REPOSO
+        : moviendo
+          ? -d * PESO_ATRAS_MOVIMIENTO
+          : -d;
+    return t.escalon[i] ? base : base + PENAL_INTERMEDIOS;
   };
   const acotar = (i: number) => Math.min(total - 1, Math.max(0, i));
   const porPrioridad = (adelantoMs: number) => {
-    const ref = posEn(adelantoMs);
+    const ref = s.pos + (s.vel * adelantoMs) / 1000;
     return (i: number, j: number) => prioridad(i, ref) - prioridad(j, ref);
   };
 
@@ -638,36 +706,48 @@ export function demanda(
 /* ---------- Qué cuadro se dibuja ---------- */
 
 /**
- * El archivo que se dibuja en la posición `pos` (archivos, con decimales): el
- * de la posición redondeada si `tiene` su bitmap; si no, el más cercano a ese
- * (en un empate, el de atrás según el sentido `dir`: la caja no se adelanta
- * para después volver) o el que ya está en el lienzo (`mostrado`) si queda
- * igual de cerca de la posición. -1 si no hay ninguno.
+ * El archivo que se dibuja en la posición `pos` (cuadro del video, con
+ * decimales): el de la posición redondeada (en archivos) si `tiene` su
+ * bitmap; si no, el decodificado más cercano EN TIEMPO del video (en un
+ * empate, el de atrás según el sentido `dir`: la caja no se adelanta para
+ * después volver) o el que ya está en el lienzo (`mostrado`) si queda igual
+ * de cerca. -1 si no hay ninguno. La distancia va en tiempo y no en archivos:
+ * con los intermedios sin decodificar (`paso` 1 o más), en archivos el
+ * intermedio de la posición empataba a los dos cuadros del video vecinos y
+ * ganaba el de atrás, la caja cambiaba de cuadro medio cuadro tarde (atraso
+ * de 0.75 en vez de 0.5 en los tramos x2).
  */
 export function elegirCuadro(
   pos: number,
   dir: 1 | -1,
-  total: number,
+  t: Tiempos,
   tiene: (i: number) => boolean,
   mostrado: number,
 ): number {
-  const c = Math.min(total - 1, Math.max(0, Math.round(pos)));
+  const { total } = t;
+  const c = Math.min(total - 1, Math.max(0, Math.round(t.posicion(pos))));
   if (tiene(c)) return c;
-  let n = -1;
-  for (let d = 1; d < total && n < 0; d++) {
-    const atras = c - d * dir;
-    const adelante = c + d * dir;
-    const fuera = (i: number) => i < 0 || i >= total;
-    if (fuera(atras) && fuera(adelante)) break;
-    if (!fuera(atras) && tiene(atras)) n = atras;
-    else if (!fuera(adelante) && tiene(adelante)) n = adelante;
+  const dist = (i: number) => Math.abs(t.tiempo[i] - pos);
+  let atras = -1;
+  for (let i = c - 1; i >= 0 && atras < 0; i--) if (tiene(i)) atras = i;
+  let adelante = -1;
+  for (let i = c + 1; i < total && adelante < 0; i++) {
+    if (tiene(i)) adelante = i;
+  }
+  let n: number;
+  if (atras < 0 || adelante < 0) {
+    n = atras < 0 ? adelante : atras;
+  } else {
+    const da = dist(atras);
+    const dd = dist(adelante);
+    n = da < dd ? atras : dd < da ? adelante : dir > 0 ? atras : adelante;
   }
   if (
     n >= 0 &&
     mostrado >= 0 &&
     mostrado !== n &&
     tiene(mostrado) &&
-    Math.abs(mostrado - pos) <= Math.abs(n - pos)
+    dist(mostrado) <= dist(n)
   ) {
     return mostrado;
   }
