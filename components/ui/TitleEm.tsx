@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { useInView, type UseInViewOptions } from "@/lib/motion";
+import { useInView } from "motion/react";
 import { cn } from "@/lib/cn";
 
 /**
@@ -11,21 +11,16 @@ import { cn } from "@/lib/cn";
  * texto en cada frame y contradecía la regla "solo transform/opacity"). Fail-safe:
  * sin JS queda el ámbar sólido; con reduced-motion el @media de globals.css no
  * activa el barrido.
- * `margin`: cuándo dispara (por defecto, al entrar al 90% de la pantalla). Los
- * titulares que se encienden por scroll lo disparan más arriba, cuando la palabra
- * ya está plena (si no, el brillo pasa mientras la palabra todavía está tenue).
  */
 export function TitleEm({
   children,
   className,
-  margin = "0px 0px -10% 0px",
 }: {
   children: React.ReactNode;
   className?: string;
-  margin?: UseInViewOptions["margin"];
 }) {
   const ref = useRef<HTMLElement>(null);
-  const inView = useInView(ref, { once: true, margin });
+  const inView = useInView(ref, { once: true, margin: "0px 0px -10% 0px" });
   return (
     <em
       ref={ref}

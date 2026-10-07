@@ -41,9 +41,7 @@ export function useQuote(): QuoteState {
  * Tarjeta-link: toda la placa de un servicio es clickeable y hace lo mismo que el
  * link "Cotizar X" (preselecciona el servicio y baja al #cotizar). Es `group` para
  * que el subrayado ámbar del <CotizarCue> se dibuje al hover/foco/tap de la tarjeta,
- * y al hover la placa "prende" con un glow ámbar (hover con la curva de resorte,
- * ease-resorte). El scroll suave al #cotizar lo hace Lenis con rueda o trackpad y
- * el smooth nativo en táctiles.
+ * y al hover la placa "prende" con un glow ámbar. Lenis maneja el scroll suave.
  */
 export function CotizarCard({
   servicio,
@@ -63,7 +61,7 @@ export function CotizarCard({
       onClick={() => setServicio(servicio)}
       aria-label={ariaLabel}
       className={cn(
-        "group flex h-full flex-col overflow-hidden rounded-lg border border-hairline bg-surface transition-[translate,border-color,box-shadow] duration-500 ease-resorte hover:-translate-y-1 hover:border-[rgba(233,188,79,0.6)] hover:shadow-[0_20px_44px_rgba(0,0,0,0.45),0_0_30px_rgba(233,188,79,0.35)]",
+        "group flex h-full flex-col overflow-hidden rounded-lg border border-hairline bg-surface transition-[transform,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:border-[rgba(233,188,79,0.6)] hover:shadow-[0_20px_44px_rgba(0,0,0,0.45),0_0_30px_rgba(233,188,79,0.35)]",
         className,
       )}
     >
@@ -82,7 +80,7 @@ export function CotizarCue({ children }: { children: React.ReactNode }) {
   return (
     <span
       aria-hidden
-      className="relative inline-block w-fit text-[15px] font-semibold text-crema after:absolute after:inset-x-0 after:-bottom-0.5 after:h-[1.5px] after:origin-left after:scale-x-0 after:bg-amarillo after:content-[''] after:transition-transform after:duration-500 after:ease-resorte group-hover:after:scale-x-100 group-focus-visible:after:scale-x-100 group-active:after:scale-x-100"
+      className="relative inline-block w-fit text-[15px] font-semibold text-crema after:absolute after:inset-x-0 after:-bottom-0.5 after:h-[1.5px] after:origin-left after:scale-x-0 after:bg-amarillo after:content-[''] after:transition-transform after:duration-200 after:ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:after:scale-x-100 group-focus-visible:after:scale-x-100 group-active:after:scale-x-100"
     >
       {children}
     </span>
