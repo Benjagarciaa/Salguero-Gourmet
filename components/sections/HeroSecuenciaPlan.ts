@@ -1,0 +1,467 @@
+import type { HeroSecuenciaVersion } from "@/content/data";
+
+/* ==========================================================================
+ * Plan de la secuencia de cuadros del hero: qué cuadro se dibuja, cuáles se
+ * bajan, cuáles se decodifican y cuáles se conservan decodificados. Funciones
+ * puras, sin DOM ni GSAP (se prueban con node); el motor
+ * (HeroSecuenciaMotor) las aplica.
+ *
+ * - Dibujo: siempre UN cuadro entero (`elegirCuadro`), el de la posición
+ *   redondeada si está decodificado; si no, el decodificado más cercano y, en
+ *   un empate, el que ya está en el lienzo. Nunca una mezcla de dos: un
+ *   fundido entre cuadros seguidos mostraba los productos que suben dos veces
+ *   (imagen doble). Lo continuo del movimiento lo pone el scroll suavizado
+ *   (Lenis) con el scrub directo.
+ * - Descargas (`demanda().bajar`): nada antes de que el motor lo pida
+ *   (`cargar`, después de `load`). Primero la pasada: 1 de cada PASADA
+ *   cuadros y el último (`indicesPasada`), así desde temprano hay cuadros
+ *   repartidos por todo el recorrido. Con los tramos habilitados (primer
+ *   scroll, en una red que da) se suman los cuadros alrededor de donde está la
+ *   persona. Mientras falta pedir parte de la pasada, el tramo pasa antes que
+ *   ella pero con un CUPO de descargas en vuelo (CUPO_TRAMO, contando las
+ *   suyas que ya están bajando): el resto de los lugares es de la pasada. Sin
+ *   el cupo, cada lugar que se liberaba lo tomaba el tramo (siempre había
+ *   cuadros nuevos alrededor de la persona) y con rueda rápida apenas cargar
+ *   la pasada salía recién con el scroll terminado: la caja se congelaba. Con
+ *   la pasada pedida, el tramo usa todas las descargas. Quien mira el
+ *   principio y se va no baja la secuencia entera; quien la recorre baja cada
+ *   cuadro una vez.
+ * - Decodificación (`demanda().decodificar` y `conservar`): solo una ventana
+ *   alrededor de donde va a estar la caja, más larga hacia donde se scrollea,
+ *   y nunca más bitmaps que los que entran en el presupuesto de memoria
+ *   (`Ajustes.capacidad`). Lo ya decodificado que todavía está cerca se
+ *   conserva mientras entre (ir y volver no decodifica de nuevo).
+ * - En movimiento rápido (más de V_MOVIMIENTO cuadros/s) se pide y se
+ *   decodifica lo que la caja va a mostrar cuando el cuadro esté listo (la
+ *   posición adelantada lo que tarda) y solo 1 de cada `paso` cuadros (1, 2, 4
+ *   u 8): lo justo para mostrar hasta IMAGENES_EN_MOVIMIENTO distintas por
+ *   segundo sin pasar de FRACCION_DECODIFICACION de lo que dan las
+ *   decodificaciones medidas. Decodificar todos a 3000 px/s (~240 cuadros por
+ *   segundo) dejaba la cola siempre llena: lo que salía ya había quedado atrás
+ *   y el trabajo le quitaba cuadros de pantalla al scroll. Lo de entre medio
+ *   se pide y se decodifica cuando el scroll se frena. En movimiento:
+ *     · no se decodifica nada nuevo que ya quedó atrás de la posición (lo
+ *       decodificado se conserva, por si vuelve): con la rueda rápida más de
+ *       la mitad de lo decodificado nunca se llegaba a ver;
+ *     · el tramo se pide por BANDAS desde donde va a estar la caja cuando el
+ *       cuadro llegue, y en cada banda de lo grueso a lo fino (1 de cada 8,
+ *       4, 2 y todos, hasta `paso`): pedir primero los cuadros seguidos más
+ *       cercanos traía cuadros que llegaban con la caja ya pasada (la
+ *       velocidad medida va por detrás de la real al arrancar una deslizada).
+ * - Prioridad para la decodificación y, en reposo, para la red: la distancia
+ *   a donde va a estar la caja, con lo de adelante más barato en reposo
+ *   (PESO_ADELANTE_REPOSO) y lo que quedó atrás más caro en movimiento
+ *   (PESO_ATRAS_MOVIMIENTO).
+ * ========================================================================== */
+
+/** Pasada inicial: 1 de cada PASADA cuadros, más el último. */
+export const PASADA = 8;
+/**
+ * Sin cambios de posición durante este tiempo (ms), el scroll está en reposo:
+ * la velocidad vuelve a 0 y se planifica sin `paso` (todos los cuadros).
+ */
+export const REPOSO_MS = 150;
+/** Constante de tiempo (s) de la media móvil de la velocidad del scroll. */
+const VEL_TAU_S = 0.25;
+/**
+ * Un cambio de más cuadros que esto en un solo paso es un salto (la página ya
+ * scrolleada al primer dibujo, un ancla), no velocidad de scroll (a 1000 px/s
+ * son ~1 cuadro por paso en desktop y ~2 en mobile).
+ */
+const SALTO = 24;
+/** Velocidad (cuadros/s) desde la que se planifica "en movimiento". */
+const V_MOVIMIENTO = 20;
+/** Tope de imágenes distintas por segundo en movimiento (define `paso`). */
+const IMAGENES_EN_MOVIMIENTO = 120;
+/** Parte de la capacidad de decodificación medida que se usa en movimiento. */
+const FRACCION_DECODIFICACION = 0.66;
+/**
+ * En movimiento, la ventana de decodificación se estira hacia adelante lo que
+ * se recorre en este tiempo (s).
+ */
+const ADELANTO_DECOD_S = 0.25;
+/**
+ * Distancia máxima (cuadros) del PRIMER dibujo a la posición: el lienzo
+ * reemplaza al <img> del servidor (el cuadro 0) en un solo corte limpio. Con
+ * la página ya scrolleada (F5 a mitad del hero) se espera al cuadro de la
+ * posición en vez de pasar por los de la pasada (0 → 8 → 80 → 77). Si no
+ * viene ninguno más cerca (red lenta: solo la pasada), va el más cercano.
+ */
+export const MAX_PRIMERO = 1.5;
+/**
+ * Latencia de una descarga (ms) sin medida, y tope de la medida para el
+ * adelanto de lo que se pide en movimiento.
+ */
+export const LATENCIA_INICIAL_MS = 120;
+export const LATENCIA_TOPE_MS = 400;
+/** Duración de una decodificación (ms) sin medida. */
+export const DECODIFICAR_INICIAL_MS = 25;
+/**
+ * Mientras falta pedir parte de la pasada, el tramo tiene a lo sumo esta
+ * fracción de las descargas en vuelo (6 de 12 en una compu, 3 de 6 en un
+ * celular); el resto es de la pasada.
+ */
+const CUPO_TRAMO = 0.5;
+/**
+ * Bandas del tramo en movimiento (ver arriba): `min` cuadros o lo que se
+ * recorre en `s` segundos, lo que sea más.
+ */
+const BANDA = { min: 8, s: 0.2 };
+/** Pesos de la distancia en la prioridad (ver arriba). */
+const PESO_ADELANTE_REPOSO = 0.6;
+const PESO_ATRAS_MOVIMIENTO = 3;
+/** Tope de densidad de píxeles de los lienzos (cuadros y tapa). */
+export const DPR_MAX = 2;
+
+/** Estado de red de un cuadro. */
+export const NADA = 0;
+export const BAJANDO = 1;
+export const BAJADO = 2;
+export const FALLO = 3;
+
+/** URL pública del cuadro `i` (0 = primero) de una versión. */
+export function urlDeCuadro(v: HeroSecuenciaVersion, i: number): string {
+  const n = String(v.primero + i).padStart(v.digitos, "0");
+  return `${v.carpeta}/${v.patron.replace("{n}", n)}`;
+}
+
+/** La pasada: 0, 8, 16... y el último (el estado final, disponible temprano). */
+export function indicesPasada(total: number): number[] {
+  const indices: number[] = [];
+  for (let i = 0; i < total; i += PASADA) indices.push(i);
+  if (indices[indices.length - 1] !== total - 1) indices.push(total - 1);
+  return indices;
+}
+
+/** ¿El cuadro `i` es de la pasada? */
+const esDePasada = (i: number, total: number) =>
+  i % PASADA === 0 || i === total - 1;
+
+/* ---------- Reloj: posición, velocidad y sentido del scroll ---------- */
+
+export interface Scroll {
+  /** Cuadro con decimales. */
+  pos: number;
+  /** Cuadros por segundo, con signo (0 en reposo). */
+  vel: number;
+  /** Sentido del último cambio. */
+  dir: 1 | -1;
+}
+
+/**
+ * Lleva la posición (cuadros), la velocidad (media móvil de VEL_TAU_S, que
+ * arranca de 0 después de un reposo y no cuenta los saltos) y el sentido.
+ */
+export function crearReloj() {
+  let pos = 0;
+  let vel = 0;
+  let dir: 1 | -1 = 1;
+  let t = -Infinity;
+  return {
+    marcar(f: number, ahora: number) {
+      const dt = (ahora - t) / 1000;
+      const df = f - pos;
+      if (dt * 1000 >= REPOSO_MS) {
+        vel = 0;
+      } else if (dt > 0.002 && Math.abs(df) <= SALTO) {
+        vel += (df / dt - vel) * (1 - Math.exp(-dt / VEL_TAU_S));
+      }
+      if (df !== 0) dir = df > 0 ? 1 : -1;
+      pos = f;
+      t = ahora;
+    },
+    leer(ahora: number): Scroll {
+      return { pos, vel: ahora - t >= REPOSO_MS ? 0 : vel, dir };
+    },
+  };
+}
+
+/* ---------- Ajustes por dispositivo ---------- */
+
+export interface Ajustes {
+  /** Descargas a la vez. */
+  descargas: number;
+  /** Decodificaciones a la vez (corren fuera del hilo principal). */
+  decodificaciones: number;
+  /** Bitmaps decodificados que entran en el presupuesto de memoria. */
+  capacidad: number;
+  /**
+   * Ventana de decodificación: tope de distancia (cuadros) hacia atrás y
+   * hacia adelante.
+   */
+  ventana: { atras: number; adelante: number };
+  /**
+   * Tramo de descarga: hacia atrás, y hacia adelante lo que sea más entre
+   * `adelanteMin` cuadros y lo que se recorre en `adelanteS` segundos a la
+   * velocidad actual (lo que todavía recorre la inercia de una deslizada).
+   */
+  tramo: { atras: number; adelanteMin: number; adelanteS: number };
+}
+
+/**
+ * Presupuesto de bitmaps (bytes): con puntero fino (compu) y táctil
+ * (celular, tablet).
+ */
+const PRESUPUESTO = { fino: 96e6, tactil: 40e6 };
+/** Decodificaciones a la vez (corren fuera del hilo principal). */
+const DECODIFICACIONES = 3;
+
+/**
+ * Ajustes del motor para el dispositivo:
+ * - descargas: 12 en desktop con puntero fino y h2/h3 (sin el tope de 6
+ *   conexiones de HTTP/1.1); 6 en el resto (en mobile manda la red y los
+ *   datos). Más a la vez en una compu con rueda rápida apenas entrar: con
+ *   solo la pasada, la caja iba "de a cuotas";
+ * - decodificaciones: DECODIFICACIONES en todos lados (más le quitaban
+ *   cuadros de pantalla al scroll en una PC de 6 núcleos). También en WebKit
+ *   (Safari y todo navegador de iPhone y iPad): con 1 o 2, en deslizadas
+ *   medias y rápidas la caja salteaba de a 2 a 8 cuadros y se atrasaba;
+ * - memoria: 96 MB con puntero fino (26 bitmaps de 720x1280) y 40 MB en
+ *   táctiles (19 de 540x960 en un celular; 10 de 720x1280 en una tablet con
+ *   la versión desktop). Cada bitmap es el cuadro entero: ancho x alto x 4.
+ *   WebKit recarga la pestaña si se queda sin memoria: ahí la capacidad
+ *   descuenta las decodificaciones en vuelo (salvo una), así el pico
+ *   (conservados + el mostrado + en vuelo) es de 21 bitmaps de 540x960
+ *   (~43 MB), igual que con una sola decodificación;
+ * - ventana: 8 cuadros hacia atrás y 20 hacia adelante en desktop, 4 y 12 en
+ *   mobile (la capacidad la recorta);
+ * - tramos: 4 hacia atrás; hacia adelante 40 cuadros o 1 s de recorrido en
+ *   desktop, 48 o 0.5 s en mobile (dos deslizadas en un celular bajaban el 86%
+ *   de la secuencia con 2 s; con 0.5 s, el 52%).
+ */
+export function ajustesPara({
+  desktop,
+  punteroFino,
+  webkit,
+  multiplexa,
+  version,
+}: {
+  /** Versión desktop de la escena (también en una tablet apaisada). */
+  desktop: boolean;
+  punteroFino: boolean;
+  /** Safari o cualquier navegador de iPhone y iPad (menos memoria). */
+  webkit: boolean;
+  /** La página llegó por h2 o h3. */
+  multiplexa: boolean;
+  version: Pick<HeroSecuenciaVersion, "ancho" | "alto">;
+}): Ajustes {
+  const fino = desktop && punteroFino;
+  const presupuesto = fino ? PRESUPUESTO.fino : PRESUPUESTO.tactil;
+  const entran = Math.floor(presupuesto / (version.ancho * version.alto * 4));
+  return {
+    descargas: fino && multiplexa ? 12 : 6,
+    decodificaciones: DECODIFICACIONES,
+    capacidad: Math.max(
+      4,
+      webkit ? entran - (DECODIFICACIONES - 1) : entran,
+    ),
+    ventana: desktop ? { atras: 8, adelante: 20 } : { atras: 4, adelante: 12 },
+    tramo: desktop
+      ? { atras: 4, adelanteMin: 40, adelanteS: 1 }
+      : { atras: 4, adelanteMin: 48, adelanteS: 0.5 },
+  };
+}
+
+/* ---------- Demanda: qué bajar, qué decodificar, qué conservar ---------- */
+
+export interface EstadoCuadros {
+  total: number;
+  /** Estado de red de cada cuadro (NADA, BAJANDO, BAJADO o FALLO). */
+  red: ArrayLike<number>;
+  /** ¿Hay bitmap del cuadro? */
+  decodificado(i: number): boolean;
+  /** ¿Se está decodificando? */
+  decodificando(i: number): boolean;
+  /** El cuadro que está en el lienzo (-1: ninguno). */
+  mostrado: number;
+  /** ¿Falta bajar algo de la pasada que se pidió? */
+  pasadaPendiente: boolean;
+}
+
+export interface Medidas {
+  latenciaMs: number;
+  decodificarMs: number;
+  /** Carga por tramos habilitada. */
+  tramos: boolean;
+}
+
+export interface Demanda {
+  /** Cuadros para bajar, en orden. */
+  bajar: number[];
+  /** Cuadros bajados para decodificar, en orden (todos dentro de `conservar`). */
+  decodificar: number[];
+  /**
+   * Los bitmaps que se quedan (los demás se liberan): a lo sumo `capacidad`
+   * más el mostrado.
+   */
+  conservar: Set<number>;
+  /** 1 de cada cuántos cuadros se piden y decodifican (1 en reposo o lento). */
+  paso: number;
+}
+
+/**
+ * Lo que el motor tiene que hacer ahora, para el scroll `s` y el estado `e`.
+ * Pura: el motor la vuelve a calcular cada vez que algo cambia (una vez por
+ * cuadro de pantalla como mucho).
+ */
+export function demanda(
+  s: Scroll,
+  e: EstadoCuadros,
+  a: Ajustes,
+  m: Medidas,
+): Demanda {
+  const { total } = e;
+  const v = Math.abs(s.vel);
+  const moviendo = v > V_MOVIMIENTO;
+  const tope = Math.min(
+    IMAGENES_EN_MOVIMIENTO,
+    ((a.decodificaciones * 1000) / m.decodificarMs) * FRACCION_DECODIFICACION,
+  );
+  let paso = 1;
+  while (moviendo && paso < PASADA && v / paso > tope) paso *= 2;
+  // El último siempre: si no, la caja llegaba al final un instante después
+  // que el scroll.
+  const enGrilla = (i: number) => i % paso === 0 || i === total - 1;
+  const prioridad = (i: number, adelantoMs: number) => {
+    const d = (i - (s.pos + (s.vel * adelantoMs) / 1000)) * s.dir;
+    if (d >= 0) return moviendo ? d : d * PESO_ADELANTE_REPOSO;
+    return moviendo ? -d * PESO_ATRAS_MOVIMIENTO : -d;
+  };
+  const acotar = (i: number) => Math.min(total - 1, Math.max(0, i));
+  const porPrioridad = (adelantoMs: number) => (x: number, y: number) =>
+    prioridad(x, adelantoMs) - prioridad(y, adelantoMs);
+
+  // 1 · Decodificación, alrededor de donde va a estar la caja cuando termine
+  // de decodificarse. Candidatos: lo ya decodificado (o decodificándose) a no
+  // más de `adelante` del centro, hacia los dos lados, y lo bajado de la
+  // grilla dentro de la ventana (en movimiento, desde la posición hacia
+  // adelante); los de mejor prioridad hasta la capacidad.
+  const tDecod = m.decodificarMs;
+  const centro = Math.round(s.pos + (s.vel * tDecod) / 1000);
+  const { atras } = a.ventana;
+  const adelante = moviendo
+    ? Math.max(a.ventana.adelante, Math.ceil(v * ADELANTO_DECOD_S))
+    : a.ventana.adelante;
+  const lo = acotar(s.dir > 0 ? centro - atras : centro - adelante);
+  const hi = acotar(s.dir > 0 ? centro + adelante : centro + atras);
+  const loConservar = acotar(Math.min(lo, centro - a.ventana.adelante));
+  const hiConservar = acotar(Math.max(hi, centro + a.ventana.adelante));
+  const candidatos: number[] = [];
+  for (let i = loConservar; i <= hiConservar; i++) {
+    const tiene = e.decodificado(i) || e.decodificando(i);
+    const nuevo =
+      i >= lo &&
+      i <= hi &&
+      e.red[i] === BAJADO &&
+      enGrilla(i) &&
+      (!moviendo || (i - s.pos) * s.dir > -0.5);
+    if (tiene || nuevo) candidatos.push(i);
+  }
+  candidatos.sort(porPrioridad(tDecod));
+  const elegidos = candidatos.slice(0, a.capacidad);
+  const conservar = new Set(elegidos);
+  if (e.mostrado >= 0) conservar.add(e.mostrado);
+  const decodificar = elegidos.filter(
+    (i) => !e.decodificado(i) && !e.decodificando(i),
+  );
+
+  // 2 · Red: el tramo (donde va a estar la caja cuando el cuadro llegue y se
+  // decodifique) y lo que falta de la pasada. Mientras falta pedir parte de
+  // la pasada, del tramo pasan primero solo los que entran en su cupo de
+  // descargas en vuelo (CUPO_TRAMO, descontadas las suyas que ya bajan),
+  // después la pasada y al final el resto del tramo.
+  const bajar: number[] = [];
+  const sumados = new Uint8Array(total);
+  const sumar = (i: number) => {
+    if (sumados[i] || e.red[i] !== NADA) return;
+    sumados[i] = 1;
+    bajar.push(i);
+  };
+  const pasada = e.pasadaPendiente
+    ? indicesPasada(total)
+        .filter((i) => e.red[i] === NADA)
+        .sort(porPrioridad(0))
+    : [];
+  if (m.tramos) {
+    const largo = Math.max(
+      a.tramo.adelanteMin,
+      Math.ceil(v * a.tramo.adelanteS),
+    );
+    const c = Math.round(s.pos);
+    const desde = acotar(s.dir > 0 ? c - a.tramo.atras : c - largo);
+    const hasta = acotar(s.dir > 0 ? c + largo : c + a.tramo.atras);
+    const tramo: number[] = [];
+    for (let i = desde; i <= hasta; i++) {
+      if (enGrilla(i) && e.red[i] === NADA) tramo.push(i);
+    }
+    if (moviendo) {
+      // Por bandas desde donde va a estar la caja cuando el cuadro llegue;
+      // en cada una, de lo grueso a lo fino. Lo de atrás de ese punto, al
+      // final (lo más cercano primero).
+      const llega = s.pos + (s.vel * (m.latenciaMs + m.decodificarMs)) / 1000;
+      const banda = Math.max(BANDA.min, Math.ceil(v * BANDA.s));
+      const fino = (i: number) =>
+        i % 8 === 0 ? 0 : i % 4 === 0 ? 1 : i % 2 === 0 ? 2 : 3;
+      const orden = (i: number) => {
+        const d = (i - llega) * s.dir;
+        if (d < 0) return total * 8 - d;
+        return Math.floor(d / banda) * 4 + fino(i) + d / total;
+      };
+      tramo.sort((x, y) => orden(x) - orden(y));
+    } else {
+      tramo.sort(porPrioridad(m.latenciaMs + m.decodificarMs));
+    }
+    let cupo = tramo.length;
+    if (pasada.length) {
+      cupo = Math.floor(a.descargas * CUPO_TRAMO);
+      for (let i = 0; i < total; i++) {
+        if (e.red[i] === BAJANDO && !esDePasada(i, total)) cupo--;
+      }
+    }
+    tramo.slice(0, Math.max(0, cupo)).forEach(sumar);
+    pasada.forEach(sumar);
+    tramo.forEach(sumar);
+  } else {
+    pasada.forEach(sumar);
+  }
+  return { bajar, decodificar, conservar, paso };
+}
+
+/* ---------- Qué cuadro se dibuja ---------- */
+
+/**
+ * El cuadro que se dibuja en la posición `pos`: el de la posición redondeada
+ * si `tiene` su bitmap; si no, el más cercano a ese (en un empate, el de atrás
+ * según el sentido `dir`: la caja no se adelanta para después volver) o el que
+ * ya está en el lienzo (`mostrado`) si queda igual de cerca de la posición.
+ * -1 si no hay ninguno.
+ */
+export function elegirCuadro(
+  pos: number,
+  dir: 1 | -1,
+  total: number,
+  tiene: (i: number) => boolean,
+  mostrado: number,
+): number {
+  const c = Math.min(total - 1, Math.max(0, Math.round(pos)));
+  if (tiene(c)) return c;
+  let n = -1;
+  for (let d = 1; d < total && n < 0; d++) {
+    const atras = c - d * dir;
+    const adelante = c + d * dir;
+    const fuera = (i: number) => i < 0 || i >= total;
+    if (fuera(atras) && fuera(adelante)) break;
+    if (!fuera(atras) && tiene(atras)) n = atras;
+    else if (!fuera(adelante) && tiene(adelante)) n = adelante;
+  }
+  if (
+    n >= 0 &&
+    mostrado >= 0 &&
+    mostrado !== n &&
+    tiene(mostrado) &&
+    Math.abs(mostrado - pos) <= Math.abs(n - pos)
+  ) {
+    return mostrado;
+  }
+  return n;
+}

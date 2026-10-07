@@ -1,7 +1,7 @@
 import { getImageProps } from "next/image";
 import { heroSecuencia } from "@/content/data";
 import { AHORRO_EN_LINEA, MQ_AHORRO } from "@/lib/video";
-import { urlDeCuadro } from "./HeroSecuenciaMotor";
+import { urlDeCuadro } from "./HeroSecuenciaPlan";
 
 /** Mismos cortes que el escenario del hero (HeroSecuencia y globals.css). */
 const MQ_MOBILE = "(max-width: 859.98px)";
@@ -68,8 +68,8 @@ export function posterDeAhorro(raiz: ParentNode) {
  * Los cuadros van TAL CUAL (unoptimized): ya son WebP livianos con alfa al
  * tamaño en que se ven (el primero pesa ~45KB en desktop y ~31KB en mobile) y
  * el optimizador los recomprimía distinto de lo que dibuja el canvas (saltaba
- * el brillo al pasar del <img> al canvas). Así el motor además adopta este
- * mismo archivo como cuadro 0.
+ * el brillo al pasar del <img> al canvas). Así el motor además toma este
+ * mismo archivo como cuadro 0, de la caché.
  *
  * El <img> elige UNA sola fuente según media queries:
  *   - ahorro de datos: el ÚLTIMO cuadro, sin la versión de alta densidad en
@@ -86,7 +86,8 @@ export function posterDeAhorro(raiz: ParentNode) {
  *     quieta, con las fichas sobre los productos);
  *   - con JS y movimiento: el PRIMER cuadro (la caja abierta y llena; con la
  *     tapa fija encima, ver HeroTapaFija, es la caja cerrada), que es lo que
- *     se ve hasta que el canvas dibuja (y queda debajo de él);
+ *     se ve hasta que el canvas dibuja (en ese cuadro se oculta; vuelve
+ *     mientras el motor duerme, con el hero ya pasado);
  *   - versión mobile o desktop según el ancho.
  * Con varias fuentes posibles no se usa `preload` (Next lo desaconseja en ese
  * caso): el <img> va eager y con fetchPriority alto, y está al principio del HTML.

@@ -194,9 +194,9 @@ export const hero = {
  *   - la TAPA (una capa aparte, dibujada en vivo): se levanta hacia la cámara,
  *     se desenfoca y se desvanece; su sombra se abre sobre la caja y la comida
  *     se ilumina al quedar descubierta (`tapa.tramo`);
- *   - el VIDEO (secuencia de cuadros, con fundido corto entre cuadro y cuadro):
- *     los 8 productos suben y se acomodan en tres filas sobre la caja vacía
- *     (`video.desde` a 1; quedan quietos cerca de 0.82).
+ *   - el VIDEO (secuencia de cuadros, uno entero por vez): los 8 productos
+ *     suben y se acomodan en tres filas sobre la caja vacía (`video.desde` a
+ *     1; quedan quietos cerca de 0.82).
  * Los textos aparecen por momentos, alternando los costados (desktop) o arriba
  * y abajo del marco (mobile):
  *   1. inicio (visible al cargar): kicker, título, bajada y botones; confianza.
@@ -331,8 +331,8 @@ export const heroSecuencia = {
       ancho: 720,
       alto: 1280,
     } as HeroSecuenciaVersion,
-    // Los mismos 172 cuadros que desktop, a 540x960 (con la mitad se veía
-    // doble imagen en el fundido entre cuadros mientras suben los productos).
+    // Los mismos 172 cuadros que desktop, a 540x960 (con la mitad, cada cambio
+    // de cuadro era el doble de largo mientras suben los productos).
     // caja-v7/mobile = caja-v6/mobile con la sombra oscura alrededor de los productos
     // bajada al 15 % (sobre el brillo cálido del fondo en celular se veía como mancha) y
     // el hueco de la mermelada relleno con el color real (caja-v3). Mismo peso.

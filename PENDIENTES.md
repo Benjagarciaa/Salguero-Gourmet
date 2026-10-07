@@ -9,6 +9,13 @@ ninguno). Lo ya resuelto está resumido al final, en "Historia".
 ## 1 · Falta hacer o confirmar
 
 ### Antes de pasar la beta (`dopamina`) a `main`
+- **Sacar el diagnóstico `?hsdiag`** (components/sections/HeroSecuenciaDiag.ts y su import en
+  HeroSecuencia.tsx) antes del relanzamiento: sirve para probar la caja en el iPhone con la
+  preview, no tiene que quedar en producción.
+- **Escalones de la caja sin el fundido** (7/10/2026): para sacar las imágenes dobles, la caja
+  dibuja un solo cuadro por vez. Que Benjamin mire en la preview la subida de los productos con
+  scroll lento (monitor y celular). Si los escalones molestan, la salida es generar más cuadros
+  intermedios desde la fuente (`_assets/archivo/`), no volver a mezclar dos cuadros.
 - **Prueba en dispositivos reales.** Benjamin la probó en su celular con wifi y anda bien
   (5/10/2026). Falta una prueba con datos móviles (4G) y, si su celular no es un iPhone,
   una en iPhone con Safari: entrar y salir de los pins del hero y de Reseñas con el dedo,

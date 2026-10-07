@@ -19,11 +19,14 @@ import {
 } from "@/lib/fisica";
 import { ahorroDeDatos } from "@/lib/video";
 import { despuesDeLoad } from "@/lib/pintado";
+import { crearMotor, type MotorSecuencia } from "./HeroSecuenciaMotor";
+import { ajustesPara } from "./HeroSecuenciaPlan";
 import {
-  crearMotor,
-  pasadasDeCarga,
-  type MotorSecuencia,
-} from "./HeroSecuenciaMotor";
+  multiplexa,
+  RED_LENTA_KBS,
+  redLenta,
+  tipoDeRed,
+} from "./HeroSecuenciaRed";
 import {
   crearTapa,
   type CapaTapa,
@@ -51,8 +54,9 @@ import {
  * <canvas> dibujan lo que corresponde al progreso:
  *   - la tapa (HeroSecuenciaTapa): se levanta hacia la cámara, se desenfoca y
  *     se desvanece, con su sombra sobre la caja; transformaciones continuas;
- *   - el video (HeroSecuenciaMotor): cuadros con un fundido corto entre uno y
- *     el siguiente, decodificados solo alrededor del actual.
+ *   - el video (HeroSecuenciaMotor, con el plan de HeroSecuenciaPlan): un
+ *     cuadro entero por vez (nunca una mezcla de dos, que se veía como imagen
+ *     doble), decodificados solo alrededor del actual.
  * El marco va centrado y a todo el alto útil; los textos aparecen por
  * momentos, todos en el MISMO timeline (ver heroSecuencia en content/data.ts):
  *   1. inicio (visible al cargar) · 2. horneado (centrado debajo de la caja,
@@ -103,52 +107,6 @@ import {
  * se ven llegar usan TRAMO (velocidad 0 al empezar y al terminar) y la deriva
  * de la salida, despegue (sin escalón de velocidad al soltarse el pin).
  */
-/**
- * Descarga de los cuadros: después de `load`, 1 de cada 8 (y el último); con
- * el primer scroll, por tramos (`seguir` del motor): solo los cercanos a donde
- * está la persona, hasta `HORIZONTE` cuadros hacia adelante (o lo que la
- * inercia todavía va a recorrer, si es más: TRAMO_SEGUNDOS en el motor). Quien
- * mira el principio y se va no baja la secuencia entera (celular, dos
- * deslizadas y quieto: 3.4 MB de cuadros en vez de los 6.6 de la secuencia).
- * Los tramos no esperan a que termine la pasada: arrancan apenas hay scroll en
- * una red que da (el tipo de red que dice el navegador o, si no lo dice, una
- * tanda medida) y, con el scroll en reposo, lo que la caja tiene que mostrar
- * ya pasa antes que el resto de la pasada (ver `siguiente` en el motor); con
- * el scroll en movimiento rápido, lo que la caja va a mostrar cuando llegue
- * cada cuadro (DESCARGAS, SEGUNDOS_EN_MOVIMIENTO). Con ahorro de datos no se
- * baja nada: versión quieta.
- */
-const PASADA_INICIAL = 8;
-const HORIZONTE = { desktop: 40, mobile: 48 };
-/**
- * Red lenta medida (KB/s): por debajo, la carga por tramos no arranca o se
- * corta (igual que con 2G/3G efectivos). Donde el navegador no dice el tipo de
- * red (iPhone) decide la primera tanda de la pasada, si la persona ya
- * scrolleó; en todos, la pasada entera al terminar. ~0.7 Mbps, el mismo corte
- * que usa Chrome para "3g": así también se respeta en iPhone, donde Safari no
- * expone navigator.connection (ni el ahorro de datos ni el tipo de red).
- */
-const RED_LENTA_KBS = 90;
-/**
- * Cuadros decodificados alrededor del actual (más hacia donde se scrollea).
- * Mobile: con el margen de liberación del motor quedan hasta 21 bitmaps de
- * 540x960 (unos 43 MB; antes 29, unos 60 MB): lo que más memoria pedía en un
- * iPhone, donde Safari recarga la pestaña si se queda sin memoria.
- */
-const VENTANA = {
-  desktop: { atras: 8, adelante: 20 },
-  mobile: { atras: 4, adelante: 12 },
-};
-/**
- * Scroll rápido apenas entrar (PC): con solo la pasada bajada (1 de cada 8),
- * la caja iba "de a cuotas". En desktop, con h2/h3 (`multiplexa`), más
- * descargas a la vez y, con el scroll en movimiento, 1 s de recorrido pedido
- * hacia adelante. En mobile, 6 a la vez (lo de siempre) y 0.5 s: ahí manda
- * la red y los datos. (Más decodificaciones a la vez, en cambio, le quitaban
- * cuadros de pantalla al scroll en una PC de 6 núcleos: quedan en 3.)
- */
-const DESCARGAS = { desktop: 12, mobile: 6 };
-const SEGUNDOS_EN_MOVIMIENTO = { desktop: 1, mobile: 0.5 };
 /** Entrada o salida de un momento (horneado, cifras), en progreso. */
 const FUNDIDO = 0.05;
 /** Entrada de una ficha, en progreso. */
@@ -193,6 +151,27 @@ const MARGEN = 10;
  * Servicios).
  */
 const APAGADO_SALIDA = { desde: 0.2, curva: "sine.in" };
+/** Salida (desktop): las fichas se apagan en esta parte del principio. */
+const FICHAS_SALIDA = 0.16;
+/**
+ * Salida: el encabezado de Servicios nunca recorre más de `fraccion` del
+ * hueco que lo separa del cierre al soltarse el pin. Se revisa de a `pasoPx`
+ * y, si llegaría, el atraso de la deriva se achica (x `recorte`, hasta
+ * `intentos` veces); si aun así llega, el fundido del cierre termina ahí y
+ * dura por lo menos `fundidoMinPx`.
+ */
+const CHOQUE = {
+  fraccion: 0.8,
+  pasoPx: 4,
+  recorte: 0.85,
+  intentos: 24,
+  fundidoMinPx: 8,
+};
+/**
+ * El botón del cierre deja de recibir clicks y foco con su fundido de salida
+ * en esta parte.
+ */
+const CIERRE_INACTIVO = 0.6;
 /** Cierre: aire (px) entre la caja y el cierre, y arriba de los productos.
  *  Mobile con 22 (antes 14): sin la bajada, el título quedaba pegado a la caja. */
 const AIRE_CIERRE = { desktop: 22, mobile: 22 };
@@ -212,39 +191,6 @@ type Condiciones = {
   mobile: boolean;
   reduce: boolean;
 };
-
-/**
- * Tipo de red efectivo que estima el navegador con lo que va midiendo
- * (Chromium: "slow-2g", "2g", "3g" o "4g"), o null donde no se expone
- * (Safari, Firefox).
- */
-function tipoDeRed(): string | null {
-  const nav = navigator as Navigator & {
-    connection?: { effectiveType?: string };
-  };
-  return nav.connection?.effectiveType ?? null;
-}
-
-/**
- * ¿Red lenta (2G o 3G efectivos)? Ahí la carga por tramos (lo que falta, hasta
- * ~6.5 MB en mobile) no se baja: el scrub usa el cuadro listo más cercano de
- * la pasada inicial. Donde no se sabe el tipo (iPhone) lo decide la velocidad
- * medida (RED_LENTA_KBS).
- */
-function redLenta(): boolean {
-  return ["slow-2g", "2g", "3g"].includes(tipoDeRed() ?? "");
-}
-
-/**
- * ¿La página llegó por h2 o h3? Sin el tope de 6 conexiones de HTTP/1.1, en
- * desktop la secuencia se baja con más pedidos a la vez (DESCARGAS).
- */
-function multiplexa(): boolean {
-  const nav = performance.getEntriesByType("navigation")[0] as
-    | PerformanceNavigationTiming
-    | undefined;
-  return ["h2", "h3"].includes(nav?.nextHopProtocol ?? "");
-}
 
 /**
  * ¿La red de seguridad CSS (hs-failsafe) ya mostró las capas antes de
@@ -389,7 +335,6 @@ export function HeroSecuencia({
         const tapaImg = q<HTMLImageElement>(".hs-tapa-img");
         const marco = q(".hs-marco");
         const encuadre = q(".hs-encuadre");
-        const poster = q<HTMLImageElement>(".hs-poster img");
         const imagen = q(".hs-imagen");
         const halo = q(".hs-halo");
         const aviso = q(".hs-aviso-in");
@@ -448,11 +393,15 @@ export function HeroSecuencia({
         // `estado` en armarEscena).
         let sucio = false;
         let rafSync = 0;
+        // El lienzo de la tapa entró con un fundido (data-hs-tapa="suave"): se
+        // corta apenas la tapa se mueve (ver alActualizar).
+        let tapaSuave = false;
         let cancelar = () => {};
         let quitarEspera = () => {};
         let quitarRefresh = () => {};
         let restaurarBotones = () => {};
         let quitarPreparacion = () => {};
+        let quitarDiag = () => {};
 
         // Desktop: escala inicial de la imagen (--hs-z en globals.css, que la
         // toma de heroSecuencia.acercamiento y la baja en pantallas angostas).
@@ -516,9 +465,6 @@ export function HeroSecuencia({
 
         // Pin + scrub: el timeline mueve la tapa, los cuadros y las capas.
         const armarEscena = (m: MotorSecuencia, pinEl: HTMLElement) => {
-          // El <img> de respaldo ya trae el primer cuadro: se usa como cuadro 0
-          // (no se baja dos veces).
-          if (poster) m.adoptar(0, poster);
           // Rendimiento: GSAP lee los transforms de todo lo que mueve en una
           // sola tanda, y las opacidades quedan en línea (prepararTransformes,
           // lib/gsap.ts). La capa de las fichas solo cambia de opacidad.
@@ -1077,7 +1023,7 @@ export function HeroSecuencia({
               aleja.fromTo(
                 capaFichas,
                 { opacity: 1 },
-                { opacity: 0, duration: 0.16, ease: "sine.in" },
+                { opacity: 0, duration: FICHAS_SALIDA, ease: "sine.in" },
                 0,
               );
             }
@@ -1161,14 +1107,14 @@ export function HeroSecuencia({
               let total = sal.deriva * largo;
               const g = geometria();
               if (g) {
-                const tope = 0.8 * Math.max(0, g.hueco);
-                for (let i = 0; i < 24 && total > 1; i++) {
+                const tope = CHOQUE.fraccion * Math.max(0, g.hueco);
+                for (let i = 0; i < CHOQUE.intentos && total > 1; i++) {
                   let maximo = -Infinity;
-                  for (let px = 0; px <= largo; px += 4) {
+                  for (let px = 0; px <= largo; px += CHOQUE.pasoPx) {
                     maximo = Math.max(maximo, acercamiento(px, total, g.brazo));
                   }
                   if (maximo <= tope) break;
-                  total *= 0.85;
+                  total *= CHOQUE.recorte;
                 }
               }
               derivaReal = Math.max(0.001, total / largo);
@@ -1202,8 +1148,11 @@ export function HeroSecuencia({
                 if (!(g.hueco > 0)) return 0;
                 const largo = tras();
                 const total = atraso();
-                for (let px = 0; px <= largo; px += 4) {
-                  if (acercamiento(px, total, g.brazo) >= 0.8 * g.hueco) {
+                for (let px = 0; px <= largo; px += CHOQUE.pasoPx) {
+                  if (
+                    acercamiento(px, total, g.brazo) >=
+                    CHOQUE.fraccion * g.hueco
+                  ) {
                     return px;
                   }
                 }
@@ -1216,7 +1165,7 @@ export function HeroSecuencia({
                 const px = choque();
                 const fin =
                   px === null ? finSalida() : Math.min(finSalida(), st.end + px);
-                return Math.max(inicioFundido() + 8, fin);
+                return Math.max(inicioFundido() + CHOQUE.fundidoMinPx, fin);
               };
               apagaCierre = gsap.fromTo(
                 m4Caja,
@@ -1239,8 +1188,8 @@ export function HeroSecuencia({
             // opacidad 0, el motor suelta sus bitmaps y achica el lienzo (en
             // un iPhone pesan justo cuando entra el video de Galería). Al
             // volver, una pantalla antes de que el marco se vuelva a ver, los
-            // decodifica de nuevo (los blobs quedaron). Dormido, la carga por
-            // tramos también espera.
+            // decodifica de nuevo (los blobs quedaron). Dormido, la pasada
+            // sigue bajando y la carga por tramos espera.
             ScrollTrigger.create({
               start: () => st.end + tras() + window.innerHeight,
               end: "max",
@@ -1277,7 +1226,9 @@ export function HeroSecuencia({
             const p = linea.progress();
             const a = p < salida.desde + dSalida / 2;
             // El cierre: desde que entra hasta que la salida lo apaga.
-            const b = cierreDentro() && (apagaCierre?.progress() ?? 0) < 0.6;
+            const b =
+              cierreDentro() &&
+              (apagaCierre?.progress() ?? 0) < CIERRE_INACTIVO;
             if (a !== ve1) {
               ve1 = a;
               activar(m1, botonesM1, a);
@@ -1293,6 +1244,12 @@ export function HeroSecuencia({
             sucio = false;
             m.irA(estado.cuadro);
             capa?.dibujar(estado.tapa);
+            // Con la tapa ya en movimiento, el fundido de entrada del lienzo
+            // mostraría dos tapas (la fija y la que sube): termina acá.
+            if (tapaSuave && estado.tapa > 0) {
+              tapaSuave = false;
+              root.dataset.hsTapa = "directo";
+            }
             sincronizar();
           };
           // Durante un refresh de ScrollTrigger (al cargar, con las fuentes,
@@ -1331,6 +1288,14 @@ export function HeroSecuencia({
           // refresh (conFunciones) y el resto tiene valores fijos.
           linea.render(0, true, true);
           alActualizar();
+          // ?hsdiag en la URL: el diagnóstico de la secuencia encima del hero,
+          // para probar en un teléfono (HeroSecuenciaDiag). Sin el parámetro
+          // ni se baja.
+          if (new URLSearchParams(location.search).has("hsdiag")) {
+            void import("./HeroSecuenciaDiag").then(({ montarDiag }) => {
+              if (vivo) quitarDiag = montarDiag(m, () => valores.cuadro);
+            });
+          }
           restaurarBotones = () => {
             [m1, m4].forEach((el) => el?.style.removeProperty("pointer-events"));
             [...botonesM1, ...botonesM4].forEach((b) =>
@@ -1338,33 +1303,34 @@ export function HeroSecuencia({
             );
           };
 
-          // Precarga después de `load` (no le compite al LCP). La tapa
-          // desenfocada y la pasada inicial van enseguida; al terminar (y con
-          // las fuentes listas, que cambian el alto del texto) se recalculan
-          // las posiciones del pin, solo si las fuentes todavía cargaban
-          // cuando se armó la escena (si no, ya se midió con las definitivas
-          // y ese refresh completo costaba ~250 ms de bloqueo en un celular de
-          // gama media sin cambiar nada). Los tramos esperan al primer scroll (quien
+          // Descarga de los cuadros (qué y en qué orden: HeroSecuenciaPlan),
+          // después de `load` (no le compite al LCP). La tapa desenfocada y la
+          // pasada van enseguida. Los tramos esperan al primer scroll (quien
           // no scrollea no baja la secuencia) y siguen a la persona; si ya
-          // scrolleó, arrancan con la pasada en curso (con el scroll en
-          // reposo, lo que la caja tiene que mostrar ya va primero: con
-          // deslizadas tempranas el cuadro exacto no espera la pasada
-          // entera). No arrancan en una red lenta:
-          // lo dice el tipo de red donde el navegador lo sabe (Chromium) y, si
-          // no (iPhone), la primera tanda medida; si la pasada entera termina
-          // lenta, se cortan. El scrub usa entonces el cuadro listo más
-          // cercano. Con ahorro de datos no se llega acá (versión quieta).
-          // Estado de las fuentes con la escena ya medida: el layout de sus
-          // triggers ya pidió todas las que usa la página (con `swap`, las que
-          // faltan quedan "loading").
+          // scrolleó, arrancan junto con la pasada. No arrancan en una red
+          // lenta: lo dice el tipo de red donde el navegador lo sabe
+          // (Chromium) y, si no (iPhone), la primera tanda medida; si la
+          // pasada entera termina lenta, se cortan. El scrub usa entonces el
+          // cuadro más cercano de la pasada. Con ahorro de datos no se llega
+          // acá (versión quieta).
+          // Al terminar la pasada (y con las fuentes listas, que cambian el
+          // alto del texto) se recalculan las posiciones del pin, solo si las
+          // fuentes todavía cargaban cuando se armó la escena (si no, ya se
+          // midió con las definitivas y ese refresh completo costaba ~250 ms
+          // de bloqueo en un celular de gama media sin cambiar nada). Estado
+          // de las fuentes con la escena ya medida: el layout de sus triggers
+          // ya pidió todas las que usa la página (con `swap`, las que faltan
+          // quedan "loading").
           const fuentesPendientes = document.fonts?.status === "loading";
           let medidaLenta = false;
           const cargarTodo = async () => {
             capa?.cargarDesenfocada(heroSecuencia.tapa.desenfocada);
-            const [primera = []] = pasadasDeCarga(version.cuadros, [
-              PASADA_INICIAL,
-            ]);
-            const pasada = m.cargar(primera);
+            // El motor arranca con la posición real (con la página ya
+            // scrolleada, F5 a mitad del hero, el timeline puede tener un
+            // render pendiente de dibujar): la pasada y los tramos se ordenan
+            // desde ahí y no desde el cuadro 0.
+            if (sucio && !refrescando) alActualizar();
+            const pasada = m.cargar();
             void seguirAlScrollear();
             await pasada;
             const kbs = m.velocidadRed();
@@ -1384,18 +1350,20 @@ export function HeroSecuencia({
           const seguirAlScrollear = async () => {
             if (redLenta()) return;
             // El primer scroll lo avisa ScrollTrigger (que ya escucha el
-            // scroll, también el de Lenis): sin listener propio.
-            await new Promise<void>((resolve) => {
-              if (window.scrollY > 0) return resolve();
-              const alScrollear = () => {
-                quitarEspera();
-                resolve();
-              };
-              ScrollTrigger.addEventListener("scrollStart", alScrollear);
-              quitarEspera = () =>
-                ScrollTrigger.removeEventListener("scrollStart", alScrollear);
-            });
-            if (!vivo) return;
+            // scroll, también el de Lenis): sin listener propio. Con la página
+            // ya scrolleada, enseguida: los tramos salen junto con la pasada.
+            if (window.scrollY <= 0) {
+              await new Promise<void>((resolve) => {
+                const alScrollear = () => {
+                  quitarEspera();
+                  resolve();
+                };
+                ScrollTrigger.addEventListener("scrollStart", alScrollear);
+                quitarEspera = () =>
+                  ScrollTrigger.removeEventListener("scrollStart", alScrollear);
+              });
+              if (!vivo) return;
+            }
             // Sin tipo de red, la primera tanda de la pasada (o la pasada
             // entera, si terminó antes del scroll) dice si la red da.
             if (tipoDeRed() === null) {
@@ -1403,9 +1371,7 @@ export function HeroSecuencia({
               if (kbs !== null && kbs < RED_LENTA_KBS) return;
             }
             if (!vivo || medidaLenta) return;
-            await m.seguir({
-              horizonte: desktop ? HORIZONTE.desktop : HORIZONTE.mobile,
-            });
+            m.seguir();
           };
           cancelar = despuesDeLoad(() => void cargarTodo());
         };
@@ -1438,18 +1404,24 @@ export function HeroSecuencia({
                 canvas,
                 version,
                 foco,
+                // Topes de red, decodificación y memoria. WebKit (Safari y
+                // todo navegador de iPhone y iPad) se reconoce por el vendor.
+                ajustes: ajustesPara({
+                  desktop,
+                  punteroFino: matchMedia("(pointer: fine)").matches,
+                  webkit: navigator.vendor.startsWith("Apple"),
+                  multiplexa: multiplexa(),
+                  version,
+                }),
                 escalaMax: desktop ? zoom : undefined,
-                ventana: desktop ? VENTANA.desktop : VENTANA.mobile,
-                concurrencia:
-                  desktop && multiplexa()
-                    ? DESCARGAS.desktop
-                    : DESCARGAS.mobile,
-                segundosEnMovimiento: desktop
-                  ? SEGUNDOS_EN_MOVIMIENTO.desktop
-                  : SEGUNDOS_EN_MOVIMIENTO.mobile,
-                // Desde el primer dibujo, el canvas tapa al <img> de respaldo.
-                alDibujar: () => {
-                  root.dataset.hsLienzo = "";
+                // Con su primer dibujo (al cargar y al despertar), el canvas
+                // reemplaza al <img> de respaldo en el mismo cuadro de
+                // pantalla; el <img> (el cuadro 0) vuelve al dormir, con el
+                // canvas vacío, o si queda más cerca de la posición que lo
+                // decodificado.
+                alLienzo: (aLaVista) => {
+                  if (aLaVista) root.dataset.hsLienzo = "";
+                  else delete root.dataset.hsLienzo;
                 },
               });
               motor = m;
@@ -1476,9 +1448,12 @@ export function HeroSecuencia({
                   transformDe,
                   tapa: tapaImg,
                   datos: heroSecuencia.tapa,
-                  // El lienzo de la tapa reemplaza a la tapa fija del servidor.
-                  alDibujar: () => {
-                    root.dataset.hsTapa = "";
+                  // El lienzo de la tapa reemplaza a la tapa fija del servidor:
+                  // con un fundido corto si la tapa sigue apoyada (entra su
+                  // sombra), en el mismo cuadro si ya se levantó.
+                  alDibujar: (u) => {
+                    tapaSuave = u <= 0;
+                    root.dataset.hsTapa = tapaSuave ? "suave" : "directo";
                   },
                 });
               }
@@ -1496,6 +1471,7 @@ export function HeroSecuencia({
           cancelar();
           quitarEspera();
           quitarRefresh();
+          quitarDiag();
           restaurarBotones();
           motor?.destruir();
           motor = null;
@@ -1520,6 +1496,7 @@ export function HeroSecuencia({
           cancelar();
           quitarEspera();
           quitarRefresh();
+          quitarDiag();
           restaurarBotones();
           motor?.destruir();
           capa?.destruir();

@@ -582,24 +582,27 @@ input[type="number"].no-spin::-webkit-inner-spin-button {
   object-position: var(--hs-foco, 50% 50%);
 }
 /* El canvas es decorativo y sin JS no tiene nada: aparece recién con su primer
-   dibujo (data-hs-lienzo) y ahí tapa al <img> de respaldo con un fundido corto
-   (es el mismo cuadro). El <img> se oculta cuando termina el fundido. */
+   dibujo (data-hs-lienzo) y en ese mismo cuadro de pantalla reemplaza al <img>
+   de respaldo, sin transición. Un fundido entre los dos era una doble imagen
+   si el primer cuadro dibujado no era el del <img> (la página ya scrolleada).
+   Con el hero ya pasado el motor duerme, el canvas queda vacío y vuelve el
+   <img> hasta el primer dibujo al despertar. */
 .hs-canvas {
-  opacity: 0;
-  transition: opacity 0.35s ease-out;
+  visibility: hidden;
 }
 .hs[data-hs-lienzo] .hs-canvas {
-  opacity: 1;
+  visibility: visible;
 }
 .hs[data-hs-lienzo] .hs-poster {
   visibility: hidden;
-  transition: visibility 0s linear 0.35s;
 }
 
 /* Tapa fija (HeroTapaFija): sobre el primer cuadro, la caja cerrada desde la
    primera pintura (posición inline, en % del cuadro). Cuando el lienzo de la
-   tapa dibuja, este aparece encima con un fundido corto (es la misma tapa;
-   solo suma su sombra) y la fija se oculta al terminar. */
+   tapa dibuja, la reemplaza (data-hs-tapa): con la tapa todavía apoyada
+   ("suave") aparece encima con un fundido corto (es la misma tapa; solo suma su
+   sombra) y la fija se oculta al terminar; con la tapa ya levantada, o apenas
+   se mueve durante el fundido ("directo"), el cambio es en el mismo cuadro. */
 .hs-tapa-img {
   position: absolute;
   display: block;
@@ -608,6 +611,8 @@ input[type="number"].no-spin::-webkit-inner-spin-button {
 }
 .hs[data-hs-tapa] .hs-tapa-img {
   visibility: hidden;
+}
+.hs[data-hs-tapa="suave"] .hs-tapa-img {
   transition: visibility 0s linear 0.35s;
 }
 .hs-tapa-lienzo {
@@ -619,10 +624,12 @@ input[type="number"].no-spin::-webkit-inner-spin-button {
   height: 100%;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.35s ease-out;
 }
 .hs[data-hs-tapa] .hs-tapa-lienzo {
   opacity: 1;
+}
+.hs[data-hs-tapa="suave"] .hs-tapa-lienzo {
+  transition: opacity 0.35s ease-out;
 }
 
 /* Halo: un foco cálido MUY sutil, redondo y centrado en la caja (nunca una

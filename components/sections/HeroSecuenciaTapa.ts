@@ -1,13 +1,16 @@
+import { DPR_MAX } from "./HeroSecuenciaPlan";
+
 /* ==========================================================================
  * Tapa de la caja: una capa aparte, dibujada en vivo (sin React y sin GSAP).
  *
- * El cuadro 1 del video es la caja abierta y llena; con la tapa encima es la
- * caja cerrada. La apertura no son cuadros: este canvas (encima del marco, a
- * todo el ancho del escenario, así la tapa puede salirse del marco) dibuja la
- * tapa con transformaciones continuas según el progreso `u` (0 a 1):
+ * El primer cuadro del video (índice 0, f001.webp) es la caja abierta y
+ * llena; con la tapa encima es la caja cerrada. La apertura no son cuadros:
+ * este canvas (encima del marco, a todo el ancho del escenario, así la tapa
+ * puede salirse del marco) dibuja la tapa con transformaciones continuas según
+ * el progreso `u` (0 a 1; los números, en COREOGRAFIA):
  *   - se levanta hacia la cámara (escala 1 a `escala`, curva sine.inOut: la
  *     más pareja, sin un pico de velocidad a mitad de camino), sube hasta
- *     salir de la caja (SUBE: a u = 0.7 su borde de abajo ya pasó el borde de
+ *     salir de la caja (a u = 0.7 su borde de abajo ya pasó el borde de
  *     arriba de la caja) y se inclina apenas. Se va como un objeto opaco que
  *     se levanta, no disolviéndose sobre la comida (se leía como un velo
  *     lechoso encima de los productos, una doble exposición);
@@ -30,15 +33,49 @@
  * ni composición el resto del recorrido).
  * ========================================================================== */
 
-const DPR_MAX = 2;
 /**
- * Cuánto sube la tapa (en altos del cuadro) al final de su tramo, con la
- * subida en suave(0.15, 1, u). Con la tapa en 34.3% a 70% del cuadro y la
- * escala final de 2.05: a u = 0.7 (donde empieza a apagarse) su borde de
- * abajo queda sobre el borde de arriba de la caja (34.5%), así nunca se apaga
- * encima de la comida.
+ * Coreografía de la tapa según el progreso `u` de su tramo (0 a 1). Los
+ * tramos [desde, hasta] se recorren con `suave` (smoothstep); la escala y el
+ * giro, con sineInOut.
  */
-const SUBE = 0.72;
+const COREOGRAFIA = {
+  /**
+   * Cuánto sube (en altos del cuadro) al final de su tramo, en el tramo
+   * `subida` (antes, se acerca casi en su lugar mientras los botones del
+   * inicio terminan de irse). Con la tapa en 34.3% a 70% del cuadro y la
+   * escala final de 2.05: a u = 0.7 (donde empieza a apagarse) su borde de
+   * abajo queda sobre el borde de arriba de la caja (34.5%), así nunca se
+   * apaga encima de la comida.
+   */
+  sube: 0.72,
+  subida: [0.15, 1],
+  /** Inclinación final (grados). */
+  giro: -3.5,
+  /** Opaca mientras se levanta sobre la caja; se apaga en este tramo. */
+  apagado: [0.7, 1],
+  /** Cruce de nítida a desenfocada. */
+  desenfoque: [0.25, 0.8],
+  /** Sin la desenfocada todavía, la nítida se desvanece en este tramo. */
+  sinDesenfocada: [0.45, 0.9],
+  /**
+   * Sombra sobre la caja: `fuerza` con la tapa apoyada (la comida arranca
+   * apenas en sombra), que se apaga en `apagado`; mientras tanto crece
+   * (`crece`, fracción), se corre hacia abajo a la derecha (`corre`, fracción
+   * del ancho y del alto de la tapa) y pasa de la nítida (`cerca`) a la difusa
+   * (`lejos`, desenfoques relativos al lado de la forma) en `mezcla`.
+   */
+  sombra: {
+    fuerza: 0.34,
+    apagado: [0, 0.72],
+    crece: 0.32,
+    corre: { x: 0.035, y: 0.08 },
+    mezcla: [0, 0.45],
+    cerca: 0.05,
+    lejos: 0.32,
+  },
+} as const;
+/** Por debajo de esta opacidad la tapa y la sombra no se dibujan. */
+const ALFA_MIN = { tapa: 0.002, sombra: 0.003 };
 const GRADOS = Math.PI / 180;
 
 /** Datos de la tapa (heroSecuencia.tapa). */
@@ -79,6 +116,7 @@ const suave = (a: number, b: number, x: number) => {
   return t * t * (3 - 2 * t);
 };
 const sineInOut = (t: number) => -(Math.cos(Math.PI * t) - 1) / 2;
+const tramo = ([a, b]: readonly [number, number], u: number) => suave(a, b, u);
 
 /**
  * Sombra pre-renderizada: un rectángulo de puntas redondeadas (la huella de la
@@ -140,12 +178,16 @@ export function crearTapa({
   /** La tapa nítida (el <img> del servidor, ya en la página). */
   tapa: HTMLImageElement;
   datos: DatosTapa;
-  /** Se llama una vez, después del primer dibujo. */
-  alDibujar?: () => void;
+  /**
+   * Se llama una vez, después del primer dibujo, con su progreso `u` (quien
+   * llama decide si el lienzo reemplaza a la tapa fija con un fundido o en el
+   * mismo cuadro).
+   */
+  alDibujar?: (u: number) => void;
 }): CapaTapa {
   const ctx = canvas.getContext("2d");
-  const sombraCerca = crearSombra(0.05);
-  const sombraLejos = crearSombra(0.32);
+  const sombraCerca = crearSombra(COREOGRAFIA.sombra.cerca);
+  const sombraLejos = crearSombra(COREOGRAFIA.sombra.lejos);
   /** La desenfocada ya decodificada (ImageBitmap donde se puede). */
   let desenfocada: HTMLImageElement | ImageBitmap | null = null;
   let lista = false;
@@ -262,10 +304,10 @@ export function crearTapa({
   };
 
   /** Primer dibujo: el lienzo reemplaza a la tapa fija del servidor. */
-  const avisar = () => {
+  const avisar = (u: number) => {
     if (avisado) return;
     avisado = true;
-    alDibujar?.();
+    alDibujar?.(u);
   };
 
   const pintar = (u: number) => {
@@ -277,7 +319,7 @@ export function crearTapa({
       // esto, si el primer dibujo llegaba con la tapa ya pasada (la persona
       // scrolleó antes de que la tapa estuviera lista), la tapa fija quedaba
       // cerrada encima de la caja abierta.
-      avisar();
+      avisar(u);
       return;
     }
     mostrar();
@@ -303,24 +345,25 @@ export function crearTapa({
     // La tapa: hacia la cámara, un poco hacia arriba y apenas inclinada.
     // Se dibuja primero (sobre el lienzo vacío, "lighter" suma exacto) y la
     // sombra va después, por debajo (destination-over).
+    const C = COREOGRAFIA;
     const t = sineInOut(u);
     const s = 1 + (escala - 1) * t;
-    // Primero se acerca casi en su lugar (los botones del inicio terminan de
-    // irse arriba) y después sube, sin escalón de velocidad.
-    const sube = -SUBE * R.h * suave(0.15, 1, u);
-    const giro = -3.5 * GRADOS * sineInOut(u);
-    // Opaca mientras se levanta sobre la caja; se apaga ya afuera.
-    const opacidad = 1 - suave(0.7, 1, u);
-    const desenfoque = desenfocada ? suave(0.25, 0.8, u) : 0;
-    // Sin la desenfocada todavía, la nítida se desvanece un poco antes.
-    const nitida = desenfocada ? 1 - desenfoque : 1 - suave(0.45, 0.9, u);
-    if (opacidad > 0.002) {
+    // Primero se acerca casi en su lugar y después sube, sin escalón de
+    // velocidad.
+    const sube = -C.sube * R.h * tramo(C.subida, u);
+    const giro = C.giro * GRADOS * t;
+    const opacidad = 1 - tramo(C.apagado, u);
+    const desenfoque = desenfocada ? tramo(C.desenfoque, u) : 0;
+    const nitida = desenfocada
+      ? 1 - desenfoque
+      : 1 - tramo(C.sinDesenfocada, u);
+    if (opacidad > ALFA_MIN.tapa) {
       ctx.save();
       ctx.translate(cx, cy + sube);
       ctx.rotate(giro);
       ctx.scale(s, s);
       ctx.globalCompositeOperation = "lighter";
-      if (desenfocada && desenfoque > 0.002) {
+      if (desenfocada && desenfoque > ALFA_MIN.tapa) {
         const mx = (margen / ancho) * lw;
         const my = (margen / alto) * lh;
         ctx.globalAlpha = opacidad * desenfoque;
@@ -332,26 +375,27 @@ export function crearTapa({
           lh + 2 * my,
         );
       }
-      if (nitida > 0.002) {
+      if (nitida > ALFA_MIN.tapa) {
         ctx.globalAlpha = opacidad * nitida;
         ctx.drawImage(tapa, -lw / 2, -lh / 2, lw, lh);
       }
       ctx.restore();
     }
 
-    // Sombra sobre la caja: nítida y apenas oscura con la tapa apoyada (la
-    // comida arranca apenas en sombra), se abre, se corre hacia abajo a la
-    // derecha y se apaga mientras sube (la comida se ilumina). Con la misma
-    // curva que la tapa (sineInOut): arranca con velocidad 0, sin escalón.
-    const e = sineInOut(u);
-    const fuerza = 0.34 * (1 - suave(0, 0.72, u));
-    if (fuerza > 0.003) {
-      const escS = 1 + 0.32 * e;
+    // Sombra sobre la caja: nítida y apenas oscura con la tapa apoyada, se
+    // abre, se corre y se apaga mientras sube (la comida se ilumina). Con la
+    // misma curva que la tapa (sineInOut): arranca con velocidad 0, sin
+    // escalón.
+    const S = C.sombra;
+    const fuerza = S.fuerza * (1 - tramo(S.apagado, u));
+    if (fuerza > ALFA_MIN.sombra) {
+      const escS = 1 + S.crece * t;
+      // El sprite tiene la forma en su mitad: se dibuja al doble.
       const sw = lw * escS * 2;
       const sh = lh * escS * 2;
-      const sx = cx + 0.035 * lw * e - sw / 2;
-      const sy = cy + 0.08 * lh * e - sh / 2;
-      const mezcla = suave(0, 0.45, u);
+      const sx = cx + S.corre.x * lw * t - sw / 2;
+      const sy = cy + S.corre.y * lh * t - sh / 2;
+      const mezcla = tramo(S.mezcla, u);
       ctx.globalCompositeOperation = "destination-over";
       ctx.globalAlpha = fuerza * (1 - mezcla);
       ctx.drawImage(sombraCerca, sx, sy, sw, sh);
@@ -360,7 +404,7 @@ export function crearTapa({
     }
     ctx.globalCompositeOperation = "source-over";
     ctx.globalAlpha = 1;
-    avisar();
+    avisar(u);
   };
 
   let pendiente = -1;
