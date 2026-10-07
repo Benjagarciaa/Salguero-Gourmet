@@ -68,6 +68,10 @@ export const metadata: Metadata = {
   },
   description: site.description,
   applicationName: site.name,
+  // La página ya está en español. Sin esto, el traductor de Chrome (sobre todo
+  // en iPhone) la "traducía del inglés" y, al reescribir los textos que
+  // animan React y GSAP, rompía el hero o hacía caer la pestaña.
+  other: { google: "notranslate" },
   alternates: { canonical: "/" },
   verification: {
     google: "qMlEPcAri2Kn8moKzbP_hu4ulnQR_VHGWnLxLIO9Ong",
@@ -99,6 +103,7 @@ export default function RootLayout({
   return (
     <html
       lang="es"
+      translate="no"
       className={`${playfair.variable} ${dmSans.variable} ${jetbrains.variable}`}
     >
       <body>
