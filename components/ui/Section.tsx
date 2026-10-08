@@ -18,28 +18,26 @@ export function Container({
 /**
  * Sección estándar: padding vertical 76px + Container interno.
  * `flush`: quita el padding-top (para secciones encadenadas, como en el mockup).
- * `pbClassName`: reemplaza el padding-bottom de 76px (cn no fusiona clases:
- * pisarlo por className dejaría las dos).
  */
 export function Section({
   id,
   flush,
   className,
-  pbClassName = "pb-[76px]",
+  containerClassName,
   children,
 }: {
   id?: string;
   flush?: boolean;
   className?: string;
-  pbClassName?: string;
+  containerClassName?: string;
   children: React.ReactNode;
 }) {
   return (
     <section
       id={id}
-      className={cn(flush ? "" : "pt-[76px]", pbClassName, className)}
+      className={cn(flush ? "pb-[76px]" : "py-[76px]", className)}
     >
-      <Container>{children}</Container>
+      <Container className={containerClassName}>{children}</Container>
     </section>
   );
 }

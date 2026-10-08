@@ -18,39 +18,6 @@
   --font-mono: var(--font-jetbrains), ui-monospace, monospace;
 }
 
-/* Física del sitio en CSS: los resortes `hover` y `panel` de lib/fisica.ts
-   (RESORTE) muestreados cada 20 ms como linear() (con un script local, fuera
-   del repo). `static`: Tailwind emite SIEMPRE
-   las variables en :root (las usan también los .module.css) y genera las
-   clases ease-resorte y ease-resorte-lento.
-   - ease-resorte = hover {380, 34}, con 500 ms (duration-500 ease-resorte).
-   - ease-resorte-lento = panel {230, 30}, con 650 ms
-     (duration-[650ms] ease-resorte-lento).
-   En un .module.css: transition: transform var(--duracion-resorte) var(--ease-resorte). */
-@theme static {
-  --ease-resorte: linear(0, 0.061, 0.194, 0.349, 0.498, 0.629, 0.735, 0.818, 0.88, 0.924, 0.955, 0.975, 0.988, 0.996, 1.001, 1.003, 1.004, 1.004, 1.003, 1.003, 1.002, 1.002, 1.001, 1.001, 1.001, 1);
-  --ease-resorte-lento: linear(0, 0.037, 0.121, 0.227, 0.337, 0.443, 0.538, 0.622, 0.694, 0.754, 0.804, 0.845, 0.877, 0.904, 0.925, 0.942, 0.955, 0.965, 0.973, 0.979, 0.984, 0.988, 0.991, 0.993, 0.995, 0.996, 0.997, 0.998, 0.998, 0.999, 0.999, 0.999, 0.999, 1);
-}
-
-/* Respaldo métrico de Playfair y JetBrains Mono mientras cargan (app/fonts,
-   layout.tsx): los mismos valores que generaba next/font/google. */
-@font-face {
-  font-family: "Playfair Display Fallback";
-  src: local("Times New Roman");
-  ascent-override: 97.25%;
-  descent-override: 22.56%;
-  line-gap-override: 0%;
-  size-adjust: 111.26%;
-}
-@font-face {
-  font-family: "JetBrains Mono Fallback";
-  src: local("Arial");
-  ascent-override: 75.79%;
-  descent-override: 22.29%;
-  line-gap-override: 0%;
-  size-adjust: 134.59%;
-}
-
 /* ==========================================================================
    Base
    ========================================================================== */
@@ -58,12 +25,6 @@
   color-scheme: dark;
   /* Color base en el <html>: el fondo ambiental vive por encima, el contenido arriba. */
   background: var(--color-bg);
-  /* Alto del Nav sticky (components/chrome/Nav.tsx). Lo usan el offset de las
-     anclas y el hero con secuencia (que además mide el nav real al fijarse). */
-  --nav-h: 70px;
-  /* Duraciones de los tokens de resorte (ver @theme static arriba). */
-  --duracion-resorte: 500ms;
-  --duracion-resorte-lento: 650ms;
 }
 
 body {
@@ -77,8 +38,8 @@ body {
 }
 
 /* Ocultar la scrollbar del navegador SIN perder el scroll (decisión de diseño:
-   el smooth scroll de Lenis + la cuchara de progreso del borde derecho
-   (ScrollProgress) alcanzan como feedback de posición). Cubre los tres motores. */
+   el smooth scroll de Lenis + la barra de progreso ámbar del top alcanzan como
+   feedback de posición). Cubre los tres motores. */
 html {
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* Edge / IE legacy */
@@ -99,14 +60,9 @@ img {
   max-width: 100%;
 }
 
-/* En la capa base (como el preflight de Tailwind): sin capa le ganaba a las
-   utilidades de color, y la pill amarilla quedaba con texto crema (1.55:1) en
-   vez de #241C15. */
-@layer base {
-  a {
-    color: inherit;
-    text-decoration: none;
-  }
+a {
+  color: inherit;
+  text-decoration: none;
 }
 
 /* Foco visible amarillo (regla de accesibilidad del proyecto). */
@@ -121,27 +77,8 @@ img {
   color: var(--color-bg);
 }
 
-/* Un Reveal que recibe foco antes de su entrada (Tab a un botón que quedó en
-   el borde de abajo, todavía sin entrar) se ve entero: el foco nunca cae en
-   algo invisible. !important de la hoja le gana al estilo en línea de motion
-   y a su animación. Después de la entrada no cambia nada (ya está así). */
-[data-reveal]:focus-within {
-  opacity: 1 !important;
-  transform: none !important;
-}
-
-/* Scroll suave de las anclas:
-   - Con puntero fino (rueda, trackpad) lo hace Lenis por JS (SmoothScroll).
-   - En táctiles no hay Lenis (momentum nativo): las anclas del nav y de
-     "Cotizar X" usan el smooth nativo, que respeta scroll-margin-top.
-     ScrollTrigger lo apaga solo durante sus scrolls programáticos (refresh).
-   - Con reduced-motion no hay Lenis ni smooth, y neutralizamos
-     animaciones/transiciones. */
-@media (hover: none) and (pointer: coarse) and (prefers-reduced-motion: no-preference) {
-  html {
-    scroll-behavior: smooth;
-  }
-}
+/* No usamos scroll-behavior:smooth de CSS: lo maneja Lenis por JS.
+   Con reduced-motion, Lenis se desactiva y neutralizamos animaciones/transiciones. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -150,24 +87,6 @@ img {
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
-  }
-}
-
-/* ==========================================================================
-   Maquetado diferido (rendimiento en celular, lib/maquetado.ts).
-   Con JS, todo lo de abajo del hero arranca con content-visibility: auto: el
-   primer pintado maqueta solo el hero (antes maquetaba la página entera con
-   las fuentes de respaldo y después otra vez con las reales). El script en
-   línea de layout.tsx las suelta de a una cuando llegan las fuentes, y
-   lib/gsap.ts suelta lo que falte antes de que las escenas midan. Sin JS no
-   aplica (fail-open: el HTML del servidor queda igual). El alto provisorio es
-   solo para lo que todavía no se maquetó, siempre fuera de la vista.
-   ========================================================================== */
-@media (scripting: enabled) {
-  main > :not(:first-child),
-  body > footer {
-    content-visibility: auto;
-    contain-intrinsic-size: auto 900px;
   }
 }
 
@@ -181,14 +100,7 @@ img {
   /* Fuera de viewport el subtree se saltea (layout/paint Y la animacion se
      suspenden) sin JS. `auto` memoriza el alto real -> sin CLS al reingresar. */
   content-visibility: auto;
-  /* Alto real de una fila (las figuras de Galeria.tsx): con un valor de más,
-     la galería se achicaba al renderizarse y corría las anclas de abajo. */
-  contain-intrinsic-size: auto 170px;
-}
-@media (min-width: 640px) {
-  .mq-viewport {
-    contain-intrinsic-size: auto 200px;
-  }
+  contain-intrinsic-size: auto 260px;
 }
 .mq-track {
   display: flex;
@@ -241,10 +153,9 @@ img {
   }
 }
 
-/* Offset para que las anclas no queden tapadas por el nav sticky (Lenis también
-   lo respeta: por eso SmoothScroll no suma un offset propio). */
+/* Offset para que las anclas no queden tapadas por el nav sticky. */
 :where(section[id], header[id]) {
-  scroll-margin-top: calc(var(--nav-h) + 6px);
+  scroll-margin-top: 76px;
 }
 
 /* Flash del <select> cuando se preselecciona un servicio desde "Cotizar X". */
@@ -264,11 +175,20 @@ img {
 }
 
 /* ==========================================================================
-   Formulario · feedback físico. Corre solo tras interactuar (clase agregada
-   por JS): nunca oculta contenido de entrada. Con reduced-motion lo neutraliza
-   el reset global. (Los errores, el listbox y el lightbox animan con motion;
-   sus viejos @keyframes quedaron en _assets/archivo/codigo/app/.)
+   Formulario · feedback físico. Corren solo tras interactuar (render
+   condicional / clase agregada por JS): nunca ocultan contenido de entrada.
+   Con reduced-motion las neutraliza el reset global.
    ========================================================================== */
+/* Mensaje de error: entra con un fundido corto al montarse. */
+@keyframes err-in {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+}
+.err-in {
+  animation: err-in 0.22s ease-out 1 both;
+}
 /* Rechazo firme del submit inválido (sin overshoot juguete). */
 @keyframes shake {
   0%,
@@ -287,6 +207,30 @@ img {
 }
 .shake {
   animation: shake 0.32s ease-in-out 1;
+}
+/* Entrada del listbox del CustomSelect (el cierre queda instantáneo a
+   propósito: las salidas más rápidas que las entradas). */
+@keyframes dd-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scaleY(0.98);
+  }
+}
+
+/* ==========================================================================
+   Lightbox · fade de entrada de las capas fullscreen (el contenido asienta
+   medio paso después del velo). Sin salida animada: cerrar es inmediato.
+   ========================================================================== */
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes overlay-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
 }
 
 /* ==========================================================================
@@ -399,6 +343,68 @@ img {
   }
 }
 
+/* ==========================================================================
+   Proceso · relevo ámbar sobre el borde superior de cada paso. La línea base
+   (border-t hairline) siempre está visible; encima, una barra ámbar "dibuja" el
+   borde de izquierda a derecha y se apaga. Cada paso arranca escalonado (1.1s)
+   en loop infinito -> se encienden 1->2->3->4 y vuelve a empezar. Pura
+   decoración CSS (fail-open, solo transform/opacity, como los glows ambientales);
+   con reduced-motion el reset global la congela y quedan solo las líneas base.
+   ========================================================================== */
+.proceso-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -1.5px;
+  height: 2px;
+  transform-origin: left;
+  transform: scaleX(0);
+  background: var(--color-amarillo);
+  animation: proceso-relay 4.4s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+@keyframes proceso-relay {
+  0% {
+    transform: scaleX(0);
+    opacity: 1;
+  }
+  13% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+  22% {
+    transform: scaleX(1);
+    opacity: 0;
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 0;
+  }
+}
+/* El número "se enciende" cuando le toca el relevo: un pop sutil (scale + lift)
+   sincronizado con el dibujo de SU línea (mismo ciclo 4.4s y mismo delay por
+   paso) -> el ojo sigue 01->02->03->04 activándose en secuencia. Usa `transform`
+   (independiente del `translate` del hover en Tailwind v4, así no chocan). Con
+   reduced-motion el reset global lo congela en reposo (scale 1). */
+.proceso-num {
+  transform-origin: left center;
+  animation: proceso-num 4.4s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+@keyframes proceso-num {
+  0%,
+  4% {
+    transform: translateY(0) scale(1);
+  }
+  12% {
+    transform: translateY(-2px) scale(1.12);
+  }
+  24% {
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
 /* Ocultar controles nativos que reemplazamos por componentes propios: las
    flechitas del <input type=number> y el ícono del <input type=date>. */
 input[type="number"].no-spin {
@@ -411,957 +417,27 @@ input[type="number"].no-spin::-webkit-inner-spin-button {
   margin: 0;
 }
 
-/* ===== dopamina: hero secuencia ===== */
-/* Hero "escenario": la caja como protagonista (components/sections/
-   HeroSecuencia.tsx). El marco de la secuencia va centrado y a todo el alto
-   útil; los textos aparecen por momentos a los costados (desktop) o arriba y
-   abajo del marco (mobile). Todo lo mueve un único timeline de GSAP con scrub.
-
-   Estructura (DOM = orden de lectura y de la versión quieta):
-     .hs > .hs-pin > .hs-m1 (inicio) · .hs-escena (marco > .hs-encuadre +
-     aviso) · .hs-m2 (horneado) · .hs-m3 (cifras) · .hs-m4 (cierre) ·
-     .hs-confianza. El cierre (el remate) va centrado debajo de la caja
-     abierta en desktop y en mobile; después, la caja abierta se aleja hacia
-     Servicios (GSAP, sobre .hs-marco y .hs-m4).
-   Cada capa tiene un envoltorio que la posiciona (.hs-m1, .hs-m2...) y un
-   interior que anima GSAP (.hs-m1-in...): GSAP solo toca opacity y transform
-   de los interiores, nunca la posición.
-
-   Modos (atributo data-hs del <header>):
-   - base (sin atributo, "escena" y "final"): la geometría del escenario. El
-     marco y las capas se ubican con variables (--hs-mw, --hs-mh...) sobre un
-     escenario de 100svh menos el nav. Sin atributo (SSR, antes de hidratar),
-     horneado y cierre van en flujo DEBAJO del escenario, ocultos hasta que
-     llegue GSAP; si el JS no llega, una red de seguridad los muestra a los 4s
-     (las fichas no: apuntan a productos que el primer cuadro todavía no
-     muestra; la lista sr-only los nombra igual).
-   - "escena": GSAP tomó el control (pin + scrub); horneado y cierre pasan a
-     estar sobre el escenario.
-   - "final": la base sin pin ni scrub, con horneado y cierre visibles
-     (hidratación tardía o falla al armar: el layout no salta).
-   - quieto: sin JS, reducir movimiento, pantalla baja o ahorro de datos.
-     Las tres primeras las decide la media query del final de este bloque (JS
-     además pone data-hs="quieto"); el ahorro de datos, data-hs="quieto" puesto
-     antes de la primera pintura por un script en línea (las variantes
-     hs-quieto aplican el mismo bloque en los dos casos): flujo normal, el
-     último cuadro y todo visible.
-   Cortes (mismos que MQ en HeroSecuencia.tsx y HeroSecuenciaPoster.tsx):
-   desktop = min-width 860px y min-height 600px; mobile = hasta 859.98px y
-   min-height 560px; lo más bajo es "quieto".
-   Las reglas van sin capa: ganan a las utilidades de Tailwind. --hs-ar-d,
-   --hs-ar-m, --hs-foco y --hs-caja-* llegan inline desde content/data.ts. */
-.hs {
-  --hs-nav: var(--nav-h);
-  --hs-alto: calc(100svh - var(--hs-nav));
-  /* Mobile: el marco llena el escenario como object-fit: cover, pero recorta
-     como mucho un 12% (en una tablet no se pierde la base de la caja). */
-  --hs-mw: clamp(
-    calc(var(--hs-alto) * var(--hs-ar-m)),
-    100vw,
-    calc(var(--hs-alto) * var(--hs-ar-m) * 1.12)
-  );
-  --hs-mh: calc(var(--hs-mw) / var(--hs-ar-m));
-  /* Al cargar, el marco arranca un poco más abajo (fracción de su alto) para
-     dejarle lugar al inicio; GSAP lo sube con el primer scroll (lee este
-     valor, así el CSS y el timeline no se desfasan). */
-  --hs-baja: 0.06;
-  --hs-mtop: calc((var(--hs-alto) - var(--hs-mh)) / 2);
-  --hs-linea: rgba(245, 238, 224, 0.3);
-  position: relative;
-  overflow-x: clip;
-}
-/* Teléfonos bajos (375x667 y parecidos): la caja cerrada arranca más abajo
-   para no quedar debajo de los botones del inicio. */
-@media (max-width: 859.98px) and (max-height: 720px) {
-  .hs {
-    --hs-baja: 0.1;
+/* FAQ: animación de altura del acordeón (progresivo; navegadores sin soporte
+   hacen el toggle instantáneo, que es igual de accesible). */
+@media (prefers-reduced-motion: no-preference) {
+  :root {
+    interpolate-size: allow-keywords;
   }
-}
-@media (min-width: 860px) {
-  .hs {
-    /* Desktop: marco a todo el alto útil, salvo que los costados queden
-       angostos (entonces se achica y queda centrado). El 12% de cada costado
-       del cuadro es fundido vacío: el lugar para los textos se mide contra el
-       ancho útil (--hs-util, donde están los productos), no contra el marco
-       entero, así entre 860 y ~1100px el marco no queda chico. */
-    --hs-ancho: min(100vw, 1680px);
-    --hs-pad: clamp(20px, 3vw, 48px);
-    --hs-gap: clamp(20px, 3vw, 56px);
-    --hs-lado-min: clamp(230px, 26vw, 400px);
-    --hs-util: 0.76;
-    --hs-mw: min(
-      calc(var(--hs-alto) * var(--hs-ar-d)),
-      calc((var(--hs-ancho) - 2 * (var(--hs-pad) + var(--hs-gap) + var(--hs-lado-min))) / var(--hs-util))
-    );
-    --hs-mh: calc(var(--hs-mw) / var(--hs-ar-d));
-    --hs-baja: 0;
-    /* Del centro al borde del ancho útil: ahí se apoyan los textos. */
-    --hs-borde: calc(var(--hs-mw) * var(--hs-util) / 2);
-    /* Ancho de cada costado (--hs-lado-w) y el que se usa para medir los
-       tipos (--hs-lado-t, sin el fundido: la tipografía no cambia en las
-       pantallas donde manda el alto). Distancia de las fichas al marco. */
-    --hs-lado-w: calc(var(--hs-ancho) / 2 - var(--hs-borde) - var(--hs-pad) - var(--hs-gap));
-    --hs-lado-t: calc(var(--hs-lado-w) - (var(--hs-mw) / 2 - var(--hs-borde)));
-    --hs-ficha-sep: clamp(14px, 1.6vw, 28px);
-  }
-}
-
-/* ---------- Escenario (base) ---------- */
-/* Antes de hidratar y en "final", el escenario ocupa la primera pantalla y lo
-   diferido sigue en flujo debajo; en "escena", el pin mide justo el escenario. */
-.hs-pin {
-  position: relative;
-  padding-top: var(--hs-alto);
-}
-.hs[data-hs="escena"] .hs-pin {
-  height: var(--hs-alto);
-  padding-top: 0;
-}
-.hs-escena {
-  position: absolute;
-  inset-inline: 0;
-  top: 0;
-  height: var(--hs-alto);
-  overflow: clip;
-}
-.hs-marco {
-  position: absolute;
-  left: calc(50% - var(--hs-mw) / 2);
-  top: calc(var(--hs-mtop) + var(--hs-baja) * var(--hs-mh));
-  width: var(--hs-mw);
-  height: var(--hs-mh);
-}
-/* Todo lo que se ve del marco (halo, cuadros, fichas). En mobile GSAP lo sube
-   (y lo achica si hace falta) antes del cierre; el marco queda para el pin y
-   la salida: cada uno mueve su elemento. */
-.hs-encuadre {
-  position: absolute;
-  inset: 0;
-}
-
-/* Imagen (respaldo + canvas + tapa fija). Los cuadros traen fondo
-   transparente (alfa): detrás de los productos se ve la página misma, con su
-   fondo ambiental. Sin máscara ni sombra alrededor: el marco no existe a la
-   vista (ni columna ni rectángulo de otro tono). */
-.hs-imagen {
-  position: absolute;
-  inset: 0;
-}
-/* Desktop con escena: la imagen arranca agrandada (--hs-zoom, de
-   heroSecuencia.acercamiento) con la base de la caja cerrada fija, así la
-   confianza sigue apoyada en ella. GSAP la lleva a 1 con el scroll; ya está
-   así antes de hidratar (y en "final"), así que no salta. Entre 860 y 1100px,
-   menos (los textos de los costados necesitan lugar). */
-@media (scripting: enabled) and (prefers-reduced-motion: no-preference) and (min-width: 860px) and (min-height: 600px) {
-  .hs {
-    --hs-z: var(--hs-zoom, 1);
-  }
-  .hs:not([data-hs="quieto"]) .hs-imagen {
-    transform: scale(var(--hs-z));
-    transform-origin: 50% calc(var(--hs-caja-inicio) * 100%);
-  }
-}
-@media (scripting: enabled) and (prefers-reduced-motion: no-preference) and (min-width: 860px) and (max-width: 1099.98px) and (min-height: 600px) {
-  .hs {
-    --hs-z: var(--hs-zoom-angosta, 1);
-  }
-}
-.hs-poster,
-.hs-canvas {
-  position: absolute;
-  inset: 0;
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-.hs-poster img {
-  width: 100%;
-  height: 100%;
-  max-width: none;
-  object-fit: cover;
-  object-position: var(--hs-foco, 50% 50%);
-}
-/* El canvas es decorativo y sin JS no tiene nada: aparece recién con su primer
-   dibujo (data-hs-lienzo) y en ese mismo cuadro de pantalla reemplaza al <img>
-   de respaldo, sin transición. Un fundido entre los dos era una doble imagen
-   si el primer cuadro dibujado no era el del <img> (la página ya scrolleada).
-   Con el hero ya pasado el motor duerme, el canvas queda vacío y vuelve el
-   <img> hasta el primer dibujo al despertar. */
-.hs-canvas {
-  visibility: hidden;
-}
-.hs[data-hs-lienzo] .hs-canvas {
-  visibility: visible;
-}
-.hs[data-hs-lienzo] .hs-poster {
-  visibility: hidden;
-}
-
-/* Tapa fija (HeroTapaFija): sobre el primer cuadro, la caja cerrada desde la
-   primera pintura (posición inline, en % del cuadro). Cuando el lienzo de la
-   tapa dibuja, la reemplaza (data-hs-tapa): con la tapa todavía apoyada
-   ("suave") aparece encima con un fundido corto (es la misma tapa; solo suma su
-   sombra) y la fija se oculta al terminar; con la tapa ya levantada, o apenas
-   se mueve durante el fundido ("directo"), el cambio es en el mismo cuadro. */
-.hs-tapa-img {
-  position: absolute;
-  display: block;
-  max-width: none;
-  pointer-events: none;
-}
-.hs[data-hs-tapa] .hs-tapa-img {
-  visibility: hidden;
-}
-.hs[data-hs-tapa="suave"] .hs-tapa-img {
-  transition: visibility 0s linear 0.35s;
-}
-.hs-tapa-lienzo {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  display: block;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  opacity: 0;
-}
-.hs[data-hs-tapa] .hs-tapa-lienzo {
-  opacity: 1;
-}
-.hs[data-hs-tapa="suave"] .hs-tapa-lienzo {
-  transition: opacity 0.35s ease-out;
-}
-
-/* Halo: un foco cálido MUY sutil, redondo y centrado en la caja (nunca una
-   columna). Va DETRÁS de los cuadros (que son transparentes alrededor de los
-   productos), así ilumina la mesa y no la comida, y se apaga antes de llegar
-   a los bordes del marco. GSAP lo abre apenas. */
-.hs-halo {
-  position: absolute;
-  left: 50%;
-  top: 54%;
-  width: 104%;
-  aspect-ratio: 1;
-  translate: -50% -50%;
-  pointer-events: none;
-  background: radial-gradient(
-    closest-side,
-    rgba(233, 188, 79, 0.055),
-    rgba(233, 188, 79, 0.022) 55%,
-    rgba(233, 188, 79, 0) 100%
-  );
-}
-
-/* ---------- Fichas (momento 4, solo desktop) ---------- */
-/* Cada ficha ocupa el marco entero (--x, --y, --base y --punta son % del
-   marco, inline). Las de "centro": el rótulo va debajo del producto. "izq" y
-   "der": al costado del marco, con una línea fina que llega hasta un punto
-   JUSTO AFUERA del producto (nunca lo pisa). En mobile no hay fichas: los
-   rótulos debajo de cada producto tapaban productos (el vaso de café) y la
-   caja abierta se lee sola; la lista sr-only los nombra igual. */
-.hs-fichas,
-.hs-ficha {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-@media (max-width: 859.98px) {
-  .hs-fichas {
-    display: none;
-  }
-}
-/* Debajo del producto, con aire para su sombra (y para lo poco que todavía se
-   mueve mientras las fichas aparecen). */
-.hs-ficha-rotulo {
-  position: absolute;
-  left: var(--x);
-  top: calc(var(--base) + 1.8%);
-  translate: -50% 0;
-}
-.hs-ficha-texto {
-  display: block;
-  white-space: nowrap;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  line-height: 1.3;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--color-crema);
-  text-shadow:
-    0 0 2px rgba(36, 28, 21, 0.9),
-    0 1px 10px rgba(36, 28, 21, 0.95);
-}
-.hs-ficha-linea,
-.hs-ficha-punto {
-  display: none;
-  position: absolute;
-}
-@media (min-width: 860px) {
-  .hs-ficha[data-lado="izq"] .hs-ficha-rotulo {
-    left: auto;
-    right: calc(100% + var(--hs-ficha-sep));
-    top: var(--y);
-    translate: 0 -50%;
-  }
-  .hs-ficha[data-lado="der"] .hs-ficha-rotulo {
-    left: calc(100% + var(--hs-ficha-sep));
-    top: var(--y);
-    translate: 0 -50%;
-  }
-  /* Antes del cierre el encuadre se achica (y las fichas con él):
-     --hs-ficha-z (HeroSecuencia) devuelve los rótulos a 11px, desde el lado
-     de la línea. */
-  .hs-ficha-texto {
-    scale: var(--hs-ficha-z, 1);
-    transform-origin: 50% 0;
-  }
-  .hs-ficha[data-lado="izq"] .hs-ficha-texto {
-    transform-origin: 100% 50%;
-  }
-  .hs-ficha[data-lado="der"] .hs-ficha-texto {
-    transform-origin: 0 50%;
-  }
-  .hs-ficha:not([data-lado="centro"]) .hs-ficha-linea {
-    display: block;
-    top: var(--y);
-    height: 1px;
-    background: var(--hs-linea);
-  }
-  /* La línea crece desde el producto hacia el rótulo. */
-  .hs-ficha[data-lado="izq"] .hs-ficha-linea {
-    left: calc(8px - var(--hs-ficha-sep));
-    width: calc(var(--punta) + var(--hs-ficha-sep) - 8px);
-    transform-origin: 100% 50%;
-  }
-  .hs-ficha[data-lado="der"] .hs-ficha-linea {
-    left: var(--punta);
-    width: calc(100% - var(--punta) + var(--hs-ficha-sep) - 8px);
-    transform-origin: 0 50%;
-  }
-  .hs-ficha:not([data-lado="centro"]) .hs-ficha-punto {
-    display: block;
-    left: var(--punta);
-    top: var(--y);
-    width: 5px;
-    height: 5px;
-    margin: -2px 0 0 -2.5px;
-    border-radius: 50%;
-    background: var(--color-crema);
-  }
-}
-
-/* ---------- Textos ---------- */
-.hs-m1,
-.hs-m2,
-.hs-m3,
-.hs-m4,
-.hs-confianza {
-  z-index: 2;
-}
-.hs-m1-in,
-.hs-m2-in,
-.hs-m3-in,
-.hs-m4-in,
-.hs-confianza-in {
-  position: relative;
-  isolation: isolate;
-}
-.hs-titulo {
-  margin: 14px 0 10px;
-  font-size: clamp(2.05rem, 9.2vw, 3.2rem);
-  line-height: 1.06;
-}
-.hs-bajada {
-  max-width: 36rem;
-  font-size: 15px;
-  line-height: 1.5;
-  text-wrap: pretty;
-}
-.hs-bajada-larga {
-  display: none;
-}
-.hs-botones {
-  margin-top: 16px;
-}
-/* Horneado (momento 2): Playfair recta con "el mismo día" en la itálica
-   amarilla y dos renglones (el <br> va después de esa frase). */
-.hs-horneado {
-  font-size: clamp(1.85rem, 8.2vw, 2.9rem);
-  line-height: 1.1;
-  letter-spacing: -0.01em;
-  text-wrap: balance;
-}
-.hs-horneado-em {
-  white-space: nowrap;
-}
-/* Cierre (momento 5), el remate del hero: el título más grande del
-   escenario después del h1, con "lucir así" en la itálica amarilla y sin
-   partirse (en mobile, "Tu pedido puede / lucir así."). El tope por alto cuida
-   los teléfonos bajos: el encuadre se achica para dejarle lugar. */
-.hs-cierre-titulo {
-  font-size: clamp(1.9rem, min(9.6vw, 5.4svh), 2.9rem);
-  line-height: 1.04;
-  letter-spacing: -0.015em;
-  text-wrap: balance;
-}
-.hs-cierre-fin {
-  white-space: nowrap;
-}
-.hs-cierre-boton {
-  margin-top: 24px;
-  white-space: nowrap;
-}
-/* Palabras que entran "desde abajo" (horneado y título del cierre): cada una
-   en su ventana. clip-path (y no overflow) no cambia la línea base ni el alto
-   del renglón, y la ventana se agranda para las tildes, la itálica que se
-   sale de su caja y los descendentes (la "g" de "llega"). Sin JS, las
-   palabras están en su lugar. */
-.hs-pal {
-  display: inline-block;
-  clip-path: inset(-0.45em -0.3em -0.2em -0.3em);
-}
-.hs-pal-in {
-  display: inline-block;
-}
-.hs-confianza-in {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
-}
-
-/* Mobile: inicio arriba y confianza abajo, sobre el marco, con un velo
-   espresso suave detrás. Horneado y cierre (en "escena") van centrados
-   debajo de la caja, en el espacio libre: sin velo (no tapan nada). */
-.hs-m1 {
-  position: absolute;
-  inset-inline: 0;
-  top: 0;
-  pointer-events: none;
-}
-.hs-m1-in {
-  padding: 16px 24px 44px;
-  pointer-events: auto;
-}
-.hs-confianza {
-  position: absolute;
-  inset-inline: 0;
-  top: 0;
-  height: var(--hs-alto);
-  display: flex;
-  align-items: flex-end;
-  pointer-events: none;
-}
-.hs-confianza-in {
-  width: 100%;
-  padding: 40px 24px 18px;
-}
-.hs-m1-in::before,
-.hs-confianza-in::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background: linear-gradient(
-    to top,
-    rgba(36, 28, 21, 0.9) 0%,
-    rgba(36, 28, 21, 0.74) 52%,
-    rgba(36, 28, 21, 0) 100%
-  );
-}
-.hs-m1-in::before {
-  background: linear-gradient(
-    to bottom,
-    rgba(36, 28, 21, 0.92) 0%,
-    rgba(36, 28, 21, 0.76) 58%,
-    rgba(36, 28, 21, 0) 100%
-  );
-}
-/* Antes de hidratar y en "final": en flujo, debajo del escenario. */
-.hs-m2,
-.hs-m4 {
-  position: relative;
-  padding: 22px 24px 0;
-}
-.hs-m4 {
-  padding-bottom: 40px;
-}
-/* Escena, horneado: centrado (a lo ancho y en el alto) en el espacio libre
-   entre la base de la caja cerrada (con su sombra) y el borde de abajo. El
-   marco ya subió a su lugar cuando aparece (y en desktop el acercamiento
-   crece desde esa base: no se mueve). Un poco más de aire abajo: el centro
-   óptico queda apenas arriba del geométrico. */
-.hs[data-hs="escena"] .hs-m2 {
-  position: absolute;
-  inset-inline: 0;
-  top: calc(var(--hs-mtop) + var(--hs-mh) * (var(--hs-caja-inicio) + 0.018));
-  bottom: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 20px 14px;
-  text-align: center;
-  pointer-events: none;
-}
-.hs[data-hs="escena"] .hs-m2-in {
-  pointer-events: none;
-}
-/* Escena, cierre (desktop y mobile): centrado abajo; el encuadre sube lo
-   justo para que la caja quede entera por encima (HeroSecuencia mide este
-   alto). */
-.hs[data-hs="escena"] .hs-m4 {
-  position: absolute;
-  inset-inline: 0;
-  bottom: 0;
-  padding: 0 24px 20px;
-  text-align: center;
-  pointer-events: none;
-}
-.hs[data-hs="escena"] .hs-m4-in {
-  pointer-events: auto;
-}
-
-/* Cifras (momento 3): solo con la escena (repiten la confianza del inicio).
-   Mobile: arriba del marco, tres columnas sobre un velo, en la franja libre
-   de encima de la fila de arriba de productos. El contenedor (y con él su
-   velo) lo prende y lo apaga GSAP junto con las cifras: si quedara visible
-   con las cifras apagadas, el velo taparía el inicio. */
-.hs-m3 {
-  display: none;
-}
-.hs[data-hs="escena"] .hs-m3 {
-  display: block;
-  position: absolute;
-  inset-inline: 0;
-  top: 0;
-  pointer-events: none;
-}
-.hs-m3-in {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-  padding: 12px 16px 38px;
-  text-align: center;
-}
-.hs-m3-in::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background: linear-gradient(
-    to bottom,
-    rgba(36, 28, 21, 0.9) 0%,
-    rgba(36, 28, 21, 0.72) 55%,
-    rgba(36, 28, 21, 0) 100%
-  );
-}
-.hs-cifra {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  min-width: 0;
-}
-.hs-cifra-valor {
-  font-size: clamp(1.6rem, 7.6vw, 2.2rem);
-  line-height: 1;
-  font-variant-numeric: lining-nums;
-}
-.hs-cifra-texto {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  line-height: 1.35;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--color-crema-dim);
-}
-.hs-cifra-largo {
-  display: none;
-}
-
-/* Mobile: bajada corta arriba (entra sobre la caja cerrada). */
-.hs-bajada-corta {
-  display: inline;
-}
-
-/* Aviso "Scrolleá": solo desktop y solo con la escena (o antes de hidratar). */
-.hs-aviso {
-  display: none;
-  position: absolute;
-  inset-inline: 0;
-  bottom: 18px;
-  z-index: 3;
-  justify-content: center;
-  pointer-events: none;
-}
-@keyframes hs-nudge {
-  0% {
-    transform: translate3d(0, -100%, 0);
+  .faq-acc::details-content {
+    height: 0;
+    overflow: clip;
+    /* El fade solo corre al abrir/cerrar: cerrado, el contenido ya lo oculta
+       height 0 + clip (la opacidad no es quien esconde nada). */
     opacity: 0;
+    transition:
+      height 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+      opacity 0.25s ease-out,
+      content-visibility 0.28s allow-discrete;
   }
-  35% {
+  .faq-acc[open]::details-content {
+    height: auto;
     opacity: 1;
-  }
-  100% {
-    transform: translate3d(0, 350%, 0);
-    opacity: 0;
-  }
-}
-.hs-nudge {
-  animation: hs-nudge 1.8s ease-in-out infinite;
-}
-
-/* Desktop: el inicio y las cifras a la izquierda del marco; la confianza a
-   la derecha; el horneado y el cierre centrados debajo de la caja (reglas de
-   la escena, más arriba). Todo se mide desde el escenario con las variables
-   del marco (el borde del ancho útil), así queda pegado a él en cualquier
-   ancho. */
-@media (min-width: 860px) {
-  .hs-m1 {
-    inset-inline: auto;
-    right: calc(50% + var(--hs-borde) + var(--hs-gap));
-    top: 0;
-    bottom: auto;
-    width: var(--hs-lado-w);
-    height: var(--hs-alto);
-    display: flex;
-    align-items: center;
-  }
-  /* Cifras: a la izquierda, en columna. */
-  .hs[data-hs="escena"] .hs-m3 {
-    inset-inline: auto;
-    right: calc(50% + var(--hs-borde) + var(--hs-gap));
-    top: 0;
-    width: var(--hs-lado-w);
-    height: var(--hs-alto);
-    display: flex;
-    align-items: center;
-  }
-  .hs-m3-in {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: clamp(16px, 3.4vh, 34px);
-    padding: 0;
-    text-align: left;
-  }
-  .hs-m3-in::before {
-    content: none;
-  }
-  .hs-cifra {
-    align-items: flex-start;
-    gap: 8px;
-  }
-  .hs-cifra-valor {
-    font-size: clamp(2.4rem, calc(var(--hs-lado-t) * 0.15), 4.4rem);
-  }
-  .hs-cifra-texto {
-    font-size: 11px;
-  }
-  .hs-cifra-largo {
-    display: inline;
-  }
-  .hs-cifra-corto {
-    display: none;
-  }
-  /* El cierre, centrado debajo de la caja vacía y a todo el ancho (ya no en
-     la columna de la izquierda, donde quedaba chico y se perdía): título en
-     un renglón. La confianza apoya su base en la de la caja
-     cerrada, a la derecha. */
-  .hs[data-hs="escena"] .hs-m4 {
-    padding: 0 var(--hs-pad) clamp(20px, 4.2svh, 44px);
-  }
-  .hs[data-hs="escena"] .hs-cierre-titulo {
-    white-space: nowrap;
-  }
-  .hs-confianza {
-    inset-inline: auto;
-    left: calc(50% + var(--hs-borde) + var(--hs-gap));
-    width: var(--hs-lado-w);
-    height: calc(var(--hs-mtop) + var(--hs-mh) * var(--hs-caja-inicio));
-  }
-  .hs-m1-in,
-  .hs-confianza-in {
-    width: 100%;
-    padding: 0;
-  }
-  .hs-m1-in::before,
-  .hs-confianza-in::before {
-    content: none;
-  }
-  .hs-confianza-in {
-    gap: 12px;
-  }
-  /* Antes de hidratar y en "final": centrados, debajo del escenario. */
-  .hs-m2,
-  .hs-m4 {
-    max-width: 44rem;
-    margin-inline: auto;
-    text-align: center;
-  }
-  .hs[data-hs="escena"] .hs-m2 {
-    max-width: none;
-    margin-inline: 0;
-    padding: 0 var(--hs-pad) 18px;
-  }
-  .hs[data-hs="escena"] .hs-m4 {
-    max-width: none;
-    margin-inline: 0;
-  }
-
-  .hs-titulo {
-    margin: 18px 0 16px;
-    font-size: clamp(2rem, calc(var(--hs-lado-t) * 0.128), 4rem);
-  }
-  .hs-bajada {
-    max-width: 36ch;
-    font-size: clamp(15px, calc(var(--hs-lado-t) * 0.042), 17px);
-    line-height: 1.6;
-  }
-  .hs-bajada-larga {
-    display: inline;
-  }
-  .hs-bajada-corta {
-    display: none;
-  }
-  .hs-botones {
-    margin-top: 26px;
-  }
-  /* Grande pero dentro del espacio libre debajo de la caja (el tope por
-     alto cuida las pantallas bajas). */
-  .hs-horneado {
-    font-size: clamp(2.2rem, min(3.9vw, 6.8svh), 3.9rem);
-    line-height: 1.06;
-  }
-  /* Más grande que el horneado (es el remate), con tope por alto: en las
-     pantallas bajas el encuadre no se achica de más. */
-  .hs-cierre-titulo {
-    font-size: clamp(2.4rem, min(4.4vw, 7.2svh), 4.5rem);
-    line-height: 1.04;
-  }
-  .hs-cierre-boton {
-    margin-top: clamp(24px, 4svh, 36px);
-  }
-
-  .hs[data-hs="escena"] .hs-aviso {
-    display: flex;
-  }
-}
-
-/* Antes de hidratar y en "final": nada con foco de teclado queda oculto (el
-   cierre, si todavía espera a GSAP). En "escena" no hace falta: los botones
-   de un momento que no se ve salen del orden de Tab (HeroSecuencia), y
-   forzarlo dejaba un momento encima de otro. */
-.hs:not([data-hs="escena"]) .hs-m1-in:focus-within,
-.hs:not([data-hs="escena"]) .hs-m4-in:focus-within {
-  opacity: 1 !important;
-  transform: none !important;
-  pointer-events: auto !important;
-}
-
-/* ---------- Antes de hidratar y "final" ---------- */
-/* Con JS y movimiento: horneado y cierre esperan ocultos a GSAP (la red de
-   seguridad los muestra a los 4s si el JS no llega) y las fichas también
-   (en "final" siguen ocultas: el cuadro queda en la caja cerrada). */
-@keyframes hs-failsafe {
-  to {
-    opacity: 1;
-  }
-}
-@keyframes hs-failsafe-out {
-  to {
-    opacity: 0;
-  }
-}
-@media (scripting: enabled) and (prefers-reduced-motion: no-preference) and (max-width: 859.98px) and (min-height: 560px),
-  (scripting: enabled) and (prefers-reduced-motion: no-preference) and (min-width: 860px) and (min-height: 600px) {
-  .hs:not([data-hs]) .hs-diferida {
-    opacity: 0;
-    animation: hs-failsafe 0.9s var(--ease-resorte-lento) 4s both;
-  }
-  .hs:not([data-hs]) .hs-ficha {
-    opacity: 0;
-  }
-}
-@media (scripting: enabled) and (prefers-reduced-motion: no-preference) and (min-width: 860px) and (min-height: 600px) {
-  .hs:not([data-hs]) .hs-aviso {
-    display: flex;
-    animation: hs-failsafe-out 0.6s ease-out 4s both;
-  }
-}
-.hs[data-hs="final"] .hs-ficha {
-  opacity: 0;
-}
-/* "final" porque el inicio no entraba en el escenario (texto muy grande): el
-   escenario se estira a su alto (--hs-m1-h, lo mide HeroSecuencia), así el
-   inicio arranca debajo del nav y el horneado y el cierre van después. */
-.hs[data-hs="final"] .hs-pin {
-  padding-top: max(var(--hs-alto), var(--hs-m1-h, 0px));
-}
-@media (min-width: 860px) {
-  .hs[data-hs="final"] .hs-m1 {
-    height: max(var(--hs-alto), var(--hs-m1-h, 0px));
-    align-items: safe center;
-  }
-}
-
-/* ---------- Quieto ---------- */
-/* Sin JS, con reducir movimiento, en una pantalla baja (teléfono en
-   horizontal) o con ahorro de datos: sin pin ni scrub, en flujo normal y
-   ordenado, todo visible y el último cuadro (el <picture> ya lo elige con las
-   mismas condiciones).
-   Las tres primeras las decide la media query, antes de pintar y también sin
-   JS. El ahorro de datos (Save-Data) no tiene media query: lo marca el script
-   en línea del <header> (HeroMarcaAhorro), data-hs="quieto" antes de la
-   primera pintura. Las dos variantes aplican el MISMO bloque en los dos casos
-   y con la misma especificidad (:where no suma): Tailwind escribe cada regla
-   una vez dentro de la media query y otra vez con el atributo. */
-@custom-variant hs-quieto {
-  @media (scripting: none), (prefers-reduced-motion: reduce), (min-width: 860px) and (max-height: 599.98px), (max-width: 859.98px) and (max-height: 559.98px) {
-    @slot;
-  }
-  &:where([data-hs="quieto"]) {
-    @slot;
-  }
-}
-@custom-variant hs-quieto-desktop {
-  @media (scripting: none) and (min-width: 860px), (prefers-reduced-motion: reduce) and (min-width: 860px), (min-width: 860px) and (max-height: 599.98px) {
-    @slot;
-  }
-  @media (min-width: 860px) {
-    &:where([data-hs="quieto"]) {
-      @slot;
-    }
-  }
-}
-.hs {
-  @variant hs-quieto {
-    padding: 36px 0 56px;
-    /* El marco a todo el ancho (sale del gutter) con su proporción, con tope
-       para teléfonos en horizontal. */
-    --hs-q-mw: min(100vw, 460px);
-    --hs-q-ar: var(--hs-ar-m);
-
-    & .hs-pin {
-      display: flex;
-      flex-direction: column;
-      gap: 28px;
-      max-width: 1160px;
-      height: auto;
-      margin-inline: auto;
-      padding: 0 24px;
-    }
-    & .hs-m1,
-    & .hs-m2,
-    & .hs-m4,
-    & .hs-confianza {
-      position: relative;
-      inset: auto;
-      display: block;
-      width: auto;
-      height: auto;
-      max-width: none;
-      margin: 0;
-      padding: 0;
-    }
-    & .hs-m1-in,
-    & .hs-m2-in,
-    & .hs-m4-in,
-    & .hs-confianza-in {
-      max-width: none;
-      padding: 0;
-    }
-    & .hs-m1-in::before,
-    & .hs-confianza-in::before {
-      content: none;
-    }
-    /* El escenario se come el aire vacío de arriba y de abajo del cuadro (sin
-       productos): sin huecos muertos. */
-    & .hs-escena {
-      position: relative;
-      inset: auto;
-      height: auto;
-      margin: calc(var(--hs-q-mw) / var(--hs-q-ar) * -0.1) -24px
-        calc(var(--hs-q-mw) / var(--hs-q-ar) * -0.05);
-      overflow: visible;
-    }
-    & .hs-marco {
-      position: relative;
-      left: auto;
-      top: auto;
-      width: var(--hs-q-mw);
-      height: auto;
-      margin-inline: auto;
-      aspect-ratio: var(--hs-q-ar);
-    }
-    & .hs-titulo {
-      font-size: clamp(2.4rem, 10vw, 3.4rem);
-    }
-    /* Dos frases seguidas después de la caja abierta, del mismo tamaño: el
-       horneado y el cierre (con su botón), con aire. */
-    & .hs-horneado,
-    & .hs-cierre-titulo {
-      font-size: clamp(1.75rem, 7.6vw, 2.4rem);
-    }
-    & .hs-m4 {
-      margin-top: 4px;
-    }
-    & .hs-bajada-larga {
-      display: inline;
-    }
-    & .hs-bajada-corta {
-      display: none;
-    }
-    & .hs-aviso,
-    & .hs-tapa-img,
-    & .hs-tapa-lienzo,
-    & .hs-m3 {
-      display: none;
-    }
-  }
-
-  /* Desktop quieto: columna centrada, con el marco al medio y las fichas a
-     los costados (el mismo dibujo que el final de la escena). */
-  @variant hs-quieto-desktop {
-    --hs-q-mw: clamp(300px, calc((100svh - var(--hs-nav) - 64px) * var(--hs-ar-d)), 440px);
-    --hs-q-ar: var(--hs-ar-d);
-
-    & .hs-pin {
-      align-items: center;
-      gap: 36px;
-      text-align: center;
-    }
-    & .hs-m1,
-    & .hs-m2,
-    & .hs-m4 {
-      max-width: 44rem;
-    }
-    & .hs-kicker,
-    & .hs-botones {
-      justify-content: center;
-    }
-    & .hs-bajada {
-      max-width: 52ch;
-      margin-inline: auto;
-    }
-    & .hs-titulo {
-      font-size: clamp(2.8rem, 4.6vw, 4.2rem);
-    }
-    & .hs-escena {
-      width: 100%;
-      margin-inline: 0;
-    }
-    & .hs-horneado,
-    & .hs-cierre-titulo {
-      font-size: clamp(2rem, 3.2vw, 2.8rem);
-    }
-    & .hs-confianza-in {
-      flex-direction: row;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 12px 28px;
-    }
+    /* El texto asienta medio paso después de que la altura arranca. */
+    transition-delay: 0s, 0.05s, 0s;
   }
 }

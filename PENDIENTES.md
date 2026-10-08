@@ -8,24 +8,15 @@ ninguno). Lo ya resuelto está resumido al final, en "Historia".
 
 ## 1 · Falta hacer o confirmar
 
-### Confirmar en producción (la beta `dopamina` pasó a `main` el 8/10/2026)
-- **Escalones de la caja sin el fundido** (7/10/2026): para sacar las imágenes dobles, la caja
-  dibuja un solo cuadro por vez. Desde `caja-v9` hay cuadros intermedios (RIFE) en los tramos
-  donde los productos más se mueven (compu x2/x3 en 4-101, celular x2 en 6-102); van solo con
-  scroll lento y pantalla holgada (HeroSecuenciaPlan). Benjamin lo aprobó en la preview el
-  7/10/2026 (PC e iPhone). Si los escalones vuelven a molestar, la salida es generar más
-  intermedios desde la fuente (`_assets/archivo/`), no volver a mezclar dos cuadros.
-- **El diagnóstico `?hsdiag` se sacó** antes del pase a `main` (8/10/2026). Para volver a
-  medir la caja en un teléfono, recuperarlo de la historia de git (`HeroSecuenciaDiag.ts` y
-  `diagnostico()` del motor, commit anterior al pase) en una rama de prueba, nunca en `main`.
+### Antes de pasar la beta (`dopamina`) a `main`
 - **Prueba en dispositivos reales.** Benjamin la probó en su celular con wifi y anda bien
   (5/10/2026). Falta una prueba con datos móviles (4G) y, si su celular no es un iPhone,
   una en iPhone con Safari: entrar y salir de los pins del hero y de Reseñas con el dedo,
   rotar el teléfono en el hero y el poster con ahorro de energía. Si se puede, también un
   Android de gama media (fluidez de la secuencia del hero y de la galería, y que no se note
   el armado de Empresas, Galería y Flor mientras se scrollea).
-- **Fecha del sitemap.** `site.lastUpdated` (`content/data.ts`) está en 2026-10-08, la del
-  pase a `main`. Cada vez que cambie el copy en producción, ponerle la fecha de ese pase.
+- **Fecha del sitemap.** `site.lastUpdated` (`content/data.ts`) está en 2026-10-05. Si el
+  copy cambia antes del pase a `main`, ponerle la fecha del pase.
 - **Rendimiento en celular.** Tercera vuelta (6/10/2026, ver "Notas técnicas"):
   Lighthouse local con la config de PageSpeed, 90-91 en celular y 100 en compu. Falta
   confirmarlo en PageSpeed Insights con la versión publicada. Para decidir (Benjamin):
@@ -150,13 +141,11 @@ ninguno). Lo ya resuelto está resumido al final, en "Historia".
   `lib/wa.ts` no cambia. Clarity también carga solo en el dominio real.
 - **JSON-LD (`components/chrome/JsonLd.tsx`):** tipo `FoodEstablishment` + `Bakery`. El
   `aggregateRating` lleva `site.reviewCount`, que no se ve en la página (CLAUDE.md §7.4).
-- **Secuencia del hero:** compu en `public/media/secuencia/caja-v9/desktop/` (291 archivos
-  720x1280, ~16 MB: los 172 cuadros del video más 119 intermedios) y celular en
-  `caja-v9/mobile/` (268 archivos 540x960, ~11 MB: 172 más 96 intermedios); la tapa en
-  `caja-v6/` (`tapa-v3.webp` y `tapa-blur-v3.webp`). Después de `load` baja una primera
-  pasada (1 de cada 8 cuadros del video, nunca un intermedio); desde el primer scroll, el
-  resto por tramos cerca de donde está la persona (`seguir` de `HeroSecuenciaMotor.ts`); los
-  intermedios se piden y se decodifican solo con scroll lento. Con ahorro de datos se
+- **Secuencia del hero:** compu en `public/media/secuencia/caja-v6/desktop/` (172 cuadros
+  720x1280, ~9.5 MB) y celular en `caja-v7/mobile/` (172 cuadros 540x960, ~6.6 MB); la
+  tapa en `caja-v6/` (`tapa-v3.webp` y `tapa-blur-v3.webp`). Después de `load` baja una
+  primera pasada (1 de cada 8 cuadros); desde el primer scroll, el resto por tramos cerca
+  de donde está la persona (`seguir` de `HeroSecuenciaMotor.ts`). Con ahorro de datos se
   saltean. No usar AVIF, no sacar cuadros ni bajar de q80 sin prueba en un iPhone real y
   el OK de Benjamin. Un iPad que rota entre vertical y horizontal cruza el corte
   (860x600) y baja las dos versiones.

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useReducedMotion } from "@/lib/motion";
+import { useReducedMotion } from "motion/react";
 import { site } from "@/content/data";
 
 /**

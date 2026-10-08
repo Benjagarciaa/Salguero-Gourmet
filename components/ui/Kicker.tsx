@@ -3,8 +3,6 @@ import { cn } from "@/lib/cn";
 /**
  * Kicker: etiqueta mono en mayúsculas con tick cuadrado amarillo.
  * Uso: encabezado de sección (arriba del título). tracking .18em.
- * Texto crema-dim: no pisar el color por `className` (cn no fusiona clases).
- * (El tono oscuro, para fondo amarillo, quedó en _assets/archivo.)
  */
 export function Kicker({
   children,

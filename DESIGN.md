@@ -142,7 +142,7 @@ En el orden de la página de la beta "dopamina" (Empresas va después de Servici
 
 | Sección | Mockup (grid / detalle) | Beta "dopamina" |
 |---|---|---|
-| Hero | `1.15fr .75fr`, gap 56px; media `max-width:400px`, `aspect-ratio:4/5`, radio 10px. | Secuencia de la caja centrada y fijada (`HeroSecuencia`, cuadros WebP en `public/media/secuencia/caja-v9/desktop/` para compu y `caja-v9/mobile/` para celular, con intermedios en los tramos de más movimiento; tapa en `caja-v6/`), textos por momentos alrededor; sin JS o con reducir movimiento, versión quieta. |
+| Hero | `1.15fr .75fr`, gap 56px; media `max-width:400px`, `aspect-ratio:4/5`, radio 10px. | Secuencia de la caja centrada y fijada (`HeroSecuencia`, cuadros WebP en `public/media/secuencia/caja-v6/desktop/` para compu y `caja-v7/mobile/` para celular, tapa en `caja-v6/`), textos por momentos alrededor; sin JS o con reducir movimiento, versión quieta. |
 | Servicios | `repeat(2,1fr)`, gap 18px; 2 placas `serv-wide` ocupan fila completa con imagen a un lado (`1.15fr 1fr`). Imagen 200px (wide hasta 270px). | Misma grilla en el HTML; en compu "mazo" fijado, en celular "pila" sticky sin pin. |
 | Empresas | banda `surface` con borde arriba/abajo; items como etiquetas + CTA a la derecha. | Sin banda ni líneas: dos filas de palabras gigantes amarillas (cuchara del logo como separador) que cruzan con el scroll, y abajo, centrados, kicker, título, etiquetas y la pill "Cotizar para mi empresa". |
 | Galería | 2 tracks marquee; `figure` 280px ancho, `img` 230px alto radio 8px. | Intro con el video de la mesa fijado (pin corto en compu, más largo en celular) y después el marquee doble en compu o el carril deslizable en celular. La versión quieta mantiene el marquee del mockup. |

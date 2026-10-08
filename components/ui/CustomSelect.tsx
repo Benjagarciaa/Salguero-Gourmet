@@ -2,9 +2,7 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { ChevronDown, Check } from "lucide-react";
-import { AnimatePresence, m, useReducedMotion } from "@/lib/motion";
 import { cn } from "@/lib/cn";
-import { OPACIDAD, RESORTE, SALIDA } from "@/lib/fisica";
 
 const control =
   "flex w-full items-center justify-between gap-2 rounded border border-hairline bg-surface px-[14px] py-[13px] text-left text-[16px] min-[1024px]:text-[15px] text-crema transition-[border-color,box-shadow] duration-200";
@@ -14,10 +12,6 @@ const control =
  * Reemplaza al <select> nativo para poder estilar la lista con la paleta de la
  * marca (highlight amarillo) en vez del popup del sistema operativo.
  * Teclado: flechas, Home/End, Enter/Espacio, Escape, y typeahead.
- *
- * La lista abre con el resorte `panel` (baja 4px y se estira desde arriba, la
- * opacidad aparte) y cierra con una salida corta (SALIDA). Con reducir
- * movimiento abre y cierra en el acto.
  */
 export function CustomSelect({
   label,
@@ -36,7 +30,6 @@ export function CustomSelect({
 }) {
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
-  const reducir = useReducedMotion();
   const rootRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
 
@@ -44,14 +37,10 @@ export function CustomSelect({
   const listId = `${name}-listbox`;
   const optId = (i: number) => `${name}-opt-${i}`;
 
-  // Al abrir, el ítem activo arranca en el seleccionado (y se resincroniza si
-  // cambian el valor o las opciones con la lista abierta). Se ajusta durante el
-  // render en vez de en un efecto: mismo resultado, sin el render en cascada.
-  const [sync, setSync] = useState({ open, value, options });
-  if (sync.open !== open || sync.value !== value || sync.options !== options) {
-    setSync({ open, value, options });
+  // Al abrir, el ítem activo arranca en el seleccionado.
+  useEffect(() => {
     if (open) setActiveIndex(Math.max(0, options.indexOf(value)));
-  }
+  }, [open, value, options]);
 
   // Cerrar al clickear afuera.
   useEffect(() => {
@@ -68,9 +57,9 @@ export function CustomSelect({
   // Scroll del ítem activo a la vista.
   useEffect(() => {
     if (open && listRef.current) {
-      (
-        listRef.current.children[activeIndex] as HTMLElement | undefined
-      )?.scrollIntoView({ block: "nearest" });
+      (listRef.current.children[activeIndex] as HTMLElement | undefined)?.scrollIntoView(
+        { block: "nearest" },
+      );
     }
   }, [activeIndex, open]);
 
@@ -134,8 +123,7 @@ export function CustomSelect({
   return (
     <div className="mb-[18px] flex flex-col gap-[7px]" ref={rootRef}>
       <span id={labelId} className="text-[13.5px] font-medium text-crema">
-        {label}{" "}
-        {required ? <i className="not-italic text-amarillo">*</i> : null}
+        {label} {required ? <i className="not-italic text-amarillo">*</i> : null}
       </span>
       <div className="relative">
         <button
@@ -156,66 +144,47 @@ export function CustomSelect({
           <ChevronDown
             aria-hidden
             className={cn(
-              "size-[18px] shrink-0 text-crema-dim transition-transform duration-500 ease-resorte",
+              "size-[18px] shrink-0 text-crema-dim transition-transform duration-200",
               open && "rotate-180",
             )}
           />
         </button>
-        <AnimatePresence>
-          {open ? (
-            <m.ul
-              key="lista"
-              id={listId}
-              role="listbox"
-              aria-labelledby={labelId}
-              ref={listRef}
-              // Menú elevado: superficie un punto más clara que el trigger.
-              style={{ "--color-surface": "#3a2e22" } as CSSProperties}
-              initial={{ opacity: 0, y: -4, scaleY: 0.98 }}
-              animate={{ opacity: 1, y: 0, scaleY: 1 }}
-              exit={{
-                opacity: 0,
-                y: -4,
-                transition: reducir ? { duration: 0 } : SALIDA,
-              }}
-              transition={
-                reducir
-                  ? { duration: 0 }
-                  : {
-                      y: RESORTE.panel,
-                      scaleY: RESORTE.panel,
-                      opacity: OPACIDAD,
-                    }
-              }
-              className="absolute left-0 top-[calc(100%+6px)] z-20 max-h-[288px] w-full origin-top overflow-auto rounded-xl border border-hairline bg-surface p-1.5 shadow-[0_20px_44px_rgba(0,0,0,0.5)]"
-            >
-              {options.map((opt, i) => {
-                const selected = opt === value;
-                const active = i === activeIndex;
-                return (
-                  <li
-                    key={opt}
-                    id={optId(i)}
-                    role="option"
-                    aria-selected={selected}
-                    onMouseEnter={() => setActiveIndex(i)}
-                    onClick={() => choose(i)}
-                    className={cn(
-                      "flex cursor-pointer items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-[15px] transition-colors duration-150",
-                      active && "bg-[rgba(233,188,79,0.16)]",
-                      active || selected ? "text-amarillo" : "text-crema",
-                    )}
-                  >
-                    <span>{opt}</span>
-                    {selected ? (
-                      <Check className="size-[17px] shrink-0" aria-hidden />
-                    ) : null}
-                  </li>
-                );
-              })}
-            </m.ul>
-          ) : null}
-        </AnimatePresence>
+        {open ? (
+          <ul
+            id={listId}
+            role="listbox"
+            aria-labelledby={labelId}
+            ref={listRef}
+            // Menú elevado: superficie un punto más clara que el trigger.
+            style={{ "--color-surface": "#3a2e22" } as CSSProperties}
+            className="absolute left-0 top-[calc(100%+6px)] z-20 max-h-[288px] w-full origin-top animate-[dd-in_180ms_cubic-bezier(0.16,1,0.3,1)] overflow-auto rounded-xl border border-hairline bg-surface p-1.5 shadow-[0_20px_44px_rgba(0,0,0,0.5)]"
+          >
+            {options.map((opt, i) => {
+              const selected = opt === value;
+              const active = i === activeIndex;
+              return (
+                <li
+                  key={opt}
+                  id={optId(i)}
+                  role="option"
+                  aria-selected={selected}
+                  onMouseEnter={() => setActiveIndex(i)}
+                  onClick={() => choose(i)}
+                  className={cn(
+                    "flex cursor-pointer items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-[15px] transition-colors duration-150",
+                    active && "bg-[rgba(233,188,79,0.16)]",
+                    active || selected ? "text-amarillo" : "text-crema",
+                  )}
+                >
+                  <span>{opt}</span>
+                  {selected ? (
+                    <Check className="size-[17px] shrink-0" aria-hidden />
+                  ) : null}
+                </li>
+              );
+            })}
+          </ul>
+        ) : null}
       </div>
     </div>
   );

@@ -12,10 +12,6 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
-    // Lo archivado (código sin uso, reversible): ni lint ni tsc lo miran.
-    "_assets/**",
-    // Configuración local y worktrees de Claude Code (traen su propio .next).
-    ".claude/**",
   ]),
 ]);
 

@@ -8,7 +8,7 @@ import { site, contacto } from "@/content/data";
 export function JsonLd() {
   const data = {
     "@context": "https://schema.org",
-    "@type": ["FoodEstablishment", "Bakery"],
+    "@type": ["Caterer", "Bakery"],
     "@id": `${site.url}/#business`,
     name: site.name,
     description: site.description,

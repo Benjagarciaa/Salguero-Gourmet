@@ -118,13 +118,11 @@ Reglas de uso:
 1. **Hero con la secuencia de la caja** (reemplazó al video desde la beta "dopamina"):
    `HeroSecuencia` fija el hero y el scroll recorre una secuencia de cuadros dibujada en
    un `<canvas>` (`HeroSecuenciaMotor.ts`, cuadros WebP con alfa en
-   `public/media/secuencia/caja-v9/desktop/` para compu y `caja-v9/mobile/` para celular:
-   los 172 cuadros del video más cuadros intermedios en los tramos donde los productos más
-   se mueven, que el plan usa solo con scroll lento) con la tapa en vivo en otro canvas
-   (`HeroSecuenciaTapa.ts`, imágenes en `public/media/secuencia/caja-v6/`): la caja se abre
-   y los productos suben. La fuente de los cuadros (`caja-v4`) está archivada fuera de git,
-   en `_assets/archivo/`. Datos, tiempos y `densidad` (dónde hay intermedios) en
-   `heroSecuencia` (`content/data.ts`). El servidor pinta el primer cuadro con la caja
+   `public/media/secuencia/caja-v6/desktop/` para compu y `caja-v7/mobile/` para celular)
+   con la tapa en vivo en otro canvas (`HeroSecuenciaTapa.ts`, imágenes en
+   `public/media/secuencia/caja-v6/`): la caja se abre y los productos suben. La fuente de
+   los cuadros (`caja-v4`) está archivada fuera de git, en `_assets/archivo/`. Datos y
+   tiempos en `heroSecuencia` (`content/data.ts`). El servidor pinta el primer cuadro con la caja
    cerrada (LCP); los cuadros se bajan después de `load`. Con `prefers-reduced-motion` o
    sin JS: versión quieta completa (último cuadro y todos los textos).
 2. **Lenis smooth scroll** global (excepto reduced-motion).

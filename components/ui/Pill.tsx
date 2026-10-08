@@ -4,7 +4,7 @@ type PillVariant = "primaria" | "fantasma";
 type PillSize = "md" | "sm";
 
 const base =
-  "inline-block cursor-pointer rounded-full text-center font-medium transition-[translate,scale,filter,border-color] duration-500 ease-resorte active:scale-[0.97] active:duration-150";
+  "inline-block cursor-pointer rounded-full text-center font-medium transition-[transform,filter,border-color] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.97]";
 
 const sizes: Record<PillSize, string> = {
   // CTA principal: compacta en mobile, completa desde sm.
@@ -15,7 +15,7 @@ const sizes: Record<PillSize, string> = {
 
 const variants: Record<PillVariant, string> = {
   primaria:
-    "relative isolate overflow-hidden bg-amarillo text-[#241C15] before:pointer-events-none before:absolute before:inset-0 before:-translate-x-[130%] before:bg-gradient-to-r before:from-transparent before:via-white/45 before:to-transparent before:transition-transform before:duration-[650ms] before:ease-resorte-lento before:content-[''] hover:-translate-y-0.5 hover:brightness-[1.06] hover:before:translate-x-[130%] active:translate-y-0",
+    "relative isolate overflow-hidden bg-amarillo text-[#241C15] before:pointer-events-none before:absolute before:inset-0 before:-translate-x-[130%] before:bg-gradient-to-r before:from-transparent before:via-white/45 before:to-transparent before:transition-transform before:duration-[700ms] before:ease-[cubic-bezier(0.16,1,0.3,1)] before:content-[''] hover:-translate-y-0.5 hover:brightness-[1.06] hover:before:translate-x-[130%] active:translate-y-0",
   fantasma:
     "border border-hairline bg-transparent text-crema hover:-translate-y-0.5 hover:border-crema-dim active:translate-y-0",
 };
@@ -30,12 +30,12 @@ interface PillProps {
   rel?: string;
   type?: "button" | "submit" | "reset";
   onClick?: React.MouseEventHandler<HTMLElement>;
+  "aria-label"?: string;
 }
 
 /**
  * CTA en formato pill. Con `href` renderiza <a>; sin `href`, <button>.
  * `primaria` = amarilla (CTA principal); `fantasma` = borde hairline.
- * (La variante `tinta`, para fondo amarillo, quedó en _assets/archivo.)
  */
 export function Pill({
   variant = "primaria",
@@ -47,6 +47,7 @@ export function Pill({
   rel,
   type = "button",
   onClick,
+  "aria-label": ariaLabel,
 }: PillProps) {
   const classes = cn(base, sizes[size], variants[variant], className);
   // Blinda pestañas nuevas: si un caller abre _blank sin pasar rel, igual sale
@@ -61,6 +62,7 @@ export function Pill({
         target={target}
         rel={relFinal}
         onClick={onClick}
+        aria-label={ariaLabel}
         className={classes}
       >
         {children}
@@ -72,6 +74,7 @@ export function Pill({
     <button
       type={type}
       onClick={onClick}
+      aria-label={ariaLabel}
       className={classes}
     >
       {children}
