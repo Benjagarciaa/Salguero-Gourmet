@@ -185,7 +185,7 @@ const PENAL_INTERMEDIOS = 6;
 export const DPR_MAX = 2;
 
 /** Estado de red de un cuadro. */
-export const NADA = 0;
+const NADA = 0;
 export const BAJANDO = 1;
 export const BAJADO = 2;
 export const FALLO = 3;
@@ -505,12 +505,6 @@ export interface Demanda {
    * más el mostrado.
    */
   conservar: Set<number>;
-  /**
-   * Grilla de lo que se pide y se decodifica: 0, todos los archivos (en
-   * reposo o lento); si no, 1 de cada `paso` cuadros del video (1, 2, 4 u 8;
-   * sin los intermedios).
-   */
-  paso: number;
 }
 
 /**
@@ -700,7 +694,7 @@ export function demanda(
   } else {
     pasada.forEach(sumar);
   }
-  return { bajar, decodificar, conservar, paso };
+  return { bajar, decodificar, conservar };
 }
 
 /* ---------- Qué cuadro se dibuja ---------- */

@@ -904,9 +904,6 @@ input[type="number"].no-spin::-webkit-inner-spin-button {
   text-align: center;
   pointer-events: none;
 }
-.hs[data-hs="escena"] .hs-m2-in {
-  pointer-events: none;
-}
 /* Escena, cierre (desktop y mobile): centrado abajo; el encuadre sube lo
    justo para que la caja quede entera por encima (HeroSecuencia mide este
    alto). */
@@ -979,11 +976,6 @@ input[type="number"].no-spin::-webkit-inner-spin-button {
 }
 .hs-cifra-largo {
   display: none;
-}
-
-/* Mobile: bajada corta arriba (entra sobre la caja cerrada). */
-.hs-bajada-corta {
-  display: inline;
 }
 
 /* Aviso "Scrolleá": solo desktop y solo con la escena (o antes de hidratar). */

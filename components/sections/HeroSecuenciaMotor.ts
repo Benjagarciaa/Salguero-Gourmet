@@ -192,7 +192,6 @@ export function crearMotor({
     bajar: [],
     decodificar: [],
     conservar: new Set(),
-    paso: 0,
   };
   /** Posición (cuadro del video) para la que se calculó `ultima`. */
   let posPlan = NaN;

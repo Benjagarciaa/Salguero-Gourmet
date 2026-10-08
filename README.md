@@ -37,4 +37,5 @@ nunca sobre `npm run dev`.
 ## Ramas
 
 - `main`: producción (lo que se ve en salguerogourmet.com).
-- `dopamina`: beta con scroll estilo Apple. Vercel arma una vista previa de cada push.
+- `dopamina`: rama de prueba. Vercel arma una vista previa de cada push; lo que se aprueba
+  ahí pasa a `main`.

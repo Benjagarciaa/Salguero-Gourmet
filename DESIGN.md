@@ -29,7 +29,8 @@ vuelve a `translateY(0)`.
 
 ## 2. Tipografía
 
-Cargar con `next/font/google`, `display: swap`, expuestas como variables CSS.
+Playfair Display y JetBrains Mono recortadas, por `next/font/local` (`app/fonts/`); DM Sans por
+`next/font/google`. Todas con `display: swap`, expuestas como variables CSS.
 
 | Familia | Variable | Uso | Pesos |
 |---|---|---|---|
@@ -83,7 +84,7 @@ Escalas clave (del mockup):
   escena de desktop de la beta (`GaleriaEscena` + `Galeria.module.css`) el marquee doble
   tiene su propia animación, deriva con el scroll y el hover lo frena con resorte.
 - Contadores de la tira de confianza: **SSR muestra el número final**; el conteo animado es
-  un realce opcional client-side (easing cúbico ~1.1s), nunca arranca en 0 en el HTML.
+  un realce opcional client-side (resorte `lento` de `lib/fisica.ts`, asienta en ~1.25 s), nunca arranca en 0 en el HTML.
 
 ## 5. Primitivas UI (derivadas del mockup)
 
@@ -94,7 +95,7 @@ Se implementan en FASE 1 dentro de `components/ui/`. Hoy están: `Wordmark`, `Se
 
 ### `Wordmark`
 `SALGUERO` + cuchara SVG amarilla + `GOURMET`. `font-weight:700; letter-spacing:.14em;
-font-size:15px` (16px alto de cuchara en footer, 22px en nav). SVG exacto:
+font-size:15px` (22px de alto de cuchara en el nav; el pie lleva `FooterMarca`). SVG exacto:
 `<svg viewBox="0 0 34 180"><g fill="#E9BC4F"><ellipse cx="17" cy="27" rx="17" ry="27"/><rect x="12.25" y="48" width="9.5" height="132" rx="4.75"/></g></svg>`
 
 ### `Section` (`.sec`)
@@ -123,7 +124,7 @@ hover `translateY(-4px)` + borde ámbar + zoom de la foto) vive dentro de cada s
 `Resenas.tsx`). La primitiva `Placa` no se usaba y se archivó en
 `_assets/archivo/codigo/components/ui/Placa.tsx` (30/9/2026).
 
-### `Field` / `Select` / `TextArea`
+### `Field` / `CustomSelect` / `TextArea`
 `background:surface; border:1px solid hairline; border-radius:4px; color:crema; font:inherit;
 font-size:15px; padding:13px 14px; width:100%`. Focus:
 `outline:2px solid amarillo; outline-offset:1px; border-color:transparent`. Label 13.5px/500,

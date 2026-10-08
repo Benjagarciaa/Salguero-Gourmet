@@ -148,7 +148,7 @@ export function despuesDeLoad(fn: () => void): () => void {
 /**
  * Corre `fn` cuando el hero ya se pintó (o ya, si pasó), sin esperar a
  * `load`. Para lo que se pide al hidratar y no hace falta para ver el hero:
- * los chunks de la decoración (Decoracion) y el cuadro 0 del motor del hero.
+ * los chunks de la decoración (Decoracion).
  * Devuelve la cancelación.
  */
 export function despuesDelPintado(fn: () => void): () => void {

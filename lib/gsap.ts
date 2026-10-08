@@ -273,18 +273,16 @@ export function useGSAPAlAcercarse(
   {
     scope,
     dependencies = [],
-    margen,
   }: {
     scope: { current: Element | null };
     dependencies?: unknown[];
-    margen?: string;
   },
 ) {
   return useGSAP(
     (_contexto, contextSafe) => {
       const el = scope.current;
       if (!el || !contextSafe) return;
-      return alAcercarse(el, contextSafe(armar), margen);
+      return alAcercarse(el, contextSafe(armar));
     },
     { scope, dependencies },
   );
@@ -341,7 +339,7 @@ function siguienteArmado() {
   }
 }
 
-export function encolarArmado(armar: () => void): () => void {
+function encolarArmado(armar: () => void): () => void {
   const pendiente: ArmadoPendiente = { armar, vivo: true };
   colaDeArmado.push(pendiente);
   programarArmado();
@@ -359,20 +357,14 @@ export function encolarArmado(armar: () => void): () => void {
  */
 export function useGSAPEnCola(
   armar: () => void | (() => void),
-  {
-    scope,
-    dependencies = [],
-  }: {
-    scope: { current: Element | null };
-    dependencies?: unknown[];
-  },
+  { scope }: { scope: { current: Element | null } },
 ) {
   return useGSAP(
     (_contexto, contextSafe) => {
       if (!contextSafe) return;
       return encolarArmado(contextSafe(armar));
     },
-    { scope, dependencies },
+    { scope, dependencies: [] },
   );
 }
 
@@ -502,8 +494,7 @@ const VAR_COSTURA = "--costura-mb";
  * lo copia al pin-spacer al refrescar. Va por una variable CSS (--costura-mb):
  * si el recorrido cambia y con él el corrimiento, se actualiza la variable y se
  * pide un refresh (converge en uno). Si el padre del pin es flex, ScrollTrigger
- * no pone pinSpacing y este margen no alcanza: usar costura solo de entrada o
- * pasar pinSpacing explícito.
+ * no pone pinSpacing y este margen no alcanza: pasar pinSpacing explícito.
  *
  * Devuelve las mismas vars con onUpdate y onRefresh compuestos (primero corre
  * el callback original) y `limpiar`, que saca el listener de refreshInit, el
@@ -518,13 +509,9 @@ export function conCostura(
   contenido: HTMLElement | HTMLElement[],
   {
     d = COSTURA.d,
-    entrada = true,
-    salida = true,
     recorrido,
   }: {
     d?: number;
-    entrada?: boolean;
-    salida?: boolean;
     /**
      * El recorrido del pin en px (lo mismo que suma el `end` "+=..."). Con
      * él, el margen inicial ya es el real y el primer refresh no tiene que
@@ -551,8 +538,7 @@ export function conCostura(
     const l = Math.max(0, Math.min(2 * d, D / 4));
     return { l, dd: l / 2 };
   };
-  const margenPara = (dd: number) =>
-    (entrada ? dd : 0) + (salida ? dd : 0);
+  const margenPara = (dd: number) => dd * 2;
 
   // Margen inicial: el del recorrido real si quien llama lo pasa; si no, el
   // de un pin largo (D >= 8d). Se fija ANTES de crear el ScrollTrigger: el
@@ -582,14 +568,11 @@ export function conCostura(
       return;
     }
     const s = st.progress * D;
-    let y = 0;
-    if (entrada) {
-      const u = Math.min(s, l) / l;
-      y -= dd * (1 - (1 - u) * (1 - u));
-    }
-    if (salida && s > D - l) {
-      const u = (s - (D - l)) / l;
-      y -= dd * u * u;
+    const u = Math.min(s, l) / l;
+    let y = -dd * (1 - (1 - u) * (1 - u));
+    if (s > D - l) {
+      const v = (s - (D - l)) / l;
+      y -= dd * v * v;
     }
     ponerY(y);
   };
@@ -635,7 +618,7 @@ export function conCostura(
 
 /**
  * will-change solo mientras la escena está cerca: pone el atributo `data-capa`
- * en `el` desde `antes` pantallas antes de que entre hasta `despues` pantallas
+ * en `el` desde `antes` pantallas antes de que entre hasta una pantalla
  * después de que sale (el CSS de la sección decide qué capa promueve con
  * `[data-capa]`). Así las capas de GPU existen solo alrededor de la escena
  * activa y se rasterizan antes de que llegue, no en pleno scroll.
@@ -643,7 +626,7 @@ export function conCostura(
  */
 export function capaActiva(
   el: HTMLElement,
-  { antes = 1, despues = 1 }: { antes?: number; despues?: number } = {},
+  { antes = 1 }: { antes?: number } = {},
 ): () => void {
   const poner = (activa: boolean) => {
     if (activa) el.setAttribute("data-capa", "");
@@ -652,7 +635,7 @@ export function capaActiva(
   const st = ScrollTrigger.create({
     trigger: el,
     start: `top bottom+=${antes * 100}%`,
-    end: `bottom top-=${despues * 100}%`,
+    end: "bottom top-=100%",
     refreshPriority: 0,
     onToggle: (self) => poner(self.isActive),
     onRefresh: (self) => poner(self.isActive),

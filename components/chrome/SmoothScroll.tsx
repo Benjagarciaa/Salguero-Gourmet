@@ -86,8 +86,8 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
       const instancia = new Clase({
         // Rueda con lerp (amortiguación continua) y no con duración: cada
         // muesca de la rueda no reinicia una curva que arranca a máxima
-        // velocidad. 0.1 = constante de ~167 ms (antes 0.075, ~220 ms): con el
-        // scrub directo de las escenas es el único suavizado.
+        // velocidad. SCROLL.lerp (lib/fisica.ts: 0.15, constante de ~100 ms) es,
+        // con el scrub directo de las escenas, el único suavizado.
         lerp: SCROLL.lerp,
         smoothWheel: true,
         // El scroll a las anclas (clicks en nav/CTAs) es más largo y con easeInOut

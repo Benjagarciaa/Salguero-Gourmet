@@ -66,7 +66,7 @@ export function posterDeAhorro(raiz: ParentNode) {
  * Imagen fija del marco, renderizada en el servidor.
  *
  * Los cuadros van TAL CUAL (unoptimized): ya son WebP livianos con alfa al
- * tamaño en que se ven (el primero pesa ~45KB en desktop y ~31KB en mobile) y
+ * tamaño en que se ven (el primero pesa ~45KB en desktop y ~25KB en mobile) y
  * el optimizador los recomprimía distinto de lo que dibuja el canvas (saltaba
  * el brillo al pasar del <img> al canvas). Así el motor además toma este
  * mismo archivo como cuadro 0, de la caché.
@@ -78,7 +78,7 @@ export function posterDeAhorro(raiz: ParentNode) {
  *     el navegador lee el HTML (ver HeroMarcaAhorro). Ese script llega tarde
  *     para el escáner de precarga, que ya pidió con las `media` del HTML el
  *     PRIMER cuadro y la tapa (HeroTapaFija): con Save-Data se bajan además
- *     esos dos, unos 48 KB en mobile y 63 KB en desktop, que no se muestran.
+ *     esos dos, unos 51 KB en mobile y 72 KB en desktop, que no se muestran.
  *     Es a propósito: sacarlos del escáner (que las `media` del HTML no los
  *     elijan y el script los habilite) demoraría el LCP de todos los demás;
  *     Chrome no tiene una media query de Save-Data que lo evite;
@@ -170,7 +170,7 @@ export function HeroSecuenciaPoster() {
  * servidor: la primera pintura ya muestra la caja cerrada. Cuando el lienzo de
  * la tapa dibuja (HeroSecuenciaTapa) la reemplaza; en la versión quieta (último
  * cuadro) no se muestra (globals.css). Tal cual (unoptimized): es un WebP con
- * alfa de ~16KB y el lienzo adopta este mismo archivo. Va eager aunque haya
+ * alfa de ~25KB y el lienzo adopta este mismo archivo. Va eager aunque haya
  * ahorro de datos: el escáner de precarga la pide antes de que el script en
  * línea marque la versión quieta (ver HeroSecuenciaPoster).
  */

@@ -1,6 +1,7 @@
 /**
  * Videos de escena (hoy solo el de la mesa, en Galería): sacar su arranque del
- * scroll.
+ * scroll. `trasCargaInactivo` es genérico: también lo usan ProcesoGrid y el
+ * visor de la galería.
  *
  * El primer cuadro de un <video> cuesta caro: decodifica, sube la textura y
  * compila el shader YUV del compositor. Si eso pasa cuando la escena entra en
@@ -51,10 +52,10 @@ export const AHORRO_EN_LINEA = `((navigator.connection&&navigator.connection.sav
 
 /**
  * Corre `fn` después del evento `load` de la ventana y de un idle del hilo
- * principal (requestIdleCallback con `timeout`; donde no existe, setTimeout de
- * 300 ms). Devuelve la cancelación, para la limpieza del efecto.
+ * principal (requestIdleCallback con tope de 2 s; donde no existe, setTimeout
+ * de 300 ms). Devuelve la cancelación, para la limpieza del efecto.
  */
-export function trasCargaInactivo(fn: () => void, timeout = 2000): () => void {
+export function trasCargaInactivo(fn: () => void): () => void {
   const w = window as IdleWindow;
   let cancelado = false;
   let idleId = 0;
@@ -67,7 +68,7 @@ export function trasCargaInactivo(fn: () => void, timeout = 2000): () => void {
         () => {
           if (!cancelado) fn();
         },
-        { timeout },
+        { timeout: 2000 },
       );
     } else {
       timeoutId = window.setTimeout(() => {

@@ -36,7 +36,7 @@ export interface EmphasisTitle {
 }
 
 /** Bajada con un tramo en <strong> (color crema pleno). */
-export interface RichLead {
+interface RichLead {
   pre: string;
   strong: string;
   post: string;
@@ -47,7 +47,7 @@ export interface CTA {
   href: string;
 }
 
-export interface TrustItem {
+interface TrustItem {
   /** Texto antes del contador. */
   before: string;
   /** Valor final del contador (el SSR ya muestra este número). */
@@ -56,12 +56,12 @@ export interface TrustItem {
   after?: string;
 }
 
-export interface NavLink {
+interface NavLink {
   label: string;
   href: string;
 }
 
-export interface Servicio {
+interface Servicio {
   id: string;
   title: string;
   desc: string;
@@ -89,7 +89,7 @@ export interface GaleriaFoto {
   video?: string;
 }
 
-export interface Resena {
+interface Resena {
   quote: string;
   author: string;
   /** Etiqueta por SERVICIO contratado, nunca por fecha. */
@@ -104,7 +104,7 @@ export interface Paso {
   desc: string;
 }
 
-export interface FaqItem {
+interface FaqItem {
   q: string;
   a: string;
 }
@@ -258,7 +258,7 @@ export interface HeroSecuenciaVersion {
 }
 
 /** Tramo del recorrido, en progreso (0 a 1). */
-export interface HeroTramo {
+interface HeroTramo {
   desde: number;
   hasta: number;
 }
@@ -269,7 +269,7 @@ export interface HeroTramo {
  * las de "centro" van dentro del marco, justo debajo. En mobile no hay fichas:
  * la caja abierta queda sola (los rótulos tapaban productos).
  */
-export interface HeroSecuenciaFicha {
+interface HeroSecuenciaFicha {
   id: string;
   /** Nombre del producto (en pantalla va en mayúsculas, JetBrains Mono). */
   texto: string;
@@ -293,7 +293,7 @@ export interface HeroSecuenciaFicha {
  * fondo. Ya suelto, el marco sube más lento que la página (`deriva`, fracción
  * del scroll que se compensa): se lee como profundidad y no como un corte.
  */
-export interface HeroSalida {
+interface HeroSalida {
   desde: { desktop: number; mobile: number };
   /** Cuánto dura después de soltarse, en altos del escenario. */
   despues: number;
@@ -307,13 +307,13 @@ export interface HeroSalida {
  * ENTERO debajo de la caja, sin tapar nada. El cálculo sale de las medidas reales (alto del
  * escenario, del marco y del cierre) en cada refresh; `escalaMin` es el tope.
  */
-export interface HeroAjusteCierre {
+interface HeroAjusteCierre {
   tramo: HeroTramo;
   escalaMin: number;
 }
 
 /** Una cifra del momento 3: número grande y rótulo (corto en mobile). */
-export interface HeroCifra {
+interface HeroCifra {
   valor: string;
   texto: string;
   corto: string;
@@ -431,13 +431,13 @@ export const heroSecuencia = {
    * aleja desde el centro de la caja abierta (productos + caja vacía).
    */
   encuadre: {
-    /** Caja cerrada (con la tapa), en el primer cuadro (borde superior e inferior). */
-    cajaInicio: { arriba: 34.5, abajo: 69.7 },
+    /** Caja cerrada (con la tapa), en el primer cuadro (borde inferior). */
+    cajaInicio: { abajo: 69.7 },
     /**
      * Caja vacía con su papel, en el último cuadro. `abajo` incluye su sombra
      * (alfa medido en el cuadro 172 de las dos versiones: 89.9 y 90.3).
      */
-    cajaFinal: { arriba: 67.6, abajo: 90.3 },
+    cajaFinal: { abajo: 90.3 },
     /**
      * Borde superior de la fila de arriba de productos (las tapas de los
      * frascos), en el último cuadro (medido: 17.9 mobile, 18.8 desktop).

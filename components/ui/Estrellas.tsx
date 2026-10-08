@@ -1,4 +1,3 @@
-import { cn } from "@/lib/cn";
 import styles from "./Estrellas.module.css";
 
 /**
@@ -9,15 +8,9 @@ import styles from "./Estrellas.module.css";
  * `data-estrella-relleno` (el relleno, que se escala en X desde la izquierda).
  * Tamaño: 1em, así que se dimensionan con el font-size del contenedor.
  */
-export function Estrellas({
-  count,
-  className,
-}: {
-  count: number;
-  className?: string;
-}) {
+export function Estrellas({ count }: { count: number }) {
   return (
-    <span aria-hidden className={cn("inline-flex gap-[0.2em]", className)}>
+    <span aria-hidden className="inline-flex gap-[0.2em]">
       {Array.from({ length: count }, (_, i) => (
         <span key={i} data-estrella className={styles.estrella}>
           <span data-estrella-relleno className={styles.relleno} />

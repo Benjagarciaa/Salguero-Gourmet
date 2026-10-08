@@ -18,9 +18,9 @@ ninguno). Lo ya resuelto está resumido al final, en "Historia".
 - **El diagnóstico `?hsdiag` se sacó** antes del pase a `main` (8/10/2026). Para volver a
   medir la caja en un teléfono, recuperarlo de la historia de git (`HeroSecuenciaDiag.ts` y
   `diagnostico()` del motor, commit anterior al pase) en una rama de prueba, nunca en `main`.
-- **Prueba en dispositivos reales.** Benjamin la probó en su celular con wifi y anda bien
-  (5/10/2026). Falta una prueba con datos móviles (4G) y, si su celular no es un iPhone,
-  una en iPhone con Safari: entrar y salir de los pins del hero y de Reseñas con el dedo,
+- **Prueba en dispositivos reales.** Benjamin la probó en su celular con wifi (5/10/2026)
+  y en iPhone y PC con la preview (7/10/2026). Falta una prueba con datos móviles (4G) y,
+  en iPhone con Safari: entrar y salir de los pins del hero y de Reseñas con el dedo,
   rotar el teléfono en el hero y el poster con ahorro de energía. Si se puede, también un
   Android de gama media (fluidez de la secuencia del hero y de la galería, y que no se note
   el armado de Empresas, Galería y Flor mientras se scrollea).
@@ -48,10 +48,6 @@ ninguno). Lo ya resuelto está resumido al final, en "Historia".
   está en pantalla la pill "Pedir presupuesto" del nav, o sea dos botones amarillos a la
   vez; (2) para que entre el cierre, el encuadre se achica en pantallas bajas (tope 0.66,
   `heroSecuencia.cierre.ajuste.escalaMin`). Todo se cambia en `heroSecuencia.cierre`.
-- **Secuencia del hero:** `caja-v6` en compu (sombra oscura en lugar del halo oliva, WebP
-  q80 a q88) y `caja-v7` en celular (sombras de afuera más suaves y el hueco de la
-  mermelada relleno). Si no la aprueba, la vuelta a `caja-v5` está en `_assets/archivo/`
-  (solo en el disco: hay que devolverla a `public/` con otro nombre de carpeta).
 - **Hero en compu de 1200px o más:** las columnas del hero se miden desde el borde de la
   ventana (el título arranca en x=43 a 1440), mientras el logo y las secciones arrancan en
   el contenedor. Alinearlas al contenedor achica la caja (13% a 1880, 24% a 1920) y a 1920
@@ -77,8 +73,8 @@ ninguno). Lo ya resuelto está resumido al final, en "Historia".
   (`empresas.servicio`).
 - **Finger food en la galería:** el marquee usa un cuadro del clip 4 rotulado "Finger
   food". Confirmar el rótulo y la foto.
-- **Visor de la galería:** usa `destacadas` + "Mesa dulce" al final (18 ítems), para que
-  cada foto del carril abra la suya.
+- **Visor de la galería:** usa `destacadas` tal cual (18 ítems, "Mesa dulce" incluida) y, al
+  final, las fotos del carril que no estén ahí, para que cada foto abra la suya.
 
 ### Panel de gestión
 - **No se toca por ahora** (decisión de Benjamin, 5/10/2026). Consecuencia conocida: el
@@ -165,7 +161,7 @@ ninguno). Lo ya resuelto está resumido al final, en "Historia".
 - **Caché de `/media` (solo producción, `next.config.ts`):** `/media/secuencia/*` y
   `/media/productos/*` con caché de un año `immutable`; el resto, una semana con
   `stale-while-revalidate`. Regla: lo que cambie en `secuencia/` o `productos/` cambia de
-  carpeta o de nombre (`caja-v8`, `mesa-mobile-v3`...). Nunca se pisa un archivo en el
+  carpeta o de nombre (`caja-v10`, `mesa-mobile-v3`...). Nunca se pisa un archivo en el
   lugar.
 - **Imágenes:** `images.qualities` es `[88]` (todas las fotos piden 88; el poster del
   hero no pasa por el optimizador).
@@ -210,8 +206,8 @@ ninguno). Lo ya resuelto está resumido al final, en "Historia".
     nuevos usan un carácter fuera de esa lista, sale con la letra de respaldo: sumarlo
     al recorte. DM Sans sigue entera (Google), porque es la del cotizador.
   - **Después de pintar (`lib/pintado.ts`).** Lo que se pide al hidratar y no hace falta
-    para ver el hero (los chunks de bocaditos y cuchara, el cuadro 0 del motor del
-    hero, Clarity) espera a la primera pintura. En una página visible no cambia nada;
+    para ver el hero (los chunks de bocaditos y cuchara, Clarity) espera a la primera
+    pintura. En una página visible no cambia nada;
     en una pestaña que todavía no se muestra (o el Chrome de PageSpeed cuando demora los
     cuadros) no le compite al hero.
 - **Fotos HEIC del cliente:** son imágenes en mosaico. Decodificar SIEMPRE con el default
@@ -275,8 +271,8 @@ La copia original sigue en `_assets/fotos/flor-trabajando.jpg`.
 - [x] **FASE 2** · Hero + Servicios (fotos elegidas por el cliente).
 - [x] **FASE 3** · Galería + La cocina de Flor + Reseñas.
 - [x] **FASE 4** · Proceso + Empresas + FAQ + Cotizador (WhatsApp + preselección) + Footer + Nav.
-- [ ] FASE 5 · SEO + performance + a11y + pasada mobile.
-- [ ] FASE 6 · Entrega (build final, guía de deploy en Vercel, cómo cargar datos faltantes).
+- [x] FASE 5 · SEO + performance + a11y + pasada mobile.
+- [x] FASE 6 · Entrega (build final, guía de deploy en Vercel, cómo cargar datos faltantes).
 
 ---
 

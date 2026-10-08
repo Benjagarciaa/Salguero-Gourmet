@@ -60,8 +60,9 @@ palabra por titular y el logo. **Única excepción:** Empresas: palabras gigante
 con movimiento sobre el fondo del sitio (pedido de Benjamin 30/9/2026); es la única
 excepción a la regla de dosis del amarillo.
 
-Fuentes por `next/font/google`: **Playfair Display** (display; itálica solo para la palabra
-destacada), **DM Sans** (texto y UI), **JetBrains Mono** (solo etiquetas: 11px, uppercase,
+Fuentes (**Playfair Display** y **JetBrains Mono** recortadas, por `next/font/local` desde
+`app/fonts/`; **DM Sans** por `next/font/google`): **Playfair Display** (display; itálica solo
+para la palabra destacada), **DM Sans** (texto y UI), **JetBrains Mono** (solo etiquetas: 11px, uppercase,
 tracking `+0.14em`). CTA: pill (radio 999px) amarilla con texto `#241C15`.
 
 ## 5. Reglas de trabajo (innegociables)
@@ -103,8 +104,9 @@ Reglas de uso:
   los plugins extra se registran en el componente que los usa con `gsap.registerPlugin`.
 - `useGSAP` con `scope`, `gsap.matchMedia()` para desktop/mobile/reducir movimiento, nada
   de GSAP en el render ni en el servidor, sin estado de React por cuadro.
-- Una sola instancia de Lenis (`components/chrome/SmoothScroll.tsx`), manejada por
-  `gsap.ticker` y avisando a `ScrollTrigger.update`: no crear otra ni otro loop de scroll.
+- Una sola instancia de Lenis (`components/chrome/SmoothScroll.tsx`), en un rAF propio que
+  llama a `lenis.raf` y después a `gsap.ticker.tick()` (el ticker de GSAP no despacha solo):
+  no crear otra ni otro loop de scroll.
 - Los pins se calculan de arriba hacia abajo: todo pin nuevo lleva `refreshPriority: 0`
   (con eso ScrollTrigger ordena los refresh por posición en la página); lo que tiene que
   refrescarse después de todos (el pie) va con `-1`. `anticipatePin` solo con
@@ -127,7 +129,8 @@ Reglas de uso:
    `heroSecuencia` (`content/data.ts`). El servidor pinta el primer cuadro con la caja
    cerrada (LCP); los cuadros se bajan después de `load`. Con `prefers-reduced-motion` o
    sin JS: versión quieta completa (último cuadro y todos los textos).
-2. **Lenis smooth scroll** global (excepto reduced-motion).
+2. **Lenis smooth scroll** solo con puntero fino (rueda y trackpad); en táctiles, scroll
+   nativo; con reduced-motion, tampoco.
 3. **Preselección + `lib/wa.ts`:** los links "Cotizar X" preseleccionan el `select` Y el
    servicio viaja en el mensaje de WhatsApp. `wa.ts` arma saludo, nombre, contacto,
    servicio, fecha, personas, descripción y cierre, luego
