@@ -23,6 +23,7 @@ import { crearMotor, type MotorSecuencia } from "./HeroSecuenciaMotor";
 import { ajustesPara } from "./HeroSecuenciaPlan";
 import {
   multiplexa,
+  nivelAnticipo,
   RED_LENTA_KBS,
   redLenta,
   tipoDeRed,
@@ -1304,8 +1305,13 @@ export function HeroSecuencia({
           // lenta: lo dice el tipo de red donde el navegador lo sabe
           // (Chromium) y, si no (iPhone), la primera tanda medida; si la
           // pasada entera termina lenta, se cortan. El scrub usa entonces el
-          // cuadro más cercano de la pasada. Con ahorro de datos no se llega
-          // acá (versión quieta).
+          // cuadro más cercano de la pasada. Con la pasada bajada y la red
+          // midiendo bien, el resto se baja por adelantado en reposo
+          // (`anticipar`, hasta un escalón según la red: nivelAnticipo), sin
+          // esperar el scroll: con la caché fría (primera visita, o el CDN
+          // todavía sin ese deploy en la región) quien lee unos segundos y
+          // después scrollea encuentra los cuadros. Con ahorro de datos no se
+          // llega acá (versión quieta).
           // Al terminar la pasada (y con las fuentes listas, que cambian el
           // alto del texto) se recalculan las posiciones del pin, solo si las
           // fuentes todavía cargaban cuando se armó la escena (si no, ya se
@@ -1330,6 +1336,12 @@ export function HeroSecuencia({
             if (kbs !== null && kbs < RED_LENTA_KBS) {
               medidaLenta = true;
               m.soltarTramos();
+            } else if (kbs !== null && !redLenta()) {
+              // Con la pasada bajada y la red midiendo bien, el resto de la
+              // secuencia se baja por adelantado (nivelAnticipo), en reposo:
+              // quien scrollea un rato después de entrar encuentra los cuadros;
+              // quien scrollea enseguida sigue con la pasada y los tramos.
+              m.anticipar(nivelAnticipo(desktop, kbs));
             }
             if (!fuentesPendientes) return;
             await document.fonts?.ready;

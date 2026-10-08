@@ -19,6 +19,30 @@ export const RED_LENTA_KBS = 90;
  * una tanda de las descargas a la vez de un celular, que llega casi junta.
  */
 export const MUESTRA_RED = 6;
+/**
+ * Velocidad medida (KB/s) desde la que, con la pasada bajada y la persona
+ * todavía sin scrollear, se baja por adelantado el resto de la secuencia (ver
+ * `nivelAnticipo`): en una compu, con 2 MB/s (~16 Mbps) todo (cuadros del
+ * video e intermedios, ~16 MB); con 500 KB/s los cuadros del video; con menos,
+ * 1 de cada 4. En un celular, con 1 MB/s 1 de cada 2 (~3.5 MB más que la
+ * pasada); con menos, 1 de cada 4. Sin esto, quien entraba con la caché fría
+ * y scrolleaba enseguida recorría el hero con la secuencia todavía bajando y
+ * veía la grilla gruesa de la pasada: la caja "en cuotas".
+ */
+export const ANTICIPO_KBS = { todo: 2000, video: 500, mitad: 1000 };
+
+/**
+ * Escalón (cuadros del video) hasta el que se baja por adelantado, según el
+ * dispositivo y la velocidad medida: 0 = todos los archivos, 1 = los cuadros
+ * del video, 2 = 1 de cada 2, 4 = 1 de cada 4.
+ */
+export function nivelAnticipo(desktop: boolean, kbs: number): number {
+  if (desktop) {
+    if (kbs >= ANTICIPO_KBS.todo) return 0;
+    return kbs >= ANTICIPO_KBS.video ? 1 : 4;
+  }
+  return kbs >= ANTICIPO_KBS.mitad ? 2 : 4;
+}
 
 /**
  * Bytes y cuadros bajados, tiempo con alguna descarga en vuelo y `latencia`:

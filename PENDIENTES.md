@@ -151,8 +151,12 @@ ninguno). Lo ya resuelto está resumido al final, en "Historia".
   `caja-v9/mobile/` (268 archivos 540x960, ~11 MB: 172 más 96 intermedios); la tapa en
   `caja-v6/` (`tapa-v3.webp` y `tapa-blur-v3.webp`). Después de `load` baja una primera
   pasada (1 de cada 8 cuadros del video, nunca un intermedio); desde el primer scroll, el
-  resto por tramos cerca de donde está la persona (`seguir` de `HeroSecuenciaMotor.ts`); los
-  intermedios se piden y se decodifican solo con scroll lento. Con ahorro de datos se
+  resto por tramos cerca de donde está la persona (`seguir` de `HeroSecuenciaMotor.ts`); con
+  la pasada bajada y la red midiendo bien, lo que falta se baja por adelantado en reposo
+  (`anticipar`: todo en una compu con 2 MB/s o más, los cuadros del video con 500 KB/s, 1 de
+  cada 2 en un celular con 1 MB/s, si no 1 de cada 4; `nivelAnticipo` en
+  `HeroSecuenciaRed.ts`); los intermedios se piden y se decodifican solo con scroll lento o
+  por adelantado en compu. Con ahorro de datos se
   saltean. No usar AVIF, no sacar cuadros ni bajar de q80 sin prueba en un iPhone real y
   el OK de Benjamin. Un iPad que rota entre vertical y horizontal cruza el corte
   (860x600) y baja las dos versiones.

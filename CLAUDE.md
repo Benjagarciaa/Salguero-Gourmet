@@ -127,7 +127,8 @@ Reglas de uso:
    y los productos suben. La fuente de los cuadros (`caja-v4`) está archivada fuera de git,
    en `_assets/archivo/`. Datos, tiempos y `densidad` (dónde hay intermedios) en
    `heroSecuencia` (`content/data.ts`). El servidor pinta el primer cuadro con la caja
-   cerrada (LCP); los cuadros se bajan después de `load`. Con `prefers-reduced-motion` o
+   cerrada (LCP); los cuadros se bajan después de `load` (la pasada de 1 de cada 8 y, con la
+   red midiendo bien, el resto por adelantado en reposo). Con `prefers-reduced-motion` o
    sin JS: versión quieta completa (último cuadro y todos los textos).
 2. **Lenis smooth scroll** solo con puntero fino (rueda y trackpad); en táctiles, scroll
    nativo; con reduced-motion, tampoco.

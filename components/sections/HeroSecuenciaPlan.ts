@@ -37,7 +37,11 @@ import type { HeroSecuenciaVersion } from "@/content/data";
  *   tomaba el tramo (siempre había cuadros nuevos alrededor de la persona) y
  *   con rueda rápida apenas cargar la pasada salía recién con el scroll
  *   terminado: la caja se congelaba. Con la pasada pedida, el tramo usa todas
- *   las descargas. Quien mira el principio y se va no baja la secuencia
+ *   las descargas. Después de la pasada y del tramo, en reposo, el anticipo
+ *   (`Medidas.anticipo`): lo que falta hasta un escalón que depende de la red
+ *   medida, de lo grueso a lo fino y desde donde está la caja, así quien
+ *   entra con la caché fría y scrollea un rato después ya tiene los cuadros.
+ *   Quien mira el principio y se va con una red lenta no baja la secuencia
  *   entera; quien la recorre baja cada archivo una vez.
  * - Decodificación (`demanda().decodificar` y `conservar`): solo una ventana
  *   (en cuadros del video) alrededor de donde va a estar la caja, más larga
@@ -493,6 +497,14 @@ export interface Medidas {
   tramos: boolean;
   /** La pantalla sigue el ritmo (`crearRitmo`): si no, sin intermedios. */
   holgada: boolean;
+  /**
+   * Escalón hasta el que se baja por adelantado, en reposo, lo que falta de la
+   * secuencia (después de la pasada y de los tramos): PASADA, nada más que la
+   * pasada; 4, 2 o 1, esa grilla de cuadros del video; 0, también los
+   * intermedios. De lo grueso a lo fino y, en cada grosor, desde donde está la
+   * caja (`nivelAnticipo` de HeroSecuenciaRed lo elige con la red medida).
+   */
+  anticipo: number;
 }
 
 export interface Demanda {
@@ -626,6 +638,22 @@ export function demanda(
   const pasada = e.pasadaPendiente
     ? t.pasada.filter((i) => e.red[i] === NADA).sort(porPrioridad(0))
     : [];
+  // 3 · Anticipo: lo que falta hasta `anticipo`, de lo grueso a lo fino y en
+  // cada grosor por distancia; solo en reposo (en movimiento, cada descarga
+  // en vuelo que no es del tramo le quita un lugar a lo que la caja va a
+  // mostrar; en reposo no compite con nada). Va después de la pasada y del
+  // tramo: con la pasada pedida, el tramo cubre lo cercano y el anticipo
+  // sigue con el resto.
+  const anticipo: number[] = [];
+  if (!moviendo && m.anticipo < PASADA) {
+    for (let i = 0; i < total; i++) {
+      if (e.red[i] === NADA && t.escalon[i] >= m.anticipo && t.escalon[i] < PASADA) {
+        anticipo.push(i);
+      }
+    }
+    const cerca = porPrioridad(0);
+    anticipo.sort((i, j) => t.escalon[j] - t.escalon[i] || cerca(i, j));
+  }
   if (m.tramos) {
     // El largo, en cuadros del video; los extremos, en archivos.
     const largo = Math.max(
@@ -694,6 +722,7 @@ export function demanda(
   } else {
     pasada.forEach(sumar);
   }
+  anticipo.forEach(sumar);
   return { bajar, decodificar, conservar };
 }
 

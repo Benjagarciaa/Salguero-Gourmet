@@ -12,6 +12,7 @@ import {
   LATENCIA_INICIAL_MS,
   LATENCIA_TOPE_MS,
   MAX_PRIMERO,
+  PASADA,
   REPOSO_MS,
   tiemposDe,
   urlDeCuadro,
@@ -97,6 +98,13 @@ export interface MotorSecuencia {
   /** Corta la carga por tramos (la red resultó lenta). */
   soltarTramos(): void;
   /**
+   * Baja por adelantado, en reposo, lo que falta de la secuencia hasta el
+   * escalón `escalon` (4, 2, 1 o 0 = también los intermedios), de lo grueso a
+   * lo fino y desde donde está la caja: así quien entra con la caché fría y
+   * scrollea un rato después encuentra los cuadros bajados.
+   */
+  anticipar(escalon: number): void;
+  /**
    * Velocidad de la red medida hasta ahora (KB/s: bytes de cuadros bajados en
    * la página sobre el tiempo con alguna descarga en vuelo), o null si no bajó
    * nada.
@@ -170,6 +178,7 @@ export function crearMotor({
     decodificarMs: DECODIFICAR_INICIAL_MS,
     tramos: false,
     holgada: true,
+    anticipo: PASADA,
   };
   /** La pasada se pidió (`cargar`) y le falta algo. */
   let pasadaPendiente = false;
@@ -475,6 +484,11 @@ export function crearMotor({
 
     soltarTramos() {
       medidas.tramos = false;
+      programar();
+    },
+
+    anticipar(escalon) {
+      medidas.anticipo = escalon;
       programar();
     },
 
