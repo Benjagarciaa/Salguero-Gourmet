@@ -37,6 +37,13 @@ const CONTACTO_INVALIDO =
 // fail-open: no se espera la respuesta ni se bloquea el flujo de WhatsApp;
 // si la API no existe o falla, acá no pasa nada. "empresa" es un honeypot
 // anti-bots que los humanos nunca ven (siempre viaja vacío).
+/**
+ * Largo máximo de cada campo: lo que el formulario deja escribir (maxLength) y
+ * lo que viaja al panel (recortado igual, por si alguien salta el formulario
+ * desde la consola). Un pedido real entra de sobra.
+ */
+const LARGO = { nombre: 80, contacto: 120, personas: 5, descripcion: 1500 };
+
 function enviarLeadAlPanel(f: QuoteForm) {
   try {
     // Solo el sitio publicado avisa al panel de producción. En desarrollo va al
@@ -57,12 +64,12 @@ function enviarLeadAlPanel(f: QuoteForm) {
       keepalive: true,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        nombre: f.nombre.trim(),
-        contacto: f.contacto.trim(),
+        nombre: f.nombre.trim().slice(0, LARGO.nombre),
+        contacto: f.contacto.trim().slice(0, LARGO.contacto),
         servicio: f.servicio,
         fecha: f.fecha || null,
-        personas: f.personas?.trim() || null,
-        descripcion: f.descripcion.trim(),
+        personas: f.personas?.trim().slice(0, LARGO.personas) || null,
+        descripcion: f.descripcion.trim().slice(0, LARGO.descripcion),
         empresa: "",
       }),
     }).catch(() => {});
@@ -187,12 +194,20 @@ export function Cotizador() {
           {/* data-clarity-mask: Microsoft Clarity graba sesiones en el dominio
               publicado; con esto lo que la persona escribe (nombre, contacto,
               descripción) no entra en la grabación, sin depender del panel. */}
-          <form onSubmit={onSubmit} noValidate data-clarity-mask="true">
+          {/* method="post": sin JS el envío nativo iría por GET con los datos en
+              la URL (historial, logs); con JS no cambia nada (preventDefault). */}
+          <form
+            onSubmit={onSubmit}
+            method="post"
+            noValidate
+            data-clarity-mask="true"
+          >
             <Reveal y={14} className="grid gap-x-[14px] sm:grid-cols-2">
               <Field
                 label={fields.nombre.label}
                 required
                 name="nombre"
+                maxLength={LARGO.nombre}
                 autoComplete="name"
                 placeholder={fields.nombre.placeholder}
                 value={values.nombre}
@@ -204,6 +219,7 @@ export function Cotizador() {
                 label={fields.contacto.label}
                 required
                 name="contacto"
+                maxLength={LARGO.contacto}
                 placeholder={fields.contacto.placeholder}
                 value={values.contacto}
                 onChange={(e) => setField("contacto", e.target.value)}
@@ -250,6 +266,7 @@ export function Cotizador() {
                 label={fields.descripcion.label}
                 required
                 name="descripcion"
+                maxLength={LARGO.descripcion}
                 placeholder={fields.descripcion.placeholder}
                 value={values.descripcion}
                 onChange={(e) => setField("descripcion", e.target.value)}
