@@ -18,6 +18,11 @@ npm run build && npx next start -p 3100  # build de producción en http://localh
 Las mediciones de rendimiento (Lighthouse) se hacen siempre sobre el build de producción,
 nunca sobre `npm run dev`.
 
+```bash
+npm run check   # tipos (tsc) + lint (eslint) + tests; lo mismo corre el CI de GitHub en cada push
+npm test        # solo los tests (tests/, corren con Node, sin dependencias)
+```
+
 ## Dónde está cada cosa
 
 - **Copy y datos:** todo el texto del sitio vive en `content/data.ts`, tipado. Para cambiar
