@@ -137,6 +137,13 @@ test("tiemposDe: una densidad que no entra en los archivos tira error (fail-open
   assert.throws(() => tiemposDe({ ...MOBILE, cuadros: 150 }));
   // Sin tramos, cada archivo es un cuadro del video: cierra siempre.
   assert.equal(tiemposDe({ ...MOBILE, densidad: [] }).ultimo, 267);
+  // Un tramo que termina justo en el último cuadro vale; uno que empieza ahí,
+  // no (el último cuadro no tiene intermedios después).
+  const fin = tiemposDe({ ...MOBILE, cuadros: 173, densidad: [{ desde: 170, hasta: 171, x: 2 }] });
+  assert.equal(fin.ultimo, 171);
+  assert.equal(fin.tiempo[171], 170.5);
+  assert.equal(fin.tiempo[172], 171);
+  assert.throws(() => tiemposDe({ ...MOBILE, cuadros: 173, densidad: [{ desde: 171, hasta: 172, x: 2 }] }));
 });
 
 test("urlDeCuadro: nombre con ceros a la izquierda desde `primero`", () => {
@@ -231,6 +238,13 @@ test("crearReloj: un salto no cuenta como velocidad y el reposo la vuelve a 0", 
   // Hacia atrás cambia el sentido.
   r.marcar(150, ahora + paso + 316);
   assert.equal(r.leer(ahora + paso + 316).dir, -1);
+  // Dos marcas en el mismo milisegundo no dividen por cero.
+  const r2 = crearReloj();
+  r2.marcar(0, 0);
+  r2.marcar(1, 0);
+  assert.equal(r2.leer(0).vel, 0);
+  r2.marcar(2, 1);
+  assert.ok(Number.isFinite(r2.leer(1).vel));
 });
 
 test("crearRitmo: se apura con cuadros de pantalla largos y se vuelve a holgar", () => {
@@ -250,6 +264,14 @@ test("crearRitmo: se apura con cuadros de pantalla largos y se vuelve a holgar",
   assert.equal(ritmo.holgada, true);
   // Una pausa (más de 100 ms) no cuenta como cuadro lento.
   marcar(500, 9);
+  assert.equal(ritmo.holgada, true);
+  // Histéresis: entre 18 y 20 ms se queda como estaba.
+  marcar(30, 9);
+  assert.equal(ritmo.holgada, false);
+  marcar(19, 9);
+  assert.equal(ritmo.holgada, false);
+  marcar(16, 9);
+  marcar(19, 9);
   assert.equal(ritmo.holgada, true);
 });
 
@@ -292,6 +314,35 @@ test("ajustesPara: memoria, descargas y ventanas por dispositivo", () => {
     version: MOBILE,
   });
   assert.equal(iphone.capacidad, 17);
+  // Tablet apaisada con la versión desktop (sin puntero fino): memoria táctil.
+  const tablet = ajustesPara({
+    desktop: true,
+    punteroFino: false,
+    webkit: false,
+    multiplexa: true,
+    version: DESKTOP,
+  });
+  assert.equal(tablet.capacidad, 10); // 40 MB / (720 x 1280 x 4)
+  assert.equal(tablet.descargas, 6);
+  assert.deepEqual(tablet.ventana, { atras: 8, adelante: 20 });
+  // Sin h2/h3 (HTTP/1.1), también en una compu: 6 descargas.
+  const http1 = ajustesPara({
+    desktop: true,
+    punteroFino: true,
+    webkit: false,
+    multiplexa: false,
+    version: DESKTOP,
+  });
+  assert.equal(http1.descargas, 6);
+  // Piso de 4 bitmaps aunque los cuadros sean enormes.
+  const enorme = ajustesPara({
+    desktop: false,
+    punteroFino: false,
+    webkit: true,
+    multiplexa: false,
+    version: { ancho: 1080, alto: 1920 },
+  });
+  assert.equal(enorme.capacidad, 4);
 });
 
 test("nivelAnticipo: escalón según dispositivo y red medida", () => {
@@ -421,8 +472,10 @@ test("demanda: en movimiento rápido decodifica solo la grilla y nada de lo que 
   const rapido: Scroll = { pos: 20, vel: 200, velCorta: 200, dir: 1 };
   const d = demanda(rapido, e, PC, MEDIDAS);
   assert.ok(d.decodificar.length > 0);
+  // Tope 79.2 imágenes/s (3 decodificaciones / 25 ms x 0.66): 200/2 lo pasa,
+  // 200/4 no: paso 4.
   for (const i of d.decodificar) {
-    assert.ok(t.escalon[i] >= 2, `archivo ${i} (escalón ${t.escalon[i]})`);
+    assert.ok(t.escalon[i] >= 4, `archivo ${i} (escalón ${t.escalon[i]})`);
     assert.ok(t.tiempo[i] >= 20, `archivo ${i} quedó atrás`);
   }
   assert.ok(d.conservar.size <= PC.capacidad + 1);

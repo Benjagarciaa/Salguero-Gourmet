@@ -10,6 +10,7 @@ framer-motion. Sin backend. Deploy en Vercel.
 ## Cómo correrlo
 
 ```bash
+# Node 22.6 o más nuevo (los tests usan el recorte de tipos de Node)
 npm install
 npm run dev                              # desarrollo en http://localhost:3000
 npm run build && npx next start -p 3100  # build de producción en http://localhost:3100

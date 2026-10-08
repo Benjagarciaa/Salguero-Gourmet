@@ -184,7 +184,10 @@ export function Cotizador() {
         <div className="grid grid-cols-[minmax(0,1fr)] gap-9 min-[860px]:grid-cols-[1.15fr_0.85fr] min-[860px]:gap-[52px]">
           {/* Cascada corta campo por campo (cada fila con su propio Reveal
             fail-open) que guía el ojo hacia el botón de WhatsApp. */}
-          <form onSubmit={onSubmit} noValidate>
+          {/* data-clarity-mask: Microsoft Clarity graba sesiones en el dominio
+              publicado; con esto lo que la persona escribe (nombre, contacto,
+              descripción) no entra en la grabación, sin depender del panel. */}
+          <form onSubmit={onSubmit} noValidate data-clarity-mask="true">
             <Reveal y={14} className="grid gap-x-[14px] sm:grid-cols-2">
               <Field
                 label={fields.nombre.label}

@@ -1,15 +1,23 @@
 name: CI
 
-# En cada push y pull request: tipos, lint, tests y build (lo mismo que
-# `npm run check` más el build). Vercel arma el deploy por su cuenta; esto
-# avisa antes, en GitHub, si algo se rompió.
+# En cada push: tipos, lint, tests y build (lo mismo que `npm run check` más
+# el build). Vercel arma el deploy por su cuenta; esto avisa antes, en GitHub,
+# si algo se rompió. Solo lee el repo (permissions) y, si se vuelve a pushear
+# la misma rama, cancela la corrida anterior.
 on:
   push:
-  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   verificar:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

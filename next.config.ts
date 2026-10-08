@@ -38,6 +38,10 @@ const securityHeaders = [
   { key: "X-Frame-Options", value: "SAMEORIGIN" },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  // La pestaña en su propio grupo de contexto: una página de otro origen
+  // abierta desde acá (WhatsApp, Instagram, Maps) no retiene un handle a la
+  // landing, aunque a un link futuro se le olvide el noopener.
+  { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
   {
     key: "Permissions-Policy",
     value: "camera=(), microphone=(), geolocation=()",

@@ -42,6 +42,11 @@ ninguno). Lo ya resuelto está resumido al final, en "Historia".
   reposo. Mientras tanto, al abrir o cerrar se pide un `ScrollTrigger.refresh(true)`.
 
 ### Diseño y textos que tiene que confirmar Benjamin
+- **Página de error** (`app/error.tsx`, 8/10/2026): si algo se rompe en el navegador (el hero,
+  una escena), Next mostraba su pantalla genérica en inglés sin nav ni pill; ahora se ve una
+  pantalla con el molde de la 404 (kicker, título, texto, "Probar de nuevo" y la pill al
+  cotizador). El copy está en `content/data.ts` (`errorPagina`) y no viene del mockup:
+  confirmar o corregir.
 - **Cierre del hero** ("Tu pedido puede *lucir así*." + pill "Quiero el mío" a `#cotizar`,
   sin bajada desde el 5/10/2026). En compu el título va en un renglón; en el celular, en
   dos ("Tu pedido puede / lucir así."). Confirmar: (1) mientras se ve el cierre también

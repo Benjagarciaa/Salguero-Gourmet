@@ -1063,3 +1063,20 @@ export const noEncontrada = {
     "Puede que el link esté mal escrito o que la página ya no exista. Desde el inicio ves nuestros servicios y pedís tu presupuesto.",
   boton: { label: "Volver al inicio", href: "/" } as CTA,
 };
+
+/* ==========================================================================
+ * Error en el cliente (app/error.tsx): si algo de la página se rompe en el
+ * navegador, en vez de la pantalla genérica de Next (en inglés y sin nav)
+ * se muestra esto, con el nav y el pie, y el pedido de presupuesto sigue a
+ * mano. Copy no incluido en el mockup: pendiente de OK de Benjamin.
+ * ========================================================================== */
+
+export const errorPagina = {
+  kicker: "Algo falló",
+  titulo: { pre: "No pudimos mostrar ", em: "esta parte" } as EmphasisTitle,
+  texto:
+    "Fue un error nuestro, no tuyo. Probá de nuevo; si sigue, escribinos por WhatsApp y te pasamos el presupuesto igual.",
+  reintentar: "Probar de nuevo",
+  // Directo a WhatsApp: con la página rota, el cotizador no está en pantalla.
+  boton: { label: "Escribinos por WhatsApp", href: contacto.whatsappHref } as CTA,
+};

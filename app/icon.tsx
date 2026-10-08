@@ -26,8 +26,7 @@ export default function Icon() {
           background: "#241C15",
         }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={spoon} width={28} height={150} alt="" />
+          <img src={spoon} width={28} height={150} alt="" />
       </div>
     ),
     { ...size },

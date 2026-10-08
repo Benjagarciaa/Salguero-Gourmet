@@ -123,7 +123,6 @@ export default async function OgImage() {
           }}
         >
           <span>SALGUERO</span>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={spoon} width={18} height={95} alt="" />
           <span>GOURMET</span>
         </div>
