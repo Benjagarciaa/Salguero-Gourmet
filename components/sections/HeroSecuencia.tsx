@@ -401,7 +401,6 @@ export function HeroSecuencia({
         let quitarRefresh = () => {};
         let restaurarBotones = () => {};
         let quitarPreparacion = () => {};
-        let quitarDiag = () => {};
 
         // Desktop: escala inicial de la imagen (--hs-z en globals.css, que la
         // toma de heroSecuencia.acercamiento y la baja en pantallas angostas).
@@ -1290,44 +1289,6 @@ export function HeroSecuencia({
           // refresh (conFunciones) y el resto tiene valores fijos.
           linea.render(0, true, true);
           alActualizar();
-          // ?hsdiag en la URL: el diagnóstico de la secuencia encima del hero,
-          // para probar en un teléfono (HeroSecuenciaDiag). Sin el parámetro
-          // ni se baja.
-          if (new URLSearchParams(location.search).has("hsdiag")) {
-            void import("./HeroSecuenciaDiag").then(({ montarDiag }) => {
-              if (!vivo) return;
-              let error = "-";
-              const anotarError = (e: ErrorEvent | PromiseRejectionEvent) => {
-                const r = "reason" in e ? e.reason : e.error ?? e.message;
-                error = String(r).slice(0, 60);
-              };
-              window.addEventListener("error", anotarError);
-              window.addEventListener("unhandledrejection", anotarError);
-              const servicios = document.getElementById("servicios");
-              const geometria = () => {
-                const st = pinRef.current;
-                const spacer = root.querySelector<HTMLElement>(".pin-spacer");
-                const raiz = document.scrollingElement;
-                const desborde = (el: Element) => getComputedStyle(el).overflowY;
-                const pin = st
-                  ? `${Math.round(st.start)}-${Math.round(st.end)} p${st.progress.toFixed(2)}${st.isActive ? " activo" : ""}`
-                  : "-";
-                return [
-                  `modo ${root.dataset.hs ?? "-"}  y ${Math.round(scrollY)}/${Math.round(raiz?.scrollTop ?? -1)}  doc ${raiz?.scrollHeight ?? "-"}`,
-                  `vh ${innerHeight}  vv ${Math.round(visualViewport?.height ?? 0)}  hero ${root.offsetHeight}  spacer ${spacer?.offsetHeight ?? "-"}`,
-                  `pin ${pin}  st ${ScrollTrigger.getAll().length}`,
-                  `servicios ${servicios ? Math.round(servicios.getBoundingClientRect().top) : "-"}  overflow ${desborde(document.documentElement)}/${desborde(document.body)}`,
-                  `error ${error}`,
-                ];
-              };
-              const quitarBase = montarDiag(m, () => valores.cuadro, geometria);
-              quitarDiag = () => {
-                quitarBase();
-                window.removeEventListener("error", anotarError);
-                window.removeEventListener("unhandledrejection", anotarError);
-              };
-            });
-          }
           restaurarBotones = () => {
             [m1, m4].forEach((el) => el?.style.removeProperty("pointer-events"));
             [...botonesM1, ...botonesM4].forEach((b) =>
@@ -1503,7 +1464,6 @@ export function HeroSecuencia({
           cancelar();
           quitarEspera();
           quitarRefresh();
-          quitarDiag();
           restaurarBotones();
           motor?.destruir();
           motor = null;
@@ -1528,7 +1488,6 @@ export function HeroSecuencia({
           cancelar();
           quitarEspera();
           quitarRefresh();
-          quitarDiag();
           restaurarBotones();
           motor?.destruir();
           capa?.destruir();

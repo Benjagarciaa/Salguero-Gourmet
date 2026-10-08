@@ -137,7 +137,7 @@ export const site = {
   // Fecha real de última actualización del contenido (copy/reseñas). Alimenta el
   // <lastmod> del sitemap; actualizar SOLO cuando cambia el contenido, no en cada
   // deploy, para que sea una señal honesta a los buscadores.
-  lastUpdated: "2026-10-05",
+  lastUpdated: "2026-10-08",
   // Descripcion base para meta/OG/JSON-LD (alineada al posicionamiento de autor).
   description:
     "Gastronomía de autor para empresas, instituciones y eventos en Córdoba: desayunos, coffee breaks y mesas gourmet, cuidadas hasta el último detalle. Pedí tu presupuesto por WhatsApp.",

@@ -120,21 +120,6 @@ export interface MotorSecuencia {
   despertar(): void;
   /** Corta descargas, decodificaciones, timers y observers, y libera todo. */
   destruir(): void;
-  /** Estado para el diagnóstico de ?hsdiag (HeroSecuenciaDiag). */
-  diagnostico(): {
-    /** Archivo en el lienzo (-1: ninguno) y su tiempo en el video. */
-    mostrado: number;
-    tiempo: number;
-    bitmaps: number;
-    bytes: number;
-    capacidad: number;
-    decodificadas: number;
-    decodificando: number;
-    decodificarMs: number;
-    decodificarMaxMs: number;
-    paso: number;
-    descargas: number;
-  };
 }
 
 export function crearMotor({
@@ -186,9 +171,6 @@ export function crearMotor({
     tramos: false,
     holgada: true,
   };
-  /** Decodificaciones terminadas y la más larga (para el diagnóstico). */
-  let decodificadas = 0;
-  let decodificarMaxMs = 0;
   /** La pasada se pidió (`cargar`) y le falta algo. */
   let pasadaPendiente = false;
   /** El archivo que está en el lienzo (-1: ninguno) y si hay que repintarlo. */
@@ -334,8 +316,6 @@ export function crearMotor({
         (bitmap) => {
           const ms = performance.now() - t0;
           medidas.decodificarMs = medidas.decodificarMs * 0.7 + ms * 0.3;
-          decodificadas++;
-          decodificarMaxMs = Math.max(decodificarMaxMs, ms);
           // Lo que dejó de hacer falta mientras se decodificaba no se queda.
           if (muerto || dormido || !ultima.conservar.has(i)) {
             bitmap.close();
@@ -541,24 +521,6 @@ export function crearMotor({
       for (const bitmap of bitmaps.values()) bitmap.close();
       bitmaps.clear();
       revisarEsperas();
-    },
-
-    diagnostico() {
-      let bytes = 0;
-      for (const b of bitmaps.values()) bytes += b.width * b.height * 4;
-      return {
-        mostrado,
-        tiempo: mostrado >= 0 ? tiempos.tiempo[mostrado] : -1,
-        bitmaps: bitmaps.size,
-        bytes,
-        capacidad: ajustes.capacidad,
-        decodificadas,
-        decodificando: decodificando.size,
-        decodificarMs: medidas.decodificarMs,
-        decodificarMaxMs,
-        paso: ultima.paso,
-        descargas: enVuelo,
-      };
     },
   };
 }
