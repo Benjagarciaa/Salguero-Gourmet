@@ -24,8 +24,8 @@ ninguno). Lo ya resuelto está resumido al final, en "Historia".
   rotar el teléfono en el hero y el poster con ahorro de energía. Si se puede, también un
   Android de gama media (fluidez de la secuencia del hero y de la galería, y que no se note
   el armado de Empresas, Galería y Flor mientras se scrollea).
-- **Fecha del sitemap.** `site.lastUpdated` (`content/data.ts`) está en 2026-10-08, la del
-  pase a `main`. Cada vez que cambie el copy en producción, ponerle la fecha de ese pase.
+- **Fecha del sitemap.** `site.lastUpdated` (`content/data.ts`) está en 2026-10-20, la del
+  pase a `main` con la anticipación de 72 hs. Cada vez que cambie el copy en producción, ponerle la fecha de ese pase.
 - **Rendimiento en celular.** Tercera vuelta (6/10/2026, ver "Notas técnicas"):
   Lighthouse local con la config de PageSpeed, 90-91 en celular y 100 en compu. Falta
   confirmarlo en PageSpeed Insights con la versión publicada. Para decidir (Benjamin):
@@ -67,7 +67,7 @@ ninguno). Lo ya resuelto está resumido al final, en "Historia".
 - **Empresas, palabras y etiquetas:** arriba "Coffee breaks · Desayunos" y abajo "Mesas
   gourmet · Agasajos" (`empresas.palabras`); en la pose de lectura se ven enteras "Coffee
   breaks" y "Agasajos". Debajo del título, "Con factura", "Sin mínimos" y "Pedido con
-  48 hs" (`empresas.items`). Si quiere ver las cuatro palabras enteras hace falta letra
+  72 hs" (`empresas.items`). Si quiere ver las cuatro palabras enteras hace falta letra
   más chica o filas en bucle.
 - **Botones al final de Reseñas y de Cómo trabajamos (L6):** "Pedir presupuesto"
   (`resenas.cta`) y "Contanos tu evento" (`proceso.cta`), los dos a `#cotizar`. Confirmar
@@ -287,7 +287,8 @@ La copia original sigue en `_assets/fotos/flor-trabajando.jpg`.
 
 ## 7 · Historia (resuelto)
 
-- **Datos del cliente (agosto 2026):** anticipación mínima 48 hs antes del evento con seña
+- **Datos del cliente (agosto 2026):** anticipación mínima 48 hs antes del evento (pasó a
+  72 hs el 20/10/2026, pedido de Benjamin: Empresas, FAQ y ayuda de la fecha) con seña
   del 50%; medios de pago efectivo, transferencia o depósito; horario de atención 9 a
   17 hs; sin cantidades mínimas; opciones sin TACC, veganas y vegetarianas según el
   servicio; vajilla y personal según lo que necesite el cliente; envío por zona se acuerda
