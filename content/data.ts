@@ -137,7 +137,7 @@ export const site = {
   // Fecha real de última actualización del contenido (copy/reseñas). Alimenta el
   // <lastmod> del sitemap; actualizar SOLO cuando cambia el contenido, no en cada
   // deploy, para que sea una señal honesta a los buscadores.
-  lastUpdated: "2026-10-08",
+  lastUpdated: "2026-10-20",
   // Descripcion base para meta/OG/JSON-LD (alineada al posicionamiento de autor).
   description:
     "Gastronomía de autor para empresas, instituciones y eventos en Córdoba: desayunos, coffee breaks y mesas gourmet, cuidadas hasta el último detalle. Pedí tu presupuesto por WhatsApp.",
@@ -866,11 +866,12 @@ export const empresas = {
    * Etiquetas debajo del título (L2): datos que ayudan a decidir a quien
    * organiza para una empresa (RR.HH., compras), no rubros (esos ya los dicen
    * las palabras gigantes). Todos confirmados por Flor: trabajamos con factura,
-   * sin cantidades mínimas y pedido con 48 horas de anticipación. "Sin TACC
+   * sin cantidades mínimas y pedido con 72 horas de anticipación (eran 48,
+   * pasó a 72 el 20/10/2026, pedido de Benjamin). "Sin TACC
    * embalado aparte" se sacó el 5/10/2026 (pedido de Benjamin); el dato sigue
    * en las preguntas frecuentes.
    */
-  items: ["Con factura", "Sin mínimos", "Pedido con 48 hs"],
+  items: ["Con factura", "Sin mínimos", "Pedido con 72 hs"],
   cta: { label: "Cotizar para mi empresa", href: "#cotizar" } as CTA,
   /**
    * Servicio que "Cotizar para mi empresa" deja preseleccionado en el
@@ -902,7 +903,7 @@ export const empresas = {
  * medios de pago, horario, sin mínimos). La mención a "viandas" quedó fuera: el
  * negocio no hace viandas recurrentes (discrepancia resuelta).
  * L1 (octubre 2026): las respuestas dicen los datos que Flor confirmó y antes
- * se esquivaban: pedido con 48 horas y horneado el mismo día, sin TACC
+ * se esquivaban: pedido con 72 horas y horneado el mismo día, sin TACC
  * preparado y embalado aparte (nunca "apto celíaco"), con mozos o por
  * delivery y "trabajamos con factura".
  * ========================================================================== */
@@ -919,7 +920,7 @@ export const faq = {
     },
     {
       q: "¿Con cuánta anticipación tengo que reservar?",
-      a: "Con al menos 48 horas, y horneamos todo el mismo día de tu evento. Si reservás antes, mejor: con más tiempo diseñamos una propuesta de autor y cuidamos cada detalle.",
+      a: "Con al menos 72 horas, y horneamos todo el mismo día de tu evento. Si reservás antes, mejor: con más tiempo diseñamos una propuesta de autor y cuidamos cada detalle.",
     },
     {
       q: "¿Hay cantidades mínimas?",
@@ -967,7 +968,7 @@ export const cotizador = {
         /** Lo que muestra el campo mientras no hay fecha elegida (CustomDate.tsx). */
         placeholder: "dd/mm/aaaa",
         /** Ayuda debajo del campo (anticipación confirmada por Flor). */
-        ayuda: "Pedí con al menos 48 hs de anticipación.",
+        ayuda: "Pedí con al menos 72 hs de anticipación.",
       },
       personas: {
         label: "Cantidad de personas",
